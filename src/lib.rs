@@ -1,98 +1,13 @@
-use std::{mem::take, str::Chars};
+#![expect(
+    clippy::while_let_on_iterator,
+    reason = "better to understand when the iterator is used after the loop brakes"
+)]
+#![allow(unused, reason = "dev")]
+
+use std::str::Chars;
 
 use tag::parse_tag;
-
-#[derive(Default)]
-struct Attribute {
-    name: String,
-    value: Option<String>,
-}
-
-#[derive(Default)]
-struct Attributes(Vec<Attribute>);
-
-#[derive(Default)]
-pub struct Tag {
-    file: bool,
-    prefix: Option<String>,
-    name: Option<String>,
-    attrs: Attributes,
-}
-
-impl Tag {
-    fn into_html(self) -> Html {
-        Html::Element {
-            tag: self,
-            full: false,
-            child: Box::new(Html::None),
-        }
-    }
-}
-
-#[derive(Default)]
-pub enum Html {
-    #[default]
-    None,
-    Element {
-        tag: Tag,
-        full: bool,
-        child: Box<Html>,
-    },
-    Text(String),
-    //TODO: Comment,
-    Vec(Vec<Html>),
-}
-
-impl Html {
-    fn push(&mut self, ch: char) {
-        match self {
-            Self::None => *self = Self::Text(ch.to_string()),
-            Self::Element { child, .. } => child.push(ch),
-            Self::Text(text) => text.push(ch),
-            Self::Vec(vec) => {
-                if let Some(last) = vec.last_mut() {
-                    last.push(ch);
-                } else {
-                    vec.push(Self::Text(ch.to_string()))
-                }
-            }
-        }
-    }
-
-    fn push_tag(&mut self, tag: Tag) {
-        match self {
-            Self::None => *self = tag.into_html(),
-            Self::Element { child, .. } => child.push_tag(tag),
-            Self::Text(_) => *self = Self::Vec(vec![take(self), tag.into_html()]),
-            Self::Vec(vec) => {
-                if matches!(vec.last(), None | Some(Self::Text(_))) {
-                    vec.push(tag.into_html())
-                } else {
-                    vec.last_mut().unwrap().push_tag(tag);
-                }
-            }
-        }
-    }
-
-    fn fill(&mut self) -> bool {
-        match self {
-            Self::None => false,
-            Self::Element {
-                full: full @ false,
-                child,
-                ..
-            } => {
-                if !child.fill() {
-                    *full = true;
-                }
-                true
-            }
-            Self::Element { full: true, .. } => false,
-            Self::Text(_) => false,
-            Self::Vec(vec) => vec.last_mut().map(|last| last.fill()).unwrap_or(false),
-        }
-    }
-}
+use types::{Html, TagBuilder};
 
 pub fn parse_html(html: &str) -> Result<Html, String> {
     let mut chars = html.chars();
@@ -107,21 +22,24 @@ fn parse_elt(chars: &mut Chars<'_>) -> Result<Html, String> {
             dash_count += 1;
         } else if ch == '>' && dash_count >= 2 {
             for _ in 0..(dash_count - 2) {
-                tree.push('-');
+                tree.push_char('-');
                 todo!("close comment")
             }
         } else {
             for _ in 0..dash_count {
-                tree.push('-');
+                tree.push_char('-');
             }
             if ch == '<' {
-                if let Some(tag) = parse_tag(chars)? {
-                    tree.push_tag(tag);
-                } else if !tree.fill() {
-                    return Err("Mismatched closing tag".to_owned()); //TODO: this is very common, improve error message.
+                match parse_tag(chars)? {
+                    TagBuilder::Document { name, attr } => {
+                        tree.push_node(Html::Document { name, attr })
+                    }
+                    TagBuilder::Open { tag } => tree.push_tag(tag, false),
+                    TagBuilder::OpenClose { tag } => tree.push_tag(tag, true),
+                    TagBuilder::Close(name) => tree.close_tag(&name)?,
                 }
             } else {
-                tree.push(ch);
+                tree.push_char(ch);
             }
         }
     }
@@ -129,3 +47,12 @@ fn parse_elt(chars: &mut Chars<'_>) -> Result<Html, String> {
 }
 
 mod tag;
+mod types;
+
+fn push_option(opt: &mut Option<String>, ch: char) {
+    if let Some(string) = opt {
+        string.push(ch)
+    } else {
+        *opt = Some(ch.to_string())
+    }
+}
