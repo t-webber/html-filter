@@ -98,13 +98,26 @@ impl fmt::Display for PrefixName {
     }
 }
 
+#[derive(Debug)]
+pub enum TagFull {
+    Closed,
+    Opened,
+    Inline,
+}
+
+impl TagFull {
+    const fn is_open(&self) -> bool {
+        matches!(self, Self::Opened)
+    }
+}
+
 #[derive(Debug, Default)]
 pub enum Html {
     #[default]
     Empty,
     Tag {
         tag: Tag,
-        full: bool,
+        full: TagFull,
         child: Box<Html>,
     },
     Document {
@@ -124,7 +137,7 @@ impl Html {
     fn is_pushable(&self, is_char: bool) -> bool {
         match self {
             Html::Empty | Html::Vec(_) => true,
-            Html::Tag { tag, full, child } => !*full,
+            Html::Tag { tag, full, child } => full.is_open(),
             Html::Document { .. } => false,
             Html::Text(_) => is_char,
         }
@@ -137,12 +150,16 @@ impl Html {
     pub(super) fn push_char(&mut self, ch: char) {
         match self {
             Self::Empty => *self = Self::from_char(ch),
-            Self::Document { .. } | Self::Tag { full: true, .. } => {
-                *self = Self::Vec(vec![take(self), Self::from_char(ch)])
-            }
             Self::Tag {
-                child, full: false, ..
+                child,
+                full: TagFull::Opened,
+                ..
             } => child.push_char(ch),
+            Self::Document { .. }
+            | Self::Tag {
+                full: TagFull::Closed | TagFull::Inline,
+                ..
+            } => *self = Self::Vec(vec![take(self), Self::from_char(ch)]),
             Self::Text(text) => text.push(ch),
             Self::Vec(vec) => {
                 if let Some(last) = vec.last_mut() {
@@ -158,12 +175,17 @@ impl Html {
     pub(super) fn push_node(&mut self, node: Self) {
         match self {
             Self::Empty => *self = node,
-            Self::Text(_) | Self::Document { .. } | Self::Tag { full: true, .. } => {
-                *self = Self::Vec(vec![take(self), node])
-            }
             Self::Tag {
-                child, full: false, ..
+                child,
+                full: TagFull::Opened,
+                ..
             } => child.push_node(node),
+            Self::Text(_)
+            | Self::Document { .. }
+            | Self::Tag {
+                full: TagFull::Closed | TagFull::Inline,
+                ..
+            } => *self = Self::Vec(vec![take(self), node]),
             Self::Vec(vec) => {
                 if let Some(last) = vec.last_mut() {
                     if last.is_pushable(false) {
@@ -175,10 +197,14 @@ impl Html {
         }
     }
 
-    pub(super) fn push_tag(&mut self, tag: Tag, closed: bool) {
+    pub(super) fn push_tag(&mut self, tag: Tag, inline: bool) {
         self.push_node(Html::Tag {
             tag,
-            full: closed,
+            full: if inline {
+                TagFull::Inline
+            } else {
+                TagFull::Opened
+            },
             child: Html::empty_box(),
         });
     }
@@ -186,14 +212,14 @@ impl Html {
     fn close_tag_aux(&mut self, name: &PrefixName) -> TagClosingStatus {
         if let Self::Tag {
             tag,
-            full: full @ false,
+            full: full @ TagFull::Opened,
             child,
         } = self
         {
             let status = child.close_tag_aux(name);
             if matches!(status, TagClosingStatus::Full) {
                 if &tag.name == name {
-                    *full = true;
+                    *full = TagFull::Closed;
                     TagClosingStatus::Success
                 } else {
                     TagClosingStatus::WrongName(take(&mut tag.name))
@@ -220,6 +246,10 @@ impl Html {
             )),
         }
     }
+
+    const fn is_empty(&self) -> bool {
+        matches!(self, Self::Empty)
+    }
 }
 
 #[expect(clippy::min_ident_chars)]
@@ -227,12 +257,18 @@ impl fmt::Display for Html {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Html::Empty => "".fmt(f)?,
-            Html::Tag { tag, full, child } => {
-                write!(f, "<{tag}>{child}")?;
-                if *full {
-                    write!(f, "</{}>", tag.name)?;
+            Html::Tag { tag, full, child } => match full {
+                TagFull::Closed => {
+                    write!(f, "<{tag}>{child}</{}>", tag.name)
                 }
-            }
+                TagFull::Opened => {
+                    write!(f, "<{tag}>{child}")
+                }
+                TagFull::Inline => {
+                    debug_assert!(child.is_empty());
+                    write!(f, "<{tag} />")
+                }
+            }?,
             Html::Document { name, attr } => match (name, attr) {
                 (None, None) => "<!>".fmt(f),
                 (None, Some(value)) | (Some(value), None) => write!(f, "<!{value}>"),
