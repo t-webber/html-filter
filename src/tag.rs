@@ -26,6 +26,12 @@ fn invalid_err<T>(ch: char, ctx: &str) -> Result<T, String> {
     Err(format!("Invalid character '{ch}' in {ctx}."))
 }
 
+fn invalid_err_alpha<T>(ch: char, ctx: &str) -> Result<T, String> {
+    Err(format!(
+        "Invalid character '{ch}' in {ctx}. Only alphanumeric characters are allowed."
+    ))
+}
+
 pub fn parse_tag(chars: &mut Chars<'_>) -> Result<TagBuilder, String> {
     let mut tag = Tag::default();
     let mut state = TagParsingState::default();
@@ -76,7 +82,7 @@ pub fn parse_tag(chars: &mut Chars<'_>) -> Result<TagBuilder, String> {
                 '/',
             ) => close = Close::After,
             // name
-            (TagParsingState::Name, 'a'..='z' | 'A'..='Z') => {
+            (TagParsingState::Name, 'a'..='z' | 'A'..='Z' | '0'..='9') => {
                 tag.name.push_char(ch)
             }
             (TagParsingState::Name, '!') => {
@@ -92,12 +98,10 @@ pub fn parse_tag(chars: &mut Chars<'_>) -> Result<TagBuilder, String> {
                 state = TagParsingState::AttributeNone;
             }
             ( TagParsingState::Name, _) => {
-                return Err(format!(
-                    "Invalid character {ch}: only alphabetic characters are allowed in tag names."
-                ));
+                return invalid_err_alpha(ch, "tag names");
             }
             // attribute none: none in progress
-            (TagParsingState::AttributeNone, 'a'..='z' | 'A'..='Z') => {
+            (TagParsingState::AttributeNone, 'a'..='z' | 'A'..='Z' | '0'..='9') => {
                 tag.attrs.push(Attribute {
                     name: ch.to_string(),
                     value: None,
@@ -111,9 +115,7 @@ pub fn parse_tag(chars: &mut Chars<'_>) -> Result<TagBuilder, String> {
             }
             (TagParsingState::AttributeName, '=') => state = TagParsingState::AttributeEq,
             (TagParsingState::AttributeNone | TagParsingState::AttributeName, _) => {
-                return Err(format!(
-                    "Invalid character {ch}: only alphabetic characters are allowed in attribute names."
-                ));
+                return invalid_err_alpha(ch, "tag attribute names");
             }
             // attribute after `=`
             (TagParsingState::AttributeEq, '"') => {
