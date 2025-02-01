@@ -10,12 +10,25 @@ use tag::parse_tag;
 use types::{Html, TagBuilder};
 
 pub fn parse_html(html: &str) -> Result<Html, String> {
+    let mut tree = Html::default();
     let mut chars = html.chars();
-    parse_elt(&mut chars)
+    parse_elt(&mut chars, &mut tree).map_err(|err| {
+        format!(
+            "
+-----------------------------------------
+An error occurred while parsing the html.
+-----------------------------------------
+{tree:#?}
+-----------------------------------------
+{err}
+-----------------------------------------
+"
+        )
+    })?;
+    Ok(tree)
 }
 
-fn parse_elt(chars: &mut Chars<'_>) -> Result<Html, String> {
-    let mut tree = Html::default();
+fn parse_elt(chars: &mut Chars<'_>, tree: &mut Html) -> Result<(), String> {
     let mut dash_count = 0;
     while let Some(ch) = chars.next() {
         if ch == '-' {
@@ -43,7 +56,7 @@ fn parse_elt(chars: &mut Chars<'_>) -> Result<Html, String> {
             }
         }
     }
-    Ok(tree)
+    Ok(())
 }
 
 mod tag;

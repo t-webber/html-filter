@@ -1,17 +1,32 @@
 use core::{fmt, mem::take};
+use std::fmt::{Write, write};
 
 use crate::push_option;
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct Attribute {
     pub name: String,
     pub value: Option<String>,
 }
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct Tag {
     pub name: PrefixName,
     pub attrs: Vec<Attribute>,
+}
+
+#[expect(clippy::min_ident_chars)]
+impl fmt::Display for Tag {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.name)?;
+        for attr in &self.attrs {
+            write!(f, " {}", attr.name)?;
+            if let Some(value) = &attr.value {
+                write!(f, "=\"{}\"", value)?;
+            }
+        }
+        Ok(())
+    }
 }
 
 pub enum TagBuilder {
@@ -28,7 +43,7 @@ pub enum TagBuilder {
     Close(PrefixName),
 }
 
-#[derive(Default, PartialEq, Eq)]
+#[derive(Default, PartialEq, Eq, Debug)]
 pub enum PrefixName {
     #[default]
     Empty,
@@ -53,7 +68,7 @@ impl PrefixName {
 
     pub(super) fn push_char(&mut self, ch: char) {
         match self {
-            Self::Empty => todo!(),
+            Self::Empty => *self = Self::Name(ch.to_string()),
             Self::Name(name) | Self::Prefix(_, name) => name.push(ch),
         }
     }
@@ -83,10 +98,10 @@ impl fmt::Display for PrefixName {
     }
 }
 
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub enum Html {
     #[default]
-    None,
+    Empty,
     Tag {
         tag: Tag,
         full: bool,
@@ -108,7 +123,7 @@ impl Html {
 
     fn is_pushable(&self, is_char: bool) -> bool {
         match self {
-            Html::None | Html::Vec(_) => true,
+            Html::Empty | Html::Vec(_) => true,
             Html::Tag { tag, full, child } => !*full,
             Html::Document { .. } => false,
             Html::Text(_) => is_char,
@@ -121,7 +136,7 @@ impl Html {
 
     pub(super) fn push_char(&mut self, ch: char) {
         match self {
-            Self::None => *self = Self::from_char(ch),
+            Self::Empty => *self = Self::from_char(ch),
             Self::Document { .. } | Self::Tag { full: true, .. } => {
                 *self = Self::Vec(vec![take(self), Self::from_char(ch)])
             }
@@ -142,7 +157,7 @@ impl Html {
 
     pub(super) fn push_node(&mut self, node: Self) {
         match self {
-            Self::None => *self = node,
+            Self::Empty => *self = node,
             Self::Text(_) | Self::Document { .. } | Self::Tag { full: true, .. } => {
                 *self = Self::Vec(vec![take(self), node])
             }
@@ -186,6 +201,10 @@ impl Html {
             } else {
                 status
             }
+        } else if let Self::Vec(vec) = self {
+            vec.last_mut()
+                .map(|child| child.close_tag_aux(name))
+                .unwrap_or(TagClosingStatus::Full)
         } else {
             TagClosingStatus::Full
         }
@@ -200,6 +219,33 @@ impl Html {
                 "Invalid closing tag: Found closing tag for '{name}' but '{expected}' is still open."
             )),
         }
+    }
+}
+
+#[expect(clippy::min_ident_chars)]
+impl fmt::Display for Html {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Html::Empty => "".fmt(f)?,
+            Html::Tag { tag, full, child } => {
+                write!(f, "<{tag}>{child}")?;
+                if *full {
+                    write!(f, "</{}>", tag.name)?;
+                }
+            }
+            Html::Document { name, attr } => match (name, attr) {
+                (None, None) => "<!>".fmt(f),
+                (None, Some(value)) | (Some(value), None) => write!(f, "<!{value}>"),
+                (Some(name), Some(attr)) => write!(f, "<!{name} {attr}>"),
+            }?,
+            Html::Text(text) => text.fmt(f)?,
+            Html::Vec(vec) => {
+                for html in vec {
+                    write!(f, "{html}")?;
+                }
+            }
+        }
+        Ok(())
     }
 }
 
