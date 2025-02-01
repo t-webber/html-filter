@@ -1,6 +1,6 @@
 use std::fs::{self, read_to_string};
 
-use html_parser::parse_html;
+use html_parser::parse::parse_html;
 
 #[test]
 fn test() {

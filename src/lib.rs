@@ -1,71 +1,49 @@
+#![doc = include_str!("../README.md")]
+#![warn(
+    // missing_docs,
+    warnings,
+    deprecated_safe,
+    future_incompatible,
+    keyword_idents,
+    let_underscore,
+    nonstandard_style,
+    refining_impl_trait,
+    rust_2018_compatibility,
+    rust_2018_idioms,
+    rust_2021_compatibility,
+    rust_2024_compatibility,
+    unused,
+    clippy::all,
+    clippy::pedantic,
+    clippy::style,
+    clippy::perf,
+    clippy::complexity,
+    clippy::correctness,
+    clippy::restriction,
+    clippy::nursery,
+    // clippy::cargo
+)]
+#![allow(
+    clippy::single_call_fn,
+    clippy::implicit_return,
+    clippy::mod_module_files,
+    clippy::exhaustive_structs,
+    clippy::question_mark_used,
+    clippy::pattern_type_mismatch,
+    clippy::module_name_repetitions,
+    clippy::blanket_clippy_restriction_lints,
+    reason = "These lint acceptable behaviour."
+)]
 #![expect(
     clippy::while_let_on_iterator,
     reason = "better to understand when the iterator is used after the loop brakes"
 )]
-#![allow(unused, reason = "dev")]
+#![expect(clippy::doc_include_without_cfg, reason = "see issue #13918")]
+#![allow(
+    clippy::missing_errors_doc,
+    clippy::missing_docs_in_private_items,
+    clippy::missing_inline_in_public_items
+)]
 
-use std::str::Chars;
-
-use tag::parse_tag;
-use types::{Html, TagBuilder};
-
-pub fn parse_html(html: &str) -> Result<Html, String> {
-    let mut tree = Html::default();
-    let mut chars = html.chars();
-    parse_elt(&mut chars, &mut tree).map_err(|err| {
-        format!(
-            "
------------------------------------------
-An error occurred while parsing the html.
------------------------------------------
-{tree:#?}
------------------------------------------
-{err}
------------------------------------------
-"
-        )
-    })?;
-    Ok(tree)
-}
-
-fn parse_elt(chars: &mut Chars<'_>, tree: &mut Html) -> Result<(), String> {
-    let mut dash_count = 0;
-    while let Some(ch) = chars.next() {
-        if ch == '-' {
-            dash_count += 1;
-        } else if ch == '>' && dash_count >= 2 {
-            for _ in 0..(dash_count - 2) {
-                tree.push_char('-');
-                todo!("close comment")
-            }
-        } else {
-            for _ in 0..dash_count {
-                tree.push_char('-');
-            }
-            if ch == '<' {
-                match parse_tag(chars)? {
-                    TagBuilder::Document { name, attr } => {
-                        tree.push_node(Html::Document { name, attr })
-                    }
-                    TagBuilder::Open { tag } => tree.push_tag(tag, false),
-                    TagBuilder::OpenClose { tag } => tree.push_tag(tag, true),
-                    TagBuilder::Close(name) => tree.close_tag(&name)?,
-                }
-            } else {
-                tree.push_char(ch);
-            }
-        }
-    }
-    Ok(())
-}
-
-mod tag;
-mod types;
-
-fn push_option(opt: &mut Option<String>, ch: char) {
-    if let Some(string) = opt {
-        string.push(ch)
-    } else {
-        *opt = Some(ch.to_string())
-    }
-}
+pub mod parse;
+pub mod types;
