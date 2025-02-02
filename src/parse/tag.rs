@@ -1,3 +1,4 @@
+use crate::safe_expect;
 use core::str::Chars;
 
 use crate::types::tag::{Attribute, Tag, TagBuilder};
@@ -81,7 +82,9 @@ pub fn parse_tag(chars: &mut Chars<'_>) -> Result<TagBuilder, String> {
             (TagParsingState::AttributeNone, _) if ch.is_whitespace() => (),
             // attribute name
             (TagParsingState::AttributeName, 'a'..='z' | 'A'..='Z') => {
-                tag.attrs.last_mut().unwrap().name.push(ch);
+                safe_expect!(tag.attrs.last_mut(), "Not AttributeNone so last exists")
+                    .name
+                    .push(ch);
             }
             (TagParsingState::AttributeName, '=') => state = TagParsingState::AttributeEq,
             (TagParsingState::AttributeNone | TagParsingState::AttributeName, _) => {
@@ -90,11 +93,13 @@ pub fn parse_tag(chars: &mut Chars<'_>) -> Result<TagBuilder, String> {
             // attribute after `=`
             (TagParsingState::AttributeEq, '"') => {
                 state = TagParsingState::AttributeDouble;
-                tag.attrs.last_mut().unwrap().value = Some(String::new());
+                safe_expect!(tag.attrs.last_mut(), "Not AttributeNone so last exists").value =
+                    Some(String::new());
             }
             (TagParsingState::AttributeEq, '\'') => {
                 state = TagParsingState::AttributeSingle;
-                tag.attrs.last_mut().unwrap().value = Some(String::new());
+                safe_expect!(tag.attrs.last_mut(), "Not AttributeNone so last exists").value =
+                    Some(String::new());
             }
             (TagParsingState::AttributeEq, _) => {
                 return Err(format!(
@@ -103,13 +108,13 @@ pub fn parse_tag(chars: &mut Chars<'_>) -> Result<TagBuilder, String> {
             }
             // attribute value
             (TagParsingState::AttributeSingle | TagParsingState::AttributeDouble, _) if escaped => {
-                tag.attrs
-                    .last_mut()
-                    .unwrap()
-                    .value
-                    .as_mut()
-                    .unwrap()
-                    .push(ch);
+                safe_expect!(
+                    safe_expect!(tag.attrs.last_mut(), "Not AttributeNone so last exists")
+                        .value
+                        .as_mut(),
+                    "Value created when state changed"
+                )
+                .push(ch);
                 escaped = false;
             }
             (TagParsingState::AttributeSingle | TagParsingState::AttributeDouble, '\\') => {
@@ -120,13 +125,13 @@ pub fn parse_tag(chars: &mut Chars<'_>) -> Result<TagBuilder, String> {
                 state = TagParsingState::AttributeNone;
             }
             (TagParsingState::AttributeSingle | TagParsingState::AttributeDouble, _) => {
-                tag.attrs
-                    .last_mut()
-                    .unwrap()
-                    .value
-                    .as_mut()
-                    .unwrap()
-                    .push(ch);
+                safe_expect!(
+                    safe_expect!(tag.attrs.last_mut(), "Not AttributeNone so last exists")
+                        .value
+                        .as_mut(),
+                    "Value created when state changed"
+                )
+                .push(ch);
             }
         }
     }
@@ -148,7 +153,7 @@ fn return_tag(document: bool, close: Close, mut tag: Tag) -> Result<TagBuilder, 
                 return Err("Doctype attribute must not have a value.".to_owned());
             }
             TagBuilder::Document {
-                name: tag.name.into_name(),
+                name: tag.name.into_name()?,
                 attr: tag.attrs.pop().map(|attr| attr.name),
             }
         }

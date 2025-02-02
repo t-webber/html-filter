@@ -45,5 +45,6 @@
     clippy::missing_inline_in_public_items
 )]
 
+mod errors;
 pub mod parse;
 pub mod types;

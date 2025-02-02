@@ -1,6 +1,8 @@
 use core::fmt;
 use core::mem::take;
 
+use crate::safe_unreachable;
+
 #[derive(Default, Debug)]
 pub struct Attribute {
     pub name: String,
@@ -20,13 +22,15 @@ impl PrefixName {
     pub(crate) const fn has_prefix(&self) -> bool {
         matches!(self, Self::Prefix(..))
     }
-    pub(crate) fn into_name(self) -> Option<String> {
+
+    pub(crate) fn into_name(self) -> Result<Option<String>, String> {
         match self {
-            Self::Empty => None,
-            Self::Name(name) => Some(name),
-            Self::Prefix(..) => panic!("please check with has_prefix before"),
+            Self::Empty => Ok(None),
+            Self::Name(name) => Ok(Some(name)),
+            Self::Prefix(..) => safe_unreachable!("has_prefix called to check"),
         }
     }
+
     pub(crate) const fn is_empty(&self) -> bool {
         matches!(self, Self::Empty)
     }
@@ -58,7 +62,12 @@ impl fmt::Display for PrefixName {
         match self {
             Self::Empty => "".fmt(f),
             Self::Name(name) => name.fmt(f),
-            Self::Prefix(prefix, name) => write!(f, "{prefix}:{name}"),
+            Self::Prefix(prefix, name) => write!(
+                f,
+                "{prefix}
+            :{name}
+            "
+            ),
         }
     }
 }
@@ -72,13 +81,28 @@ pub struct Tag {
 #[expect(clippy::min_ident_chars, reason = "keep trait naming")]
 impl fmt::Display for Tag {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.name)?;
+        write!(
+            f,
+            "{}
+        ",
+            self.name
+        )?;
         for attr in &self.attrs {
-            write!(f, " {}", attr.name)?;
+            write!(
+                f,
+                " {}
+            ",
+                attr.name
+            )?;
             if let Some(value) = &attr.value {
-                write!(f, "=\"{value}\"")?;
+                write!(
+                    f,
+                    "=\"{value}
+                \""
+                )?;
             }
         }
+
         Ok(())
     }
 }
