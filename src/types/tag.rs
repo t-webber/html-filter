@@ -62,10 +62,10 @@ impl PrefixName {
     }
 
     /// Converts the [`PrefixName`] into its prefix and its name.
-    pub(crate) fn into_name(self) -> Result<Option<String>, String> {
+    pub(crate) fn into_name(self) -> Option<String> {
         match self {
-            Self::Empty => Ok(None),
-            Self::Name(name) => Ok(Some(name)),
+            Self::Empty => None,
+            Self::Name(name) => Some(name),
             Self::Prefix(..) => safe_unreachable!("has_prefix called to check"),
         }
     }
@@ -189,6 +189,12 @@ pub enum TagBuilder {
     ///
     /// `<p />` and `<div id="blob" enabled />`
     OpenClose(Tag),
+    /// Opening block comment
+    ///
+    /// # Examples
+    ///
+    /// `<!--`
+    OpenComment,
 }
 
 /// Response type of the attempt to closing a tag.

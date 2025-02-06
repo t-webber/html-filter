@@ -6,7 +6,12 @@
 #[macro_export]
 macro_rules! safe_expect {
     ($code:expr, $reason:expr) => {
-        $code.ok_or(format!("This is not meant to happen. Please raise an issue on https://github.com/t-webber/html-parser. Thank you for signaling this issue! {}", $reason))?
+        $code.expect(&format!("
+This is not meant to happen. Please raise an issue on https://github.com/t-webber/html-parser. Thank you for signaling this issue!
+---------- Reason ----------
+{}
+----------------------------
+", $reason))
     };
 }
 
@@ -14,6 +19,10 @@ macro_rules! safe_expect {
 #[macro_export]
 macro_rules! safe_unreachable {
     ($reason:expr) => {
-        Err(format!("This is not meant to happen. Please raise an issue on https://github.com/t-webber/html-parser. Thank you for signaling this issue! {}", $reason))
-    };
+        panic!("
+This is not meant to happen. Please raise an issue on https://github.com/t-webber/html-parser. Thank you for signaling this issue!
+---------- Reason ----------
+{}
+----------------------------
+", $reason)    };
 }

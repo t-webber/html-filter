@@ -16,45 +16,55 @@ use crate::types::{html::Html, tag::TagBuilder};
 pub fn parse_html(html: &str) -> Result<Html, String> {
     let mut tree = Html::default();
     let mut chars = html.chars();
-    parse_html_aux(&mut chars, &mut tree).map_err(|err| {
-        format!(
+    match parse_html_aux(&mut chars, &mut tree) {
+        Ok(()) => Ok(tree),
+        #[cfg(not(feature = "debug"))]
+        Err(err) => Err(err),
+        #[cfg(feature = "debug")]
+        Err(err) => Err(format!(
             "
 -----------------------------------------
 An error occurred while parsing the html.
 -----------------------------------------
 {tree:#?}
 -----------------------------------------
+{tree}
+-----------------------------------------
 {err}
 -----------------------------------------
 "
-        )
-    })?;
-    Ok(tree)
+        )),
+    }
 }
 
 /// Wrapper for the [`parse_html`] function.
 fn parse_html_aux(chars: &mut Chars<'_>, tree: &mut Html) -> Result<(), String> {
     let mut dash_count: u32 = 0;
     while let Some(ch) = chars.next() {
+        debug_assert!(dash_count <= 2, "dashes written when more than 2");
         if ch == '-' {
-            if dash_count >= 2 {
+            #[expect(clippy::arithmetic_side_effects, reason = "checked")]
+            if dash_count == 2 {
                 tree.push_char('-');
             } else {
-                #[expect(clippy::arithmetic_side_effects, reason = "checked")]
-                {
-                    dash_count += 1;
-                }
+                dash_count += 1;
             }
         } else if ch == '>' && dash_count >= 2 {
             #[expect(clippy::arithmetic_side_effects, reason = "checked")]
             for _ in 0..(dash_count - 2) {
                 tree.push_char('-');
-                todo!("close comment")
             }
+            if !tree.close_comment() {
+                return Err("Tried to close unopened comment".to_owned());
+            }
+            dash_count = 0;
+        } else if tree.is_comment() {
+            tree.push_char(ch);
         } else {
             for _ in 0..dash_count {
                 tree.push_char('-');
             }
+            dash_count = 0;
             if ch == '<' {
                 match parse_tag(chars)? {
                     TagBuilder::Document { name, attr } => {
@@ -63,6 +73,7 @@ fn parse_html_aux(chars: &mut Chars<'_>, tree: &mut Html) -> Result<(), String> 
                     TagBuilder::Open(tag) => tree.push_tag(tag, false),
                     TagBuilder::OpenClose(tag) => tree.push_tag(tag, true),
                     TagBuilder::Close(name) => tree.close_tag(&name)?,
+                    TagBuilder::OpenComment => tree.push_comment(),
                 }
             } else {
                 tree.push_char(ch);

@@ -2,12 +2,35 @@
 
 use core::{fmt, mem::take};
 
+use crate::safe_unreachable;
+
 use super::tag::{PrefixName, Tag, TagClosingStatus, TagType};
 
 /// Dom tree structure to represent the parsed html.
 #[non_exhaustive]
 #[derive(Debug, Default)]
 pub enum Html {
+    /// Comment block
+    ///
+    /// # Example
+    ///
+    /// `<!-- some comment -->`
+    Comment {
+        /// Content of the comment
+        ///
+        /// # Examples
+        ///
+        /// In the previous example, the content is `some content`.
+        content: String,
+        /// Fullness of the comment
+        ///
+        /// `full` is `true` iff the closing `-->` was found for this comment.
+        ///
+        /// # Examples
+        ///
+        /// In the previous example, the content is `some content`.
+        full: bool,
+    },
     /// Document tag.
     ///
     /// These are tags with exclamation marks
@@ -77,6 +100,23 @@ pub enum Html {
 }
 
 impl Html {
+    /// Pushes a block comment into the html tree
+    pub(crate) fn close_comment(&mut self) -> bool {
+        match self {
+            Self::Comment { full, .. } => {
+                if *full {
+                    false
+                } else {
+                    *full = true;
+                    true
+                }
+            }
+            Self::Text(_) | Self::Empty | Self::Document { .. } => false,
+            Self::Tag { full, child, .. } => full.is_open() && child.close_comment(),
+            Self::Vec(vec) => vec.last_mut().map_or_else(|| false, Self::close_comment),
+        }
+    }
+
     /// Method to find to close that last opened tag.
     ///
     /// This method finds the opened tag the closest to the leaves.
@@ -129,6 +169,16 @@ impl Html {
         Self::Text(ch.to_string())
     }
 
+    /// Checks if the writer is currently in a comment
+    pub(crate) fn is_comment(&self) -> bool {
+        match self {
+            Self::Comment { full, .. } => !*full,
+            Self::Empty | Self::Text(_) | Self::Document { .. } => false,
+            Self::Tag { full, child, .. } => full.is_open() && child.is_comment(),
+            Self::Vec(vec) => vec.last().is_some_and(Self::is_comment),
+        }
+    }
+
     /// Checks if an html tree is empty.
     ///
     /// This is equivalent to check if tree is [`Html::Empty`] as all the others are initialised with at least one character.
@@ -147,6 +197,7 @@ impl Html {
             Self::Tag { full, .. } => full.is_open(),
             Self::Document { .. } => false,
             Self::Text(_) => is_char,
+            Self::Comment { full, .. } => !*full,
         }
     }
 
@@ -173,7 +224,23 @@ impl Html {
                 }
                 vec.push(Self::from_char(ch));
             }
+            Self::Comment { content, full } => {
+                if *full {
+                    // This means the comment is at the root
+                    *self = Self::Vec(vec![take(self), Self::from_char(ch)]);
+                } else {
+                    content.push(ch);
+                }
+            }
         }
+    }
+
+    /// Pushes a block comment into the html tree
+    pub(crate) fn push_comment(&mut self) {
+        self.push_node(Self::Comment {
+            content: String::new(),
+            full: false,
+        });
     }
 
     /// Pushes an html tree into another one.
@@ -200,6 +267,9 @@ impl Html {
                     }
                 }
                 vec.push(node);
+            }
+            Self::Comment { .. } => {
+                safe_unreachable!("Pushed parsed not into an unclosed comment.")
             }
         }
     }
@@ -244,7 +314,14 @@ impl fmt::Display for Html {
             Self::Text(text) => text.fmt(f)?,
             Self::Vec(vec) => {
                 for html in vec {
-                    write!(f, "{html}")?;
+                    html.fmt(f)?;
+                }
+            }
+            Self::Comment { content, full } => {
+                f.write_str("<!--")?;
+                f.write_str(content)?;
+                if *full {
+                    f.write_str("-->")?;
                 }
             }
         }

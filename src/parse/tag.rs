@@ -32,7 +32,7 @@ enum Close {
 /// State of the parsing for the tag.
 ///
 /// The elements of this enum are ordered in chronological order, from reading the first character of the name, to reading the last closing character of a value of an attribute.
-#[derive(Default, PartialEq, Eq)]
+#[derive(Default, PartialEq, Eq, Debug)]
 #[expect(clippy::arbitrary_source_item_ordering, reason = "chronological order")]
 enum TagParsingState {
     /// Parser currently reading the name of the tag.
@@ -84,17 +84,22 @@ pub fn parse_tag(chars: &mut Chars<'_>) -> Result<TagBuilder, String> {
     let mut state = TagParsingState::default();
     let mut escaped = false;
     let mut close = Close::None;
-    let mut document = false;
+    let mut bang = false;
+    let mut dash = false;
 
     while let Some(ch) = chars.next() {
         match (&state, ch) {
+            (TagParsingState::Name, '-') if dash => return Ok(TagBuilder::OpenComment),
+            (TagParsingState::Name, '-') if bang => dash = true,
+            _ if dash => return invalid_err('-', "tag name"),
+            // closing
             (
                 TagParsingState::Name
                 | TagParsingState::AttributeNone
                 | TagParsingState::AttributeName,
                 '>',
-            ) => return return_tag(document, close, tag),
-            // closing
+            ) => return return_tag(bang, close, tag),
+
             (TagParsingState::Name, '/') if tag.name.is_empty() => close = Close::Before,
             (
                 TagParsingState::Name
@@ -106,9 +111,9 @@ pub fn parse_tag(chars: &mut Chars<'_>) -> Result<TagBuilder, String> {
             (TagParsingState::Name, 'a'..='z' | 'A'..='Z' | '0'..='9') => tag.name.push_char(ch),
             (TagParsingState::Name, '!') => {
                 if tag.name.is_empty() {
-                    document = true;
+                    bang = true;
                 } else {
-                    return invalid_err(ch, "doctype");
+                    return invalid_err(ch, "tag name");
                 }
             }
             (TagParsingState::Name, ':') => tag.name.push_colon()?,
@@ -156,13 +161,7 @@ pub fn parse_tag(chars: &mut Chars<'_>) -> Result<TagBuilder, String> {
             }
             // attribute value
             (TagParsingState::AttributeSingle | TagParsingState::AttributeDouble, _) if escaped => {
-                safe_expect!(
-                    safe_expect!(tag.attrs.last_mut(), "Not AttributeNone so last exists")
-                        .value
-                        .as_mut(),
-                    "Value created when state changed"
-                )
-                .push(ch);
+                push_char_in_attr(&mut tag, ch);
                 escaped = false;
             }
             (TagParsingState::AttributeSingle | TagParsingState::AttributeDouble, '\\') => {
@@ -173,17 +172,22 @@ pub fn parse_tag(chars: &mut Chars<'_>) -> Result<TagBuilder, String> {
                 state = TagParsingState::AttributeNone;
             }
             (TagParsingState::AttributeSingle | TagParsingState::AttributeDouble, _) => {
-                safe_expect!(
-                    safe_expect!(tag.attrs.last_mut(), "Not AttributeNone so last exists")
-                        .value
-                        .as_mut(),
-                    "Value created when state changed"
-                )
-                .push(ch);
+                push_char_in_attr(&mut tag, ch);
             }
         }
     }
     Err("EOF: Missing closing '>'".to_owned())
+}
+
+/// Push a character safely in an attribute's value
+fn push_char_in_attr(tag: &mut Tag, ch: char) {
+    safe_expect!(
+        safe_expect!(tag.attrs.last_mut(), "Not AttributeNone so last exists")
+            .value
+            .as_mut(),
+        "Value created when state changed"
+    )
+    .push(ch);
 }
 
 /// Builds a [`TagBuilder`] with the parsing information from [`parse_tag`].
@@ -202,7 +206,7 @@ fn return_tag(document: bool, close: Close, mut tag: Tag) -> Result<TagBuilder, 
                 return Err("Doctype attribute must not have a value.".to_owned());
             }
             TagBuilder::Document {
-                name: tag.name.into_name()?,
+                name: tag.name.into_name(),
                 attr: tag.attrs.pop().map(|attr| attr.name),
             }
         }
