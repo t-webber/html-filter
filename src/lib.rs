@@ -1,6 +1,6 @@
 #![doc = include_str!("../README.md")]
 #![warn(
-    // missing_docs,
+    missing_docs,
     warnings,
     deprecated_safe,
     future_incompatible,
@@ -39,11 +39,6 @@
     reason = "better to understand when the iterator is used after the loop brakes"
 )]
 #![expect(clippy::doc_include_without_cfg, reason = "see issue #13918")]
-#![allow(
-    clippy::missing_errors_doc,
-    clippy::missing_docs_in_private_items,
-    clippy::missing_inline_in_public_items
-)]
 
 mod errors;
 pub mod parse;

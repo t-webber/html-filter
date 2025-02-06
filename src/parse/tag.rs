@@ -1,36 +1,84 @@
+//! Module to parse an opening tag.
+//!
+//! This module is used when a <d is found in a html string. It can also mean an opening comment.
+
 use crate::safe_expect;
 use core::str::Chars;
 
 use crate::types::tag::{Attribute, Tag, TagBuilder};
 
+/// State that informs on position of the '/' closing character.
+///
+/// This is relatively to the name of the tag.
 enum Close {
+    /// The '/' was found after the name.
+    ///
+    /// # Examples
+    ///
+    /// `<div/>` or `<div id="blob" />`
     After,
+    /// The '/' was found before the name.
+    ///
+    /// # Examples
+    ///
+    /// `</>`
     Before,
+    /// No `/` was found yet.
+    ///
+    /// Sometimes, it is never found, like in `<div>`.
     None,
 }
 
-#[expect(clippy::arbitrary_source_item_ordering, reason = "chronological order")]
+/// State of the parsing for the tag.
+///
+/// The elements of this enum are ordered in chronological order, from reading the first character of the name, to reading the last closing character of a value of an attribute.
 #[derive(Default, PartialEq, Eq)]
+#[expect(clippy::arbitrary_source_item_ordering, reason = "chronological order")]
 enum TagParsingState {
+    /// Parser currently reading the name of the tag.
+    ///
+    /// Waiting for character to continue the name, the end of the tag or space to read attributes.
     #[default]
     Name,
+    /// Parser finished the name and/or the previous attribute.
+    ///
+    /// Waiting for another attribute name or the end of the tag.
     AttributeNone,
+    /// Parser currently reading the name of an attribute.
+    ///
+    /// Waiting for character to continue the name, the end of the tag or a `=` sign to assign a value to this attribute.
     AttributeName,
+    /// Parser read the `=` sign after an attribute name.
+    ///
+    /// Waiting for a `'` or `"` to assign a value to the last attribute.
     AttributeEq,
+    /// Parser currently reading the value of an attribute.
+    ///
+    /// The attribute was started by a single quote `'`.
     AttributeSingle,
+    /// Parser currently reading the value of an attribute.
+    ///
+    /// The attribute was started by a double quote `"`.
     AttributeDouble,
 }
 
+/// Function to format the errors for an invalid character in a given context.
 fn invalid_err<T>(ch: char, ctx: &str) -> Result<T, String> {
     Err(format!("Invalid character '{ch}' in {ctx}."))
 }
 
+/// Function to format the errors for an invalid alphanumeric character in a given context.
 fn invalid_err_alpha<T>(ch: char, ctx: &str) -> Result<T, String> {
     Err(format!(
         "Invalid character '{ch}' in {ctx}. Only alphanumeric characters are allowed."
     ))
 }
 
+/// Parses an opening tag, or an opening comment.
+///
+/// # Returns
+///
+/// A [`TagBuilder`] that indicates the type of the tag/comment that was found.
 pub fn parse_tag(chars: &mut Chars<'_>) -> Result<TagBuilder, String> {
     let mut tag = Tag::default();
     let mut state = TagParsingState::default();
@@ -138,6 +186,7 @@ pub fn parse_tag(chars: &mut Chars<'_>) -> Result<TagBuilder, String> {
     Err("EOF: Missing closing '>'".to_owned())
 }
 
+/// Builds a [`TagBuilder`] with the parsing information from [`parse_tag`].
 fn return_tag(document: bool, close: Close, mut tag: Tag) -> Result<TagBuilder, String> {
     Ok(match (document, close) {
         (true, Close::After) => return invalid_err('/', "doctype"),
@@ -157,13 +206,13 @@ fn return_tag(document: bool, close: Close, mut tag: Tag) -> Result<TagBuilder, 
                 attr: tag.attrs.pop().map(|attr| attr.name),
             }
         }
-        (false, Close::None) => TagBuilder::Open { tag },
+        (false, Close::None) => TagBuilder::Open(tag),
         (false, Close::Before) => {
             if !tag.attrs.is_empty() {
                 return Err("Closing tags doesn't support attributes.".to_owned());
             }
             TagBuilder::Close(tag.name)
         }
-        (false, Close::After) => TagBuilder::OpenClose { tag },
+        (false, Close::After) => TagBuilder::OpenClose(tag),
     })
 }
