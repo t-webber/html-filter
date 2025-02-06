@@ -22,13 +22,20 @@ macro_rules! make_err_test {
 
 make_err_test!(
 
+bang_closing: "</!doc h>" => "Invalid character '!' in closing tag."
 invalid_dash: "<!-audio>" => "Invalid character '-' in doctype."
+doctype_col: "<!dx xml:>" => "Invalid character ':' in doctype attribute."
+doctype_val: "<!dx h=''>" => "Doctype attribute must not have a value."
 close_doctype: "<!doc />" => "Invalid character '/' in doctype."
-bang_closing: "</!doc >" => "Invalid character '!' in closing tag."
-prefix_name: "<webkit:br>" => "Invalid character ':' in tag name."
 invalid_bang: "<button!>" => "Invalid character '!' in tag name."
+double_colon: "<ab c::d>" => "Found 2 colons ':' in attribute name."
+prefix_name: "<image:br>" => "Invalid character ':' in tag name."
 invalid_equal: "<p id=a>" => "Invalid character 'a': expected ''' or '\"' after '=' sign."
 unclosed_tag: "<textarea" => "EOF: Missing closing '>'."
-unopened_tag: "<br></div>" => "Invalid closing tag: Found closing tag for 'div' but it isn't open."
+unopened_tag: "<br></em>" => "Invalid closing tag: Found closing tag for 'em' but it isn't open."
+unopened_comment: " --> " => "Tried to close unopened comment."
+attr_close: "</a id='c'>" => "Closing tags don't support attributes."
+second_close: "<!---->-->" => "Tried to close unopened comment."
+doctype_2attr: "<!dx a b>" => "Doctype expected at most one attribute."
 
 );

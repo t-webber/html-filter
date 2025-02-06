@@ -186,9 +186,12 @@ impl Html {
     /// This is to check if a new node needs to be created for the next data.
     ///
     /// This method is different if the input is a char or not.
-    pub(crate) const fn is_pushable(&self, is_char: bool) -> bool {
+    #[inline]
+    pub(crate) fn is_pushable(&self, is_char: bool) -> bool {
         match self {
-            Self::Empty | Self::Vec(_) => true,
+            Self::Empty | Self::Vec(_) => {
+                safe_unreachable!("Vec of empty or Vec of vec are never built");
+            }
             Self::Tag { full, .. } => full.is_open(),
             Self::Document { .. } => false,
             Self::Text(_) => is_char,

@@ -122,6 +122,11 @@ pub fn parse_tag(chars: &mut Chars<'_>) -> Result<TagBuilder, String> {
                 tag.attrs.push(Attribute::from(take(attr)));
                 state = TagParsingState::AttributeEq;
             }
+            (TagParsingState::AttributeName(attr), _) if ch.is_whitespace() => {
+                tag.attrs.push(Attribute::from(take(attr)));
+                state = TagParsingState::AttributeNone;
+            }
+            (TagParsingState::AttributeName(attr), ':') => attr.push_colon()?,
             (TagParsingState::AttributeName(attr), _) => attr.push_char(ch),
             // attribute after `=`
             (TagParsingState::AttributeEq, '"') => {
@@ -182,7 +187,7 @@ fn return_tag(document: bool, close: Close, mut tag: Tag) -> Result<TagBuilder, 
         (false, Close::None) => TagBuilder::Open(tag),
         (false, Close::Before) => {
             if !tag.attrs.is_empty() {
-                return Err("Closing tags doesn't support attributes.".to_owned());
+                return Err("Closing tags don't support attributes.".to_owned());
             }
             TagBuilder::Close(tag.name)
         }

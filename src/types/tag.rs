@@ -63,6 +63,7 @@ impl Attribute {
             safe_unreachable!("Never create attribute value twice from parser.")
         }
     }
+
     /// Pushes a character into the value of the [`PrefixName`]
     pub(crate) fn push_value(&mut self, ch: char) {
         if let Self::NameValue { value, .. } = self {
@@ -106,6 +107,23 @@ impl PrefixName {
             Self::Name(name) | Self::Prefix(_, name) => name.push(ch),
         }
     }
+
+    /// Pushes a colon into a [`PrefixName`]
+    ///
+    /// This informs us that there was a prefix.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if there is already a prefix, i.e., if a colon as already been found.
+    pub(crate) fn push_colon(&mut self) -> Result<(), &'static str> {
+        *self = match self {
+            Self::Name(name) => Self::Prefix(take(name), String::new()),
+            Self::Prefix(..) => {
+                return Err("Found 2 colons ':' in attribute name.");
+            }
+        };
+        Ok(())
+    }
 }
 
 impl Default for PrefixName {
@@ -145,7 +163,7 @@ pub struct Tag {
 impl fmt::Display for Tag {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.name)?;
+        f.write_str(&self.name)?;
         for attr in &self.attrs {
             match attr {
                 Attribute::NameNoValue(prefix_name) => write!(f, " {prefix_name}")?,

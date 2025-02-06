@@ -41,7 +41,6 @@ An error occurred while parsing the html.
 fn parse_html_aux(chars: &mut Chars<'_>, tree: &mut Html) -> Result<(), String> {
     let mut dash_count: u32 = 0;
     while let Some(ch) = chars.next() {
-        debug_assert!(dash_count <= 2, "dashes written when more than 2");
         if ch == '-' {
             #[expect(clippy::arithmetic_side_effects, reason = "checked")]
             if dash_count == 2 {
@@ -51,7 +50,7 @@ fn parse_html_aux(chars: &mut Chars<'_>, tree: &mut Html) -> Result<(), String> 
             }
         } else if ch == '>' && dash_count == 2 {
             if !tree.close_comment() {
-                return Err("Tried to close unopened comment".to_owned());
+                return Err("Tried to close unopened comment.".to_owned());
             }
             dash_count = 0;
         } else {
