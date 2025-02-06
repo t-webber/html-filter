@@ -1,0 +1,8 @@
+imports_layout = "Horizontal"
+imports_granularity = "Module"
+group_imports = "StdExternalCrate"
+format_code_in_doc_comments = true
+wrap_comments = true
+match_arm_blocks = false
+struct_lit_width = 80  
+fn_call_width = 80

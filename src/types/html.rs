@@ -1,10 +1,11 @@
 //! Module that defines an [`Html`] tree.
 
-use core::{fmt, mem::take};
-
-use crate::{errors::safe_unreachable, safe_expect};
+use core::fmt;
+use core::mem::take;
 
 use super::tag::{Tag, TagType};
+use crate::errors::safe_unreachable;
+use crate::safe_expect;
 
 /// Dom tree structure to represent the parsed html.
 #[non_exhaustive]
@@ -71,7 +72,8 @@ pub enum Html {
         tag: Tag,
         /// Type of the tag
         ///
-        /// The type is the information on the closing style: self-closing (`<div/>`), opened (`<div>`) or closed (`<div></div>`).
+        /// The type is the information on the closing style: self-closing
+        /// (`<div/>`), opened (`<div>`) or closed (`<div></div>`).
         full: TagType,
         /// Child of the tag
         ///
@@ -94,7 +96,8 @@ pub enum Html {
     ///
     /// # Examples
     ///
-    /// In `a<strong>b`, the node is a vector, with [`Html::Text`] `a`, [`Html::Tag`] `strong` [`Html::Text`] `b`.
+    /// In `a<strong>b`, the node is a vector, with [`Html::Text`] `a`,
+    /// [`Html::Tag`] `strong` [`Html::Text`] `b`.
     Vec(Vec<Html>),
 }
 
@@ -102,19 +105,17 @@ impl Html {
     /// Pushes a block comment into the html tree
     pub(crate) fn close_comment(&mut self) -> bool {
         match self {
-            Self::Comment { full, .. } => {
+            Self::Comment { full, .. } =>
                 if *full {
                     false
                 } else {
                     *full = true;
                     true
-                }
-            }
+                },
             Self::Text(_) | Self::Empty | Self::Document { .. } => false,
             Self::Tag { full, child, .. } => full.is_open() && child.close_comment(),
-            Self::Vec(vec) => {
-                safe_expect!(vec.last_mut(), "Html vec built with one.").close_comment()
-            }
+            Self::Vec(vec) =>
+                safe_expect!(vec.last_mut(), "Html vec built with one.").close_comment(),
         }
     }
 
@@ -137,12 +138,7 @@ impl Html {
     ///
     /// `true` iff the tag was successfully closed.
     pub(crate) fn close_tag_aux(&mut self, name: &str) -> bool {
-        if let Self::Tag {
-            tag,
-            full: full @ TagType::Opened,
-            child,
-        } = self
-        {
+        if let Self::Tag { tag, full: full @ TagType::Opened, child } = self {
             child.close_tag_aux(name)
                 || (tag.name == name && {
                     *full = TagType::Closed;
@@ -172,9 +168,8 @@ impl Html {
             Self::Comment { full, .. } => !*full,
             Self::Empty | Self::Text(_) | Self::Document { .. } => false,
             Self::Tag { full, child, .. } => full.is_open() && child.is_comment(),
-            Self::Vec(vec) => {
-                safe_expect!(vec.last(), "Html vec initialised with one.").is_comment()
-            }
+            Self::Vec(vec) =>
+                safe_expect!(vec.last(), "Html vec initialised with one.").is_comment(),
         }
     }
 
@@ -184,11 +179,10 @@ impl Html {
     ///
     /// This method is different if the input is a char or not.
     #[inline]
+    #[coverage(off)]
     pub(crate) fn is_pushable(&self, is_char: bool) -> bool {
         match self {
-            Self::Empty | Self::Vec(_) => {
-                safe_unreachable("Vec of empty or Vec of vec are never built")
-            }
+            Self::Empty | Self::Vec(_) => safe_unreachable("Vec or Empty can't be in vec"),
             Self::Tag { full, .. } => full.is_open(),
             Self::Document { .. } => false,
             Self::Text(_) => is_char,
@@ -200,16 +194,10 @@ impl Html {
     pub(crate) fn push_char(&mut self, ch: char) {
         match self {
             Self::Empty => *self = Self::from_char(ch),
-            Self::Tag {
-                child,
-                full: TagType::Opened,
-                ..
-            } => child.push_char(ch),
+            Self::Tag { child, full: TagType::Opened, .. } => child.push_char(ch),
             Self::Document { .. }
-            | Self::Tag {
-                full: TagType::Closed | TagType::SelfClosing,
-                ..
-            } => *self = Self::Vec(vec![take(self), Self::from_char(ch)]),
+            | Self::Tag { full: TagType::Closed | TagType::SelfClosing, .. } =>
+                *self = Self::Vec(vec![take(self), Self::from_char(ch)]),
             Self::Text(text) => text.push(ch),
             Self::Vec(vec) => {
                 let last = safe_expect!(vec.last_mut(), "Initialised with one element.");
@@ -231,29 +219,21 @@ impl Html {
 
     /// Pushes a block comment into the html tree
     pub(crate) fn push_comment(&mut self) {
-        self.push_node(Self::Comment {
-            content: String::new(),
-            full: false,
-        });
+        self.push_node(Self::Comment { content: String::new(), full: false });
     }
 
     /// Pushes an html tree into another one.
     ///
     /// This is useful to add comments or push tags for instance.
+    #[coverage(off)]
     pub(crate) fn push_node(&mut self, node: Self) {
         match self {
             Self::Empty => *self = node,
-            Self::Tag {
-                child,
-                full: TagType::Opened,
-                ..
-            } => child.push_node(node),
+            Self::Tag { child, full: TagType::Opened, .. } => child.push_node(node),
             Self::Text(_)
             | Self::Document { .. }
-            | Self::Tag {
-                full: TagType::Closed | TagType::SelfClosing,
-                ..
-            } => *self = Self::Vec(vec![take(self), node]),
+            | Self::Tag { full: TagType::Closed | TagType::SelfClosing, .. } =>
+                *self = Self::Vec(vec![take(self), node]),
             Self::Vec(vec) => {
                 let last = safe_expect!(vec.last_mut(), "Initialised with one element.");
                 if last.is_pushable(false) {

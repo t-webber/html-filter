@@ -5,7 +5,8 @@ use core::str::Chars;
 
 use tag::parse_tag;
 
-use crate::types::{html::Html, tag::TagBuilder};
+use crate::types::html::Html;
+use crate::types::tag::TagBuilder;
 
 /// Parses html into a Dom tree.
 ///
@@ -60,9 +61,8 @@ fn parse_html_aux(chars: &mut Chars<'_>, tree: &mut Html) -> Result<(), String> 
                 tree.push_char(ch);
             } else if ch == '<' {
                 match parse_tag(chars)? {
-                    TagBuilder::Document { name, attr } => {
-                        tree.push_node(Html::Document { name, attr });
-                    }
+                    TagBuilder::Document { name, attr } =>
+                        tree.push_node(Html::Document { name, attr }),
                     TagBuilder::Open(tag) => tree.push_tag(tag, false),
                     TagBuilder::OpenClose(tag) => tree.push_tag(tag, true),
                     TagBuilder::Close(name) => tree.close_tag(&name)?,

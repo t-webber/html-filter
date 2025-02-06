@@ -7,7 +7,9 @@ use crate::errors::safe_unreachable;
 
 /// Name and optionally a value for an attribute of a tag.
 ///
-/// Attributes provide information about a tag. They can consist in a simple name, or also have a value, after an `=` sign. The values are always surrounded either by single or double quotes.
+/// Attributes provide information about a tag. They can consist in a simple
+/// name, or also have a value, after an `=` sign. The values are always
+/// surrounded either by single or double quotes.
 #[derive(Debug)]
 #[non_exhaustive]
 pub enum Attribute {
@@ -21,11 +23,12 @@ pub enum Attribute {
     ///
     /// # Examples
     ///
-    /// <div id="blob"/>
+    /// `<div id="blob"/>`
     NameValue {
         /// Whether double or single quotes were used to define the value
         ///
-        /// Equals `true` if the attribute value was delimited by double quotes, and false otherwise.
+        /// Equals `true` if the attribute value was delimited by double quotes,
+        /// and false otherwise.
         double_quote: bool,
         /// Name of the attribute
         ///
@@ -41,25 +44,23 @@ pub enum Attribute {
         ///
         /// # Examples
         ///
-        /// - In `<div id="blob" />`, the value of the first attribute is `"blob"`.
+        /// - In `<div id="blob" />`, the value of the first attribute is
+        ///   `"blob"`.
         value: String,
     },
 }
 
 impl Attribute {
-    /// Converts an existent [`PrefixName::NameNoValue`] to a [`PrefixName::NameValue`].
+    /// Converts an existent [`Attribute::NameNoValue`] to a
+    /// [`Attribute::NameValue`].
     ///
     /// # Panics
     ///
-    /// If called on a [`PrefixName::NameValue`]
+    /// If called on a [`Attribute::NameValue`]
     #[coverage(off)]
     pub(crate) fn add_value(&mut self, double_quote: bool) {
         if let Self::NameNoValue(name) = self {
-            *self = Self::NameValue {
-                double_quote,
-                name: take(name),
-                value: String::new(),
-            }
+            *self = Self::NameValue { double_quote, name: take(name), value: String::new() }
         } else {
             safe_unreachable("Never create attribute value twice from parser.")
         }
@@ -89,11 +90,7 @@ impl fmt::Display for Attribute {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::NameNoValue(prefix_name) => write!(f, " {prefix_name}"),
-            Self::NameValue {
-                double_quote,
-                name,
-                value,
-            } => write!(f, " {name}").and_then(|()| {
+            Self::NameValue { double_quote, name, value } => write!(f, " {name}").and_then(|()| {
                 let del = if *double_quote { '"' } else { '\'' };
                 write!(f, "={del}{value}{del}")
             }),
@@ -134,13 +131,12 @@ impl PrefixName {
     ///
     /// # Errors
     ///
-    /// Returns an error if there is already a prefix, i.e., if a colon as already been found.
+    /// Returns an error if there is already a prefix, i.e., if a colon as
+    /// already been found.
     pub(crate) fn push_colon(&mut self) -> Result<(), &'static str> {
         *self = match self {
             Self::Name(name) => Self::Prefix(take(name), String::new()),
-            Self::Prefix(..) => {
-                return Err("Found 2 colons ':' in attribute name.");
-            }
+            Self::Prefix(..) => return Err("Found 2 colons ':' in attribute name."),
         };
         Ok(())
     }
@@ -284,7 +280,8 @@ pub enum TagType {
 impl TagType {
     /// Checks if tag is still open.
     ///
-    /// This happens when the tag is not self closing, and the corresponding closing tag has not yet been found.
+    /// This happens when the tag is not self closing, and the corresponding
+    /// closing tag has not yet been found.
     ///
     /// # Examples
     ///
