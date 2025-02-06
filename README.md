@@ -41,4 +41,3 @@ Are no yet supported:
 
 -   `style` and `script` tags
 -   escaped characters (e.g. `&nbsp;`, `&amp;` or `&copy`.)
--   the output of `fmt` on `Html` is the default formatting of prettier (applicable for spaces inside tags)
