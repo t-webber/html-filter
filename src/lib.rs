@@ -21,7 +21,7 @@
     clippy::correctness,
     clippy::restriction,
     clippy::nursery,
-    // clippy::cargo
+    clippy::cargo
 )]
 #![allow(
     clippy::single_call_fn,

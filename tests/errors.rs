@@ -29,5 +29,6 @@ prefix_name: "<webkit:br>" => "Invalid character ':' in tag name."
 invalid_bang: "<button!>" => "Invalid character '!' in tag name."
 invalid_equal: "<p id=a>" => "Invalid character 'a': expected ''' or '\"' after '=' sign."
 unclosed_tag: "<textarea" => "EOF: Missing closing '>'."
+unopened_tag: "<br></div>" => "Invalid closing tag: Found closing tag for 'div' but it isn't open."
 
 );

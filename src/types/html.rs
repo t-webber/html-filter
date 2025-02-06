@@ -4,7 +4,7 @@ use core::{fmt, mem::take};
 
 use crate::safe_unreachable;
 
-use super::tag::{Tag, TagClosingStatus, TagType};
+use super::tag::{Tag, TagType};
 
 /// Dom tree structure to represent the parsed html.
 #[non_exhaustive]
@@ -120,41 +120,37 @@ impl Html {
     ///
     /// This method finds the opened tag the closest to the leaves.
     pub(crate) fn close_tag(&mut self, name: &str) -> Result<(), String> {
-        match self.close_tag_aux(name) {
-            TagClosingStatus::Success => Ok(()),
-            TagClosingStatus::Full => Err(format!(
-                "Invalid closing tag: Found closing tag for '{name}' but all tags are already closed."
-            )),
-            TagClosingStatus::WrongName(expected) => Err(format!(
-                "Invalid closing tag: Found closing tag for '{name}' but '{expected}' is still open."
-            )),
+        if self.close_tag_aux(name) {
+            Ok(())
+        } else {
+            Err(format!(
+                "Invalid closing tag: Found closing tag for '{name}' but it isn't open."
+            ))
         }
     }
 
     /// Wrapper for [`Self::close_tag`].
-    pub(crate) fn close_tag_aux(&mut self, name: &str) -> TagClosingStatus {
+    ///
+    /// # Returns
+    ///
+    /// `true` iff the tag was successfully closed.
+    pub(crate) fn close_tag_aux(&mut self, name: &str) -> bool {
         if let Self::Tag {
             tag,
             full: full @ TagType::Opened,
             child,
         } = self
         {
-            let status = child.close_tag_aux(name);
-            if matches!(status, TagClosingStatus::Full) {
-                if tag.name == name {
+            child.close_tag_aux(name)
+                || (tag.name == name && {
                     *full = TagType::Closed;
-                    TagClosingStatus::Success
-                } else {
-                    TagClosingStatus::WrongName(take(&mut tag.name))
-                }
-            } else {
-                status
-            }
+                    true
+                })
         } else if let Self::Vec(vec) = self {
             vec.last_mut()
-                .map_or(TagClosingStatus::Full, |child| child.close_tag_aux(name))
+                .is_some_and(|child| child.close_tag_aux(name))
         } else {
-            TagClosingStatus::Full
+            false
         }
     }
 

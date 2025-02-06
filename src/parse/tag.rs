@@ -115,7 +115,7 @@ pub fn parse_tag(chars: &mut Chars<'_>) -> Result<TagBuilder, String> {
             // attribute none: none in progress
             (TagParsingState::AttributeNone, _) if ch.is_whitespace() => (),
             (TagParsingState::AttributeNone, _) => {
-                state = TagParsingState::AttributeName(PrefixName::from(ch));
+                state = TagParsingState::AttributeName(PrefixName::Name(ch.to_string()));
             }
             // attribute name
             (TagParsingState::AttributeName(attr), '=') => {
@@ -163,7 +163,6 @@ fn return_tag(document: bool, close: Close, mut tag: Tag) -> Result<TagBuilder, 
             }
             let attr = if let Some(attr) = tag.attrs.pop() {
                 match attr {
-                    Attribute::NameNoValue(PrefixName::Empty) => None,
                     Attribute::NameNoValue(PrefixName::Name(name)) => Some(name),
                     Attribute::NameNoValue(PrefixName::Prefix(..)) => {
                         return invalid_err(':', "doctype attribute");

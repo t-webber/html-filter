@@ -49,23 +49,19 @@ fn parse_html_aux(chars: &mut Chars<'_>, tree: &mut Html) -> Result<(), String> 
             } else {
                 dash_count += 1;
             }
-        } else if ch == '>' && dash_count >= 2 {
-            #[expect(clippy::arithmetic_side_effects, reason = "checked")]
-            for _ in 0..(dash_count - 2) {
-                tree.push_char('-');
-            }
+        } else if ch == '>' && dash_count == 2 {
             if !tree.close_comment() {
                 return Err("Tried to close unopened comment".to_owned());
             }
             dash_count = 0;
-        } else if tree.is_comment() {
-            tree.push_char(ch);
         } else {
             for _ in 0..dash_count {
                 tree.push_char('-');
             }
             dash_count = 0;
-            if ch == '<' {
+            if tree.is_comment() {
+                tree.push_char(ch);
+            } else if ch == '<' {
                 match parse_tag(chars)? {
                     TagBuilder::Document { name, attr } => {
                         tree.push_node(Html::Document { name, attr });

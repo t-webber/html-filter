@@ -89,14 +89,8 @@ impl From<PrefixName> for Attribute {
 /// - In `<a:b id="blob"/>`, the prefix is `a` and the name is `b`.
 /// - In `<a id="blob"/>`, the name is `a` and there is no prefix.
 #[non_exhaustive]
-#[derive(Default, PartialEq, Eq, Debug)]
+#[derive(PartialEq, Eq, Debug)]
 pub enum PrefixName {
-    /// No name in tag
-    ///
-    /// This means the tag is a fragment (`<>` or `</>`)
-    #[default]
-    ///
-    Empty,
     /// Name of the fragment
     ///
     /// No prefix here, i.e., no colon found.
@@ -109,16 +103,15 @@ impl PrefixName {
     /// Pushes a character into a [`PrefixName`]
     pub(crate) fn push_char(&mut self, ch: char) {
         match self {
-            Self::Empty => *self = Self::Name(ch.to_string()),
             Self::Name(name) | Self::Prefix(_, name) => name.push(ch),
         }
     }
 }
 
-impl From<char> for PrefixName {
+impl Default for PrefixName {
     #[inline]
-    fn from(value: char) -> Self {
-        Self::Name(value.to_string())
+    fn default() -> Self {
+        Self::Name(String::new())
     }
 }
 
@@ -127,7 +120,6 @@ impl fmt::Display for PrefixName {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Empty => "".fmt(f),
             Self::Name(name) => name.fmt(f),
             Self::Prefix(prefix, name) => write!(f, "{prefix}:{name}"),
         }
