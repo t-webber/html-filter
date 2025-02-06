@@ -96,7 +96,6 @@ pub enum Html {
     ///
     /// In `a<strong>b`, the node is a vector, with [`Html::Text`] `a`, [`Html::Tag`] `strong` [`Html::Text`] `b`.
     Vec(Vec<Html>),
-    //TODO: Comment,
 }
 
 impl Html {
@@ -308,7 +307,7 @@ impl fmt::Display for Html {
             }?,
             Self::Document { name, attr } => match (name, attr) {
                 (None, None) => "<!>".fmt(f),
-                (None, Some(value)) | (Some(value), None) => write!(f, "<!{value}>"),
+                (None, Some(value)) | (Some(value), None) => write!(f, "<!{value} >"),
                 (Some(name_str), Some(attr_str)) => write!(f, "<!{name_str} {attr_str}>"),
             }?,
             Self::Text(text) => text.fmt(f)?,

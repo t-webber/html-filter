@@ -91,7 +91,7 @@ pub fn parse_tag(chars: &mut Chars<'_>) -> Result<TagBuilder, String> {
         match (&state, ch) {
             (TagParsingState::Name, '-') if dash => return Ok(TagBuilder::OpenComment),
             (TagParsingState::Name, '-') if bang => dash = true,
-            _ if dash => return invalid_err('-', "tag name"),
+            _ if dash => return invalid_err('-', "doctype"),
             // closing
             (
                 TagParsingState::Name
@@ -127,6 +127,7 @@ pub fn parse_tag(chars: &mut Chars<'_>) -> Result<TagBuilder, String> {
             // attribute none: none in progress
             (TagParsingState::AttributeNone, 'a'..='z' | 'A'..='Z' | '0'..='9') => {
                 tag.attrs.push(Attribute {
+                    double_quote: true,
                     name: ch.to_string(),
                     value: None,
                 });
@@ -153,6 +154,8 @@ pub fn parse_tag(chars: &mut Chars<'_>) -> Result<TagBuilder, String> {
                 state = TagParsingState::AttributeSingle;
                 safe_expect!(tag.attrs.last_mut(), "Not AttributeNone so last exists").value =
                     Some(String::new());
+                safe_expect!(tag.attrs.last_mut(), "Not AttributeNone so last exists")
+                    .double_quote = false;
             }
             (TagParsingState::AttributeEq, _) => {
                 return Err(format!(

@@ -10,6 +10,10 @@ use crate::safe_unreachable;
 /// Attributes provide information about a tag. They can consist in a simple name, or also have a value, after an `=` sign. The values are always surrounded either by single or double quotes.
 #[derive(Default, Debug)]
 pub struct Attribute {
+    /// Whether double or single quotes were used to define the value
+    ///
+    /// Equals `true` if the attribute value was delimited by double quotes, and false otherwise.
+    pub double_quote: bool,
     /// Name of the attribute
     ///
     /// # Examples
@@ -137,7 +141,8 @@ impl fmt::Display for Tag {
         for attr in &self.attrs {
             write!(f, " {}", attr.name)?;
             if let Some(value) = &attr.value {
-                write!(f, "=\"{value}\"")?;
+                let del = if attr.double_quote { '"' } else { '\'' };
+                write!(f, "={del}{value}{del}")?;
             }
         }
 
