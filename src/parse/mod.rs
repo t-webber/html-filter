@@ -18,22 +18,20 @@ pub fn parse_html(html: &str) -> Result<Html, String> {
     let mut chars = html.chars();
     match parse_html_aux(&mut chars, &mut tree) {
         Ok(()) => Ok(tree),
-        #[cfg(not(feature = "debug"))]
         Err(err) => Err(err),
-        #[cfg(feature = "debug")]
-        Err(err) => Err(format!(
-            "
------------------------------------------
-An error occurred while parsing the html.
------------------------------------------
-{tree:#?}
------------------------------------------
-{tree}
------------------------------------------
-{err}
------------------------------------------
-"
-        )),
+        //         Err(err) => Err(format!(
+        //             "
+        // -----------------------------------------
+        // An error occurred while parsing the html.
+        // -----------------------------------------
+        // {tree:#?}
+        // -----------------------------------------
+        // {tree}
+        // -----------------------------------------
+        // {err}
+        // -----------------------------------------
+        // "
+        // )),
     }
 }
 

@@ -16,13 +16,17 @@ This is not meant to happen. Please raise an issue on https://github.com/t-webbe
 }
 
 /// Macro to make a developer error with a generic failure text.
-#[macro_export]
-macro_rules! safe_unreachable {
-    ($reason:expr) => {
-        panic!("
+#[inline]
+#[coverage(off)]
+#[expect(
+    clippy::panic,
+    reason = "called when code must fail to avoid undefined behaviour."
+)]
+pub fn safe_unreachable(reason: &str) -> ! {
+    panic!("
 This is not meant to happen. Please raise an issue on https://github.com/t-webber/html-parser. Thank you for signaling this issue!
 ---------- Reason ----------
-{}
+{reason}
 ----------------------------
-", $reason)    };
+"   )
 }

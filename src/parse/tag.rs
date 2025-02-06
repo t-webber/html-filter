@@ -131,13 +131,19 @@ pub fn parse_tag(chars: &mut Chars<'_>) -> Result<TagBuilder, String> {
             // attribute after `=`
             (TagParsingState::AttributeEq, '"') => {
                 state = TagParsingState::AttributeDouble;
-                safe_expect!(tag.attrs.last_mut(), "Not AttributeNone so last exists")
-                    .add_value(true);
+                safe_expect!(
+                    tag.attrs.last_mut(),
+                    "Not AttributeNone so last exists at double quote creation."
+                )
+                .add_value(true);
             }
             (TagParsingState::AttributeEq, '\'') => {
                 state = TagParsingState::AttributeSingle;
-                safe_expect!(tag.attrs.last_mut(), "Not AttributeNone so last exists")
-                    .add_value(false);
+                safe_expect!(
+                    tag.attrs.last_mut(),
+                    "Not AttributeNone so last exists at single quote creation."
+                )
+                .add_value(false);
             }
             (TagParsingState::AttributeEq, _) => {
                 return Err(format!(

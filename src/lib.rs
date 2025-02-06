@@ -39,6 +39,7 @@
     reason = "better to understand when the iterator is used after the loop brakes"
 )]
 #![expect(clippy::doc_include_without_cfg, reason = "see issue #13918")]
+#![feature(coverage_attribute)]
 
 mod errors;
 pub mod parse;

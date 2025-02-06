@@ -3,7 +3,7 @@
 use core::fmt;
 use core::mem::take;
 
-use crate::safe_unreachable;
+use crate::errors::safe_unreachable;
 
 /// Name and optionally a value for an attribute of a tag.
 ///
@@ -52,6 +52,7 @@ impl Attribute {
     /// # Panics
     ///
     /// If called on a [`PrefixName::NameValue`]
+    #[coverage(off)]
     pub(crate) fn add_value(&mut self, double_quote: bool) {
         if let Self::NameNoValue(name) = self {
             *self = Self::NameValue {
@@ -60,16 +61,17 @@ impl Attribute {
                 value: String::new(),
             }
         } else {
-            safe_unreachable!("Never create attribute value twice from parser.")
+            safe_unreachable("Never create attribute value twice from parser.")
         }
     }
 
     /// Pushes a character into the value of the [`PrefixName`]
+    #[coverage(off)]
     pub(crate) fn push_value(&mut self, ch: char) {
         if let Self::NameValue { value, .. } = self {
             value.push(ch);
         } else {
-            safe_unreachable!("Never push to attribute before creation.")
+            safe_unreachable("Never push to attribute before creation.")
         }
     }
 }
@@ -78,6 +80,24 @@ impl From<PrefixName> for Attribute {
     #[inline]
     fn from(name: PrefixName) -> Self {
         Self::NameNoValue(name)
+    }
+}
+
+#[expect(clippy::min_ident_chars, reason = "keep trait naming")]
+impl fmt::Display for Attribute {
+    #[inline]
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::NameNoValue(prefix_name) => write!(f, " {prefix_name}"),
+            Self::NameValue {
+                double_quote,
+                name,
+                value,
+            } => write!(f, " {name}").and_then(|()| {
+                let del = if *double_quote { '"' } else { '\'' };
+                write!(f, "={del}{value}{del}")
+            }),
+        }
     }
 }
 
@@ -163,22 +183,8 @@ pub struct Tag {
 impl fmt::Display for Tag {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(&self.name)?;
-        for attr in &self.attrs {
-            match attr {
-                Attribute::NameNoValue(prefix_name) => write!(f, " {prefix_name}")?,
-                Attribute::NameValue {
-                    double_quote,
-                    name,
-                    value,
-                } => {
-                    write!(f, " {name}")?;
-                    let del = if *double_quote { '"' } else { '\'' };
-                    write!(f, "={del}{value}{del}")?;
-                }
-            }
-        }
-        Ok(())
+        f.write_str(&self.name)
+            .and_then(|()| self.attrs.iter().try_for_each(|attr| attr.fmt(f)))
     }
 }
 
@@ -189,7 +195,7 @@ pub enum TagBuilder {
     ///
     /// # Examples
     ///
-    /// `</>` and `</div>`
+    /// `</,>` and `</div>`
     Close(String),
     /// Document tag
     ///

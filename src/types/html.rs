@@ -2,7 +2,7 @@
 
 use core::{fmt, mem::take};
 
-use crate::safe_unreachable;
+use crate::{errors::safe_unreachable, safe_expect};
 
 use super::tag::{Tag, TagType};
 
@@ -112,7 +112,9 @@ impl Html {
             }
             Self::Text(_) | Self::Empty | Self::Document { .. } => false,
             Self::Tag { full, child, .. } => full.is_open() && child.close_comment(),
-            Self::Vec(vec) => vec.last_mut().map_or_else(|| false, Self::close_comment),
+            Self::Vec(vec) => {
+                safe_expect!(vec.last_mut(), "Html vec built with one.").close_comment()
+            }
         }
     }
 
@@ -170,15 +172,10 @@ impl Html {
             Self::Comment { full, .. } => !*full,
             Self::Empty | Self::Text(_) | Self::Document { .. } => false,
             Self::Tag { full, child, .. } => full.is_open() && child.is_comment(),
-            Self::Vec(vec) => vec.last().is_some_and(Self::is_comment),
+            Self::Vec(vec) => {
+                safe_expect!(vec.last(), "Html vec initialised with one.").is_comment()
+            }
         }
-    }
-
-    /// Checks if an html tree is empty.
-    ///
-    /// This is equivalent to check if tree is [`Html::Empty`] as all the others are initialised with at least one character.
-    const fn is_empty(&self) -> bool {
-        matches!(self, Self::Empty)
     }
 
     /// Checks if an html tree is pushable.
@@ -190,7 +187,7 @@ impl Html {
     pub(crate) fn is_pushable(&self, is_char: bool) -> bool {
         match self {
             Self::Empty | Self::Vec(_) => {
-                safe_unreachable!("Vec of empty or Vec of vec are never built");
+                safe_unreachable("Vec of empty or Vec of vec are never built")
             }
             Self::Tag { full, .. } => full.is_open(),
             Self::Document { .. } => false,
@@ -215,10 +212,9 @@ impl Html {
             } => *self = Self::Vec(vec![take(self), Self::from_char(ch)]),
             Self::Text(text) => text.push(ch),
             Self::Vec(vec) => {
-                if let Some(last) = vec.last_mut() {
-                    if last.is_pushable(true) {
-                        return last.push_char(ch);
-                    }
+                let last = safe_expect!(vec.last_mut(), "Initialised with one element.");
+                if last.is_pushable(true) {
+                    return last.push_char(ch);
                 }
                 vec.push(Self::from_char(ch));
             }
@@ -259,16 +255,13 @@ impl Html {
                 ..
             } => *self = Self::Vec(vec![take(self), node]),
             Self::Vec(vec) => {
-                if let Some(last) = vec.last_mut() {
-                    if last.is_pushable(false) {
-                        return last.push_node(node);
-                    }
+                let last = safe_expect!(vec.last_mut(), "Initialised with one element.");
+                if last.is_pushable(false) {
+                    return last.push_node(node);
                 }
                 vec.push(node);
             }
-            Self::Comment { .. } => {
-                safe_unreachable!("Pushed parsed not into an unclosed comment.")
-            }
+            Self::Comment { .. } => safe_unreachable("Pushed parsed not into an unclosed comment."),
         }
     }
 
@@ -291,38 +284,23 @@ impl fmt::Display for Html {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Empty => "".fmt(f)?,
+            Self::Empty => "".fmt(f),
             Self::Tag { tag, full, child } => match full {
-                TagType::Closed => {
-                    write!(f, "<{tag}>{child}</{}>", tag.name)
-                }
-                TagType::Opened => {
-                    write!(f, "<{tag}>{child}")
-                }
-                TagType::SelfClosing => {
-                    debug_assert!(child.is_empty(), "child can't be pushed if inline");
-                    write!(f, "<{tag} />")
-                }
-            }?,
+                TagType::Closed => write!(f, "<{tag}>{child}</{}>", tag.name),
+                TagType::Opened => write!(f, "<{tag}>{child}"),
+                TagType::SelfClosing => write!(f, "<{tag} />"),
+            },
             Self::Document { name, attr } => match (name, attr) {
                 (name_str, None) if name_str.is_empty() => write!(f, "<!>"),
                 (name_str, None) => write!(f, "<!{name_str} >"),
                 (name_str, Some(attr_str)) => write!(f, "<!{name_str} {attr_str}>"),
-            }?,
-            Self::Text(text) => text.fmt(f)?,
-            Self::Vec(vec) => {
-                for html in vec {
-                    html.fmt(f)?;
-                }
-            }
-            Self::Comment { content, full } => {
-                f.write_str("<!--")?;
-                f.write_str(content)?;
-                if *full {
-                    f.write_str("-->")?;
-                }
-            }
+            },
+            Self::Text(text) => text.fmt(f),
+            Self::Vec(vec) => vec.iter().try_for_each(|html| html.fmt(f)),
+            Self::Comment { content, full } => f
+                .write_str("<!--")
+                .and_then(|()| f.write_str(content))
+                .and_then(|()| if *full { f.write_str("-->") } else { Ok(()) }),
         }
-        Ok(())
     }
 }
