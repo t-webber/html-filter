@@ -2,6 +2,13 @@
 name = "html_parser"
 version = "0.1.0"
 edition = "2024"
+description = "Crate to parse, filter, search and edit an HTML file."
+license-file = "LICENSE"
+repository = "https://github.com/t-webber/html-parser"
+keywords = ["parser", "HTML", "scraping"]
+categories = ["parser", "HTML", "scraping"]
+readme = "README.md"
+
 
 [dependencies]
 
