@@ -2,7 +2,8 @@
 //!
 //! This module is used when a <d is found in a html string. It can also mean an opening comment.
 
-use crate::safe_expect;
+use crate::{safe_expect, types::tag::PrefixName};
+use core::mem::take;
 use core::str::Chars;
 
 use crate::types::tag::{Attribute, Tag, TagBuilder};
@@ -47,7 +48,7 @@ enum TagParsingState {
     /// Parser currently reading the name of an attribute.
     ///
     /// Waiting for character to continue the name, the end of the tag or a `=` sign to assign a value to this attribute.
-    AttributeName,
+    AttributeName(PrefixName),
     /// Parser read the `=` sign after an attribute name.
     ///
     /// Waiting for a `'` or `"` to assign a value to the last attribute.
@@ -67,13 +68,6 @@ fn invalid_err<T>(ch: char, ctx: &str) -> Result<T, String> {
     Err(format!("Invalid character '{ch}' in {ctx}."))
 }
 
-/// Function to format the errors for an invalid alphanumeric character in a given context.
-fn invalid_err_alpha<T>(ch: char, ctx: &str) -> Result<T, String> {
-    Err(format!(
-        "Invalid character '{ch}' in {ctx}. Only alphanumeric characters are allowed."
-    ))
-}
-
 /// Parses an opening tag, or an opening comment.
 ///
 /// # Returns
@@ -82,33 +76,30 @@ fn invalid_err_alpha<T>(ch: char, ctx: &str) -> Result<T, String> {
 pub fn parse_tag(chars: &mut Chars<'_>) -> Result<TagBuilder, String> {
     let mut tag = Tag::default();
     let mut state = TagParsingState::default();
-    let mut escaped = false;
     let mut close = Close::None;
     let mut bang = false;
     let mut dash = false;
 
     while let Some(ch) = chars.next() {
-        match (&state, ch) {
+        match (&mut state, ch) {
             (TagParsingState::Name, '-') if dash => return Ok(TagBuilder::OpenComment),
             (TagParsingState::Name, '-') if bang => dash = true,
             _ if dash => return invalid_err('-', "doctype"),
             // closing
-            (
-                TagParsingState::Name
-                | TagParsingState::AttributeNone
-                | TagParsingState::AttributeName,
-                '>',
-            ) => return return_tag(bang, close, tag),
-
+            (TagParsingState::Name | TagParsingState::AttributeNone, '>') => {
+                return return_tag(bang, close, tag);
+            }
+            (TagParsingState::AttributeName(attr), '>') => {
+                tag.attrs.push(Attribute::from(take(attr)));
+                return return_tag(bang, close, tag);
+            }
             (TagParsingState::Name, '/') if tag.name.is_empty() => close = Close::Before,
-            (
-                TagParsingState::Name
-                | TagParsingState::AttributeNone
-                | TagParsingState::AttributeName,
-                '/',
-            ) => close = Close::After,
+            (TagParsingState::Name | TagParsingState::AttributeNone, '/') => close = Close::After,
+            (TagParsingState::AttributeName(attr), '/') => {
+                tag.attrs.push(Attribute::from(take(attr)));
+                close = Close::After;
+            }
             // name
-            (TagParsingState::Name, 'a'..='z' | 'A'..='Z' | '0'..='9') => tag.name.push_char(ch),
             (TagParsingState::Name, '!') => {
                 if tag.name.is_empty() {
                     bang = true;
@@ -116,81 +107,49 @@ pub fn parse_tag(chars: &mut Chars<'_>) -> Result<TagBuilder, String> {
                     return invalid_err(ch, "tag name");
                 }
             }
-            (TagParsingState::Name, ':') => tag.name.push_colon()?,
-            // name
+            (TagParsingState::Name, ':') => return invalid_err(ch, "tag name"),
             (TagParsingState::Name, _) if ch.is_whitespace() => {
                 state = TagParsingState::AttributeNone;
             }
-            (TagParsingState::Name, _) => {
-                return invalid_err_alpha(ch, "tag names");
-            }
+            (TagParsingState::Name, _) => tag.name.push(ch),
             // attribute none: none in progress
-            (TagParsingState::AttributeNone, 'a'..='z' | 'A'..='Z' | '0'..='9') => {
-                tag.attrs.push(Attribute {
-                    double_quote: true,
-                    name: ch.to_string(),
-                    value: None,
-                });
-                state = TagParsingState::AttributeName;
-            }
             (TagParsingState::AttributeNone, _) if ch.is_whitespace() => (),
+            (TagParsingState::AttributeNone, _) => {
+                state = TagParsingState::AttributeName(PrefixName::from(ch));
+            }
             // attribute name
-            (TagParsingState::AttributeName, 'a'..='z' | 'A'..='Z') => {
-                safe_expect!(tag.attrs.last_mut(), "Not AttributeNone so last exists")
-                    .name
-                    .push(ch);
+            (TagParsingState::AttributeName(attr), '=') => {
+                tag.attrs.push(Attribute::from(take(attr)));
+                state = TagParsingState::AttributeEq;
             }
-            (TagParsingState::AttributeName, '=') => state = TagParsingState::AttributeEq,
-            (TagParsingState::AttributeNone | TagParsingState::AttributeName, _) => {
-                return invalid_err_alpha(ch, "tag attribute names");
-            }
+            (TagParsingState::AttributeName(attr), _) => attr.push_char(ch),
             // attribute after `=`
             (TagParsingState::AttributeEq, '"') => {
                 state = TagParsingState::AttributeDouble;
-                safe_expect!(tag.attrs.last_mut(), "Not AttributeNone so last exists").value =
-                    Some(String::new());
+                safe_expect!(tag.attrs.last_mut(), "Not AttributeNone so last exists")
+                    .add_value(true);
             }
             (TagParsingState::AttributeEq, '\'') => {
                 state = TagParsingState::AttributeSingle;
-                safe_expect!(tag.attrs.last_mut(), "Not AttributeNone so last exists").value =
-                    Some(String::new());
                 safe_expect!(tag.attrs.last_mut(), "Not AttributeNone so last exists")
-                    .double_quote = false;
+                    .add_value(false);
             }
             (TagParsingState::AttributeEq, _) => {
                 return Err(format!(
-                    "Invalid character {ch}: expected '\'' or '\"' after '=' sign."
+                    "Invalid character '{ch}': expected '\'' or '\"' after '=' sign."
                 ));
             }
             // attribute value
-            (TagParsingState::AttributeSingle | TagParsingState::AttributeDouble, _) if escaped => {
-                push_char_in_attr(&mut tag, ch);
-                escaped = false;
-            }
-            (TagParsingState::AttributeSingle | TagParsingState::AttributeDouble, '\\') => {
-                escaped = true;
-            }
-
             (TagParsingState::AttributeSingle, '\'') | (TagParsingState::AttributeDouble, '\"') => {
                 state = TagParsingState::AttributeNone;
             }
             (TagParsingState::AttributeSingle | TagParsingState::AttributeDouble, _) => {
-                push_char_in_attr(&mut tag, ch);
+                safe_expect!(tag.attrs.last_mut(), "Not AttributeNone so last exists")
+                    .push_value(ch);
             }
         }
     }
-    Err("EOF: Missing closing '>'".to_owned())
-}
-
-/// Push a character safely in an attribute's value
-fn push_char_in_attr(tag: &mut Tag, ch: char) {
-    safe_expect!(
-        safe_expect!(tag.attrs.last_mut(), "Not AttributeNone so last exists")
-            .value
-            .as_mut(),
-        "Value created when state changed"
-    )
-    .push(ch);
+    Err("EOF: Missing closing '>'.".to_owned())
 }
 
 /// Builds a [`TagBuilder`] with the parsing information from [`parse_tag`].
@@ -199,18 +158,26 @@ fn return_tag(document: bool, close: Close, mut tag: Tag) -> Result<TagBuilder, 
         (true, Close::After) => return invalid_err('/', "doctype"),
         (true, Close::Before) => return invalid_err('!', "closing tag"),
         (true, Close::None) => {
-            if tag.name.has_prefix() {
-                return invalid_err(':', "closing tag");
-            }
             if tag.attrs.len() >= 2 {
                 return Err("Doctype expected at most one attribute.".to_owned());
             }
-            if tag.attrs.last().is_some_and(|attr| attr.value.is_some()) {
-                return Err("Doctype attribute must not have a value.".to_owned());
-            }
+            let attr = if let Some(attr) = tag.attrs.pop() {
+                match attr {
+                    Attribute::NameNoValue(PrefixName::Empty) => None,
+                    Attribute::NameNoValue(PrefixName::Name(name)) => Some(name),
+                    Attribute::NameNoValue(PrefixName::Prefix(..)) => {
+                        return invalid_err(':', "doctype attribute");
+                    }
+                    Attribute::NameValue { .. } => {
+                        return Err("Doctype attribute must not have a value.".to_owned());
+                    }
+                }
+            } else {
+                None
+            };
             TagBuilder::Document {
-                name: tag.name.into_name(),
-                attr: tag.attrs.pop().map(|attr| attr.name),
+                name: tag.name,
+                attr,
             }
         }
         (false, Close::None) => TagBuilder::Open(tag),

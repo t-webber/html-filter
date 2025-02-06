@@ -22,8 +22,12 @@ macro_rules! make_err_test {
 
 make_err_test!(
 
-invalid_char: "<a@b>" => "Invalid character '@' in tag names. Only alphanumeric characters are allowed."
-
-invalid_dash: "<!-a>" => "Invalid character '-' in doctype."
+invalid_dash: "<!-audio>" => "Invalid character '-' in doctype."
+close_doctype: "<!doc />" => "Invalid character '/' in doctype."
+bang_closing: "</!doc >" => "Invalid character '!' in closing tag."
+prefix_name: "<webkit:br>" => "Invalid character ':' in tag name."
+invalid_bang: "<button!>" => "Invalid character '!' in tag name."
+invalid_equal: "<p id=a>" => "Invalid character 'a': expected ''' or '\"' after '=' sign."
+unclosed_tag: "<textarea" => "EOF: Missing closing '>'."
 
 );

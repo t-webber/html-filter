@@ -4,7 +4,7 @@ use core::{fmt, mem::take};
 
 use crate::safe_unreachable;
 
-use super::tag::{PrefixName, Tag, TagClosingStatus, TagType};
+use super::tag::{Tag, TagClosingStatus, TagType};
 
 /// Dom tree structure to represent the parsed html.
 #[non_exhaustive]
@@ -44,7 +44,7 @@ pub enum Html {
         /// # Examples
         ///
         /// In the previous example, the name is `doctype`.
-        name: Option<String>,
+        name: String,
         /// Attribute of the tag
         ///
         /// # Examples
@@ -119,7 +119,7 @@ impl Html {
     /// Method to find to close that last opened tag.
     ///
     /// This method finds the opened tag the closest to the leaves.
-    pub(crate) fn close_tag(&mut self, name: &PrefixName) -> Result<(), String> {
+    pub(crate) fn close_tag(&mut self, name: &str) -> Result<(), String> {
         match self.close_tag_aux(name) {
             TagClosingStatus::Success => Ok(()),
             TagClosingStatus::Full => Err(format!(
@@ -132,7 +132,7 @@ impl Html {
     }
 
     /// Wrapper for [`Self::close_tag`].
-    pub(crate) fn close_tag_aux(&mut self, name: &PrefixName) -> TagClosingStatus {
+    pub(crate) fn close_tag_aux(&mut self, name: &str) -> TagClosingStatus {
         if let Self::Tag {
             tag,
             full: full @ TagType::Opened,
@@ -141,7 +141,7 @@ impl Html {
         {
             let status = child.close_tag_aux(name);
             if matches!(status, TagClosingStatus::Full) {
-                if &tag.name == name {
+                if tag.name == name {
                     *full = TagType::Closed;
                     TagClosingStatus::Success
                 } else {
@@ -306,9 +306,9 @@ impl fmt::Display for Html {
                 }
             }?,
             Self::Document { name, attr } => match (name, attr) {
-                (None, None) => "<!>".fmt(f),
-                (None, Some(value)) | (Some(value), None) => write!(f, "<!{value} >"),
-                (Some(name_str), Some(attr_str)) => write!(f, "<!{name_str} {attr_str}>"),
+                (name_str, None) if name_str.is_empty() => write!(f, "<!>"),
+                (name_str, None) => write!(f, "<!{name_str} >"),
+                (name_str, Some(attr_str)) => write!(f, "<!{name_str} {attr_str}>"),
             }?,
             Self::Text(text) => text.fmt(f)?,
             Self::Vec(vec) => {
