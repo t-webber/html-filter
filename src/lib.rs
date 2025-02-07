@@ -42,5 +42,6 @@
 #![feature(coverage_attribute)]
 
 mod errors;
+pub mod filter;
 pub mod parse;
 pub mod types;

@@ -2,3 +2,5 @@
 .*
 *.lock
 !.git*
+*.html
+!tests/data/index.html

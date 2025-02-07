@@ -173,6 +173,15 @@ impl Html {
         }
     }
 
+    /// Checks if an html tree is empty
+    pub(crate) fn is_empty(&self) -> bool {
+        if let Self::Vec(vec) = self {
+            vec.is_empty()
+        } else {
+            matches!(self, Self::Empty)
+        }
+    }
+
     /// Checks if an html tree is pushable.
     ///
     /// This is to check if a new node needs to be created for the next data.
