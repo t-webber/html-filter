@@ -32,6 +32,7 @@
     clippy::pattern_type_mismatch,
     clippy::module_name_repetitions,
     clippy::blanket_clippy_restriction_lints,
+    clippy::unseparated_literal_suffix,
     reason = "These lint acceptable behaviour."
 )]
 #![expect(

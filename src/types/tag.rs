@@ -1,6 +1,7 @@
 //! Module to define the tag data structure.
 
 use core::fmt;
+use core::hash::Hash;
 use core::mem::take;
 
 use crate::errors::safe_unreachable;
@@ -10,7 +11,12 @@ use crate::errors::safe_unreachable;
 /// Attributes provide information about a tag. They can consist in a simple
 /// name, or also have a value, after an `=` sign. The values are always
 /// surrounded either by single or double quotes.
-#[derive(Debug)]
+#[allow(
+    clippy::allow_attributes,
+    clippy::derived_hash_with_manual_eq,
+    reason = "hash on enum doesn't depend of variant data"
+)]
+#[derive(Debug, Eq, Hash)]
 #[non_exhaustive]
 pub enum Attribute {
     /// Name of the attribute, when it doesn't have a value
@@ -24,6 +30,7 @@ pub enum Attribute {
     /// # Examples
     ///
     /// `<div id="blob"/>`
+    #[non_exhaustive]
     NameValue {
         /// Whether double or single quotes were used to define the value
         ///
@@ -84,6 +91,28 @@ impl From<PrefixName> for Attribute {
     }
 }
 
+#[expect(clippy::missing_trait_methods, reason = "ne default applicable")]
+impl PartialEq for Attribute {
+    #[inline]
+    fn eq(&self, other: &Self) -> bool {
+        match self {
+            Self::NameNoValue(l0) =>
+                if let Self::NameNoValue(r0) = other {
+                    l0 == r0
+                } else {
+                    false
+                },
+            Self::NameValue { name: l_name, value: l_value, .. } => {
+                if let Self::NameValue { name: r_name, value: r_value, .. } = other {
+                    l_name == r_name && l_value == r_value
+                } else {
+                    false
+                }
+            }
+        }
+    }
+}
+
 #[expect(clippy::min_ident_chars, reason = "keep trait naming")]
 impl fmt::Display for Attribute {
     #[inline]
@@ -107,7 +136,7 @@ impl fmt::Display for Attribute {
 /// - In `<a:b id="blob"/>`, the prefix is `a` and the name is `b`.
 /// - In `<a id="blob"/>`, the name is `a` and there is no prefix.
 #[non_exhaustive]
-#[derive(PartialEq, Eq, Debug)]
+#[derive(PartialEq, Eq, Debug, Hash)]
 pub enum PrefixName {
     /// Name of the fragment
     ///
@@ -146,6 +175,25 @@ impl Default for PrefixName {
     #[inline]
     fn default() -> Self {
         Self::Name(String::new())
+    }
+}
+
+impl From<String> for PrefixName {
+    #[inline]
+    fn from(value: String) -> Self {
+        if value.contains(':') {
+            let mut prefix = String::new();
+            let mut iter = value.chars();
+            while let Some(ch) = iter.next() {
+                if ch == ':' {
+                    break; // end of prefix
+                }
+                prefix.push(ch);
+            }
+            Self::Prefix(prefix, iter.collect())
+        } else {
+            Self::Name(value)
+        }
     }
 }
 
