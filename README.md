@@ -40,4 +40,3 @@ assert!(format!("{tree}") == html);
 Are no yet supported:
 
 -   `style` and `script` tags
--   escaped characters (e.g. `&nbsp;`, `&amp;` or `&copy`.)
