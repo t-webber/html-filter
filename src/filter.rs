@@ -3,7 +3,7 @@
 use std::collections::HashSet;
 
 use crate::types::html::Html;
-use crate::types::tag::{Attribute, PrefixName};
+use crate::types::tag::{Attribute, PrefixName, Tag};
 
 /// Macro to setup a filter
 macro_rules! filter_setter {
@@ -33,7 +33,7 @@ pub struct Filter {
     ///  # Examples
     ///
     /// `<a href="link" />`
-    tag: TagFilterType,
+    tags: Option<HashSet<String>>,
     /// Filter by type of html node
     types: HtmlFilterType,
 }
@@ -75,10 +75,22 @@ impl Filter {
     }
 
     /// Method to check all the attributes are present.
-    fn compare_attrs(&self, found: &[Attribute]) -> bool {
-        self.attrs
+    fn allowed_tag(&self, tag: &Tag) -> bool {
+        self.tags
             .as_ref()
-            .is_some_and(|wanted| wanted.iter().all(|attr| found.contains(attr)))
+            .is_some_and(|names| names.contains(&tag.name))
+            || self
+                .attrs
+                .as_ref()
+                .is_some_and(|wanted| wanted.iter().all(|attr| tag.attrs.contains(attr)))
+    }
+    #[inline]
+    #[must_use]
+    /// Activates everything, except if tag names or attributes were given.
+    pub const fn all(mut self) -> Self {
+        self.types.comment = true;
+        self.types.document = true;
+        self
     }
 
     filter_setter!(comment document);
@@ -87,7 +99,13 @@ impl Filter {
     #[must_use]
     /// Adds a required attribute in the selected tags.
     pub fn tag_name<N: Into<String>>(mut self, name: N) -> Self {
-        self.tag.push(name.into());
+        if let Some(names) = &mut self.tags {
+            names.insert(name.into());
+        } else {
+            let mut names = HashSet::new();
+            names.insert(name.into());
+            self.tags = Some(names);
+        }
         self
     }
 }
@@ -96,29 +114,27 @@ impl Html {
     /// Filters html based on a defined filter.
     #[inline]
     #[must_use]
-    pub fn filter_html(self, filter: &Filter) -> Self {
-        self.filter_html_aux(filter, false)
+    pub fn filter(self, filter: &Filter) -> Self {
+        self.filter_aux(filter, false)
     }
 
-    /// Wrapper for [`Self::filter_html`]
+    /// Wrapper for [`Self::filter`]
     ///
     /// It takes an additional `clean` boolean to indicate when a tag returns
     /// the child, the texts must disappear.
     #[expect(clippy::ref_patterns, reason = "ref only on one branch")]
-    fn filter_html_aux(self, filter: &Filter, clean: bool) -> Self {
+    fn filter_aux(self, filter: &Filter, clean: bool) -> Self {
         match self {
             Self::Comment { .. } if !filter.types.comment => Self::default(),
             Self::Document { .. } if !filter.types.document => Self::default(),
             Self::Text(txt) if txt.chars().all(char::is_whitespace) => Self::default(),
 
-            Self::Tag { ref tag, .. }
-                if filter.compare_attrs(&tag.attrs) || filter.tag.is_allowed(&tag.name) =>
-                self,
-            Self::Tag { child, .. } => child.filter_html_aux(filter, true),
+            Self::Tag { ref tag, .. } if filter.allowed_tag(tag) => self,
+            Self::Tag { child, .. } => child.filter_aux(filter, true),
             Self::Vec(vec) => {
                 let mut filtered_vec = Vec::with_capacity(vec.len());
                 for child in vec {
-                    let filtered_child = child.filter_html(filter);
+                    let filtered_child = child.filter(filter);
                     if !filtered_child.is_empty()
                         && (!clean || !matches!(filtered_child, Self::Text(_)))
                     {
@@ -132,6 +148,30 @@ impl Html {
                 }
             }
             Self::Comment { .. } | Self::Document { .. } | Self::Empty | Self::Text(_) => self,
+        }
+    }
+
+    /// Filters html based on a defined filter.
+    #[inline]
+    #[must_use]
+    #[expect(clippy::ref_patterns, reason = "ref only on one branch")]
+    pub fn find(self, filter: &Filter) -> Option<Self> {
+        match self {
+            Self::Comment { .. } if !filter.types.comment => None,
+            Self::Document { .. } if !filter.types.document => None,
+            Self::Text(txt) if txt.chars().all(char::is_whitespace) => None,
+
+            Self::Tag { ref tag, .. } if filter.allowed_tag(tag) => Some(self),
+            Self::Tag { child, .. } => child.find(filter),
+            Self::Vec(vec) => {
+                for child in vec {
+                    if let Some(found) = child.find(filter) {
+                        return Some(found);
+                    }
+                }
+                None
+            }
+            Self::Comment { .. } | Self::Document { .. } | Self::Empty | Self::Text(_) => None,
         }
     }
 }
@@ -154,26 +194,4 @@ struct HtmlFilterType {
     ///
     /// `<!-- some comment -->`
     document: bool,
-}
-
-#[non_exhaustive]
-#[derive(Default, Debug)]
-struct TagFilterType(Option<HashSet<String>>);
-
-impl TagFilterType {
-    /// Checks if a tag is allowed with respect to the filter.
-    fn is_allowed(&self, name: &str) -> bool {
-        self.0.as_ref().is_some_and(|names| names.contains(name))
-    }
-
-    /// Pushes a tag name into the whitelist.
-    fn push(&mut self, name: String) {
-        if let Some(names) = &mut self.0 {
-            names.insert(name);
-        } else {
-            let mut hash_set = HashSet::new();
-            hash_set.insert(name);
-            self.0 = Some(hash_set);
-        }
-    }
 }

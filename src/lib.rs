@@ -23,23 +23,25 @@
     clippy::nursery,
     clippy::cargo
 )]
-#![allow(
-    clippy::single_call_fn,
+#![expect(
     clippy::implicit_return,
-    clippy::mod_module_files,
-    clippy::exhaustive_structs,
     clippy::question_mark_used,
-    clippy::pattern_type_mismatch,
     clippy::module_name_repetitions,
-    clippy::blanket_clippy_restriction_lints,
-    clippy::unseparated_literal_suffix,
-    reason = "These lint acceptable behaviour."
+    reason = "bad lint"
+)]
+#![expect(
+    clippy::single_call_fn,
+    clippy::mod_module_files,
+    clippy::pattern_type_mismatch,
+    reason = "style"
 )]
 #![expect(
     clippy::while_let_on_iterator,
-    reason = "better to understand when the iterator is used after the loop brakes"
+    reason = "better to understand when the iterator is used after the loop breaks"
 )]
 #![expect(clippy::doc_include_without_cfg, reason = "see issue #13918")]
+#![expect(clippy::blanket_clippy_restriction_lints, reason = "I want them all")]
+#![expect(clippy::multiple_inherent_impl, reason = "useful when lots of methods")]
 #![feature(coverage_attribute)]
 
 mod errors;

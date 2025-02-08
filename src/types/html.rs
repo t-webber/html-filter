@@ -280,9 +280,9 @@ impl fmt::Display for Html {
                 TagType::SelfClosing => write!(f, "<{tag} />"),
             },
             Self::Document { name, attr } => match (name, attr) {
+                (name_str, Some(attr_str)) => write!(f, "<!{name_str} {attr_str}>"),
                 (name_str, None) if name_str.is_empty() => write!(f, "<!>"),
                 (name_str, None) => write!(f, "<!{name_str} >"),
-                (name_str, Some(attr_str)) => write!(f, "<!{name_str} {attr_str}>"),
             },
             Self::Text(text) => text.fmt(f),
             Self::Vec(vec) => vec.iter().try_for_each(|html| html.fmt(f)),
