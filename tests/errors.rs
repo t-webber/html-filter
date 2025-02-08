@@ -1,4 +1,4 @@
-use html_parser::parse::parse_html;
+use html_parser::prelude::*;
 
 macro_rules! make_err_test {
     ($($name:ident: $html:expr => $err:expr)*) => {

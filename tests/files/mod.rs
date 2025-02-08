@@ -1,6 +1,6 @@
 use std::fs;
 
-use html_parser::types::html::Html;
+use html_parser::prelude::*;
 
 pub mod filter;
 pub mod find;

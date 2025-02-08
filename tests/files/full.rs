@@ -1,6 +1,6 @@
 use std::fs::read_to_string;
 
-use html_parser::parse::parse_html;
+use html_parser::prelude::*;
 
 use super::test_maker;
 
