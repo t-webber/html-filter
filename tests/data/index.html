@@ -6,7 +6,38 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Test HTML</title>
-        <style></style>
+        <style>
+            @keyframes a {
+                0% {
+                    --x: rotate(0deg);
+                }
+                100% {
+                    --x: rotate(360deg);
+                }
+            }
+
+            :is(div, span, [data-test]):not(.skip, :has(+ p)) {
+                animation: a 2s infinite;
+                transform: var(--x, scale(1)) perspective(500px) rotateY(30deg);
+                display: grid;
+                grid-template-areas: "a b" "c d";
+            }
+
+            @media (min-width: calc(100px + 2em)) {
+                :where(.container) > :nth-child(even of .item, .box):hover {
+                    color: hsl(calc(360 * var(--hue, 1)), 50%, 50%);
+                    content: counter(my-counter, upper-roman);
+                }
+            }
+
+            @supports (display: flex) and (animation-name: a) {
+                *::before {
+                    content: "⚡";
+                    position: absolute;
+                    inset: 10% auto auto 10%;
+                }
+            }
+        </style>
     </head>
     <body>
         <header>
@@ -65,12 +96,12 @@
                     <li>First</li>
                     <li>Second</li>
                 </ol>
+                <input enabled />
             </section>
 
             <section>
                 <h2>Divs & Spans</h2>
                 <div class="box"></div>
-                <input enabled />
                 <div class="box"></div>
                 <div class="box"></div>
                 <span>Inline span</span>
@@ -106,5 +137,27 @@
         <footer>
             <p>2025 Test Footer</p>
         </footer>
+
+        <script>
+                        (()=> {
+              "use strict";
+
+              class A extends (class { constructor() { return Object.setPrototypeOf(this, new.target.prototype); } }) {
+                #x = (super(), 42);
+
+                static {
+                  const f = () => { try { return arguments.callee; } catch { return f; } };
+                  this.y = f();
+                }
+
+                ["m" + "ethod"](...[a, b = (yield, this.#x)]) {
+                  return { [Symbol.toPrimitive](hint) { return hint === "number" ? +b : a } };
+                }
+              }
+
+              let [x, { [x ??= "method"]: y }] = [new A(), new A()];
+              console.log(x[y]); // Triggers Symbol.toPrimitive
+            })();
+        </script>
     </body>
 </html>

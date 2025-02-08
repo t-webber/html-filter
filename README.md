@@ -34,9 +34,3 @@ let tree: Html = parse_html(&html).expect("Invalid html.");
 // Now you can use it!
 assert!(format!("{tree}") == html);
 ```
-
-## Known issues
-
-Are no yet supported:
-
--   `style` and `script` tags

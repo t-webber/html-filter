@@ -26,6 +26,7 @@
 #![expect(
     clippy::implicit_return,
     clippy::question_mark_used,
+    clippy::else_if_without_else,
     clippy::module_name_repetitions,
     reason = "bad lint"
 )]

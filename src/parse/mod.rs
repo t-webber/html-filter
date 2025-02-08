@@ -39,8 +39,27 @@ pub fn parse_html(html: &str) -> Result<Html, String> {
 /// Wrapper for the [`parse_html`] function.
 fn parse_html_aux(chars: &mut Chars<'_>, tree: &mut Html) -> Result<(), String> {
     let mut dash_count: u32 = 0;
+    let mut style = false;
+    let mut script = false;
+    let mut comment = false;
     while let Some(ch) = chars.next() {
-        if ch == '-' {
+        if !comment && (style || script) {
+            if ch == '<' {
+                if let Ok(TagBuilder::Close(name)) = parse_tag(chars) {
+                    if style && name == "style" {
+                        style = false;
+                        tree.close_tag(&name)?;
+                        continue;
+                    }
+                    if script && name == "script" {
+                        script = false;
+                        tree.close_tag(&name)?;
+                        continue;
+                    }
+                }
+            }
+            tree.push_char(ch);
+        } else if ch == '-' {
             #[expect(clippy::arithmetic_side_effects, reason = "checked")]
             if dash_count == 2 {
                 tree.push_char('-');
@@ -51,22 +70,33 @@ fn parse_html_aux(chars: &mut Chars<'_>, tree: &mut Html) -> Result<(), String> 
             if !tree.close_comment() {
                 return Err("Tried to close unopened comment.".to_owned());
             }
+            comment = false;
             dash_count = 0;
         } else {
             for _ in 0..dash_count {
                 tree.push_char('-');
             }
             dash_count = 0;
-            if tree.is_comment() {
+            if comment {
                 tree.push_char(ch);
             } else if ch == '<' {
                 match parse_tag(chars)? {
                     TagBuilder::Document { name, attr } =>
                         tree.push_node(Html::Document { name, attr }),
-                    TagBuilder::Open(tag) => tree.push_tag(tag, false),
+                    TagBuilder::Open(tag) => {
+                        if tag.name == "style" {
+                            style = true;
+                        } else if tag.name == "script" {
+                            script = true;
+                        }
+                        tree.push_tag(tag, false);
+                    }
                     TagBuilder::OpenClose(tag) => tree.push_tag(tag, true),
                     TagBuilder::Close(name) => tree.close_tag(&name)?,
-                    TagBuilder::OpenComment => tree.push_comment(),
+                    TagBuilder::OpenComment => {
+                        tree.push_comment();
+                        comment = true;
+                    }
                 }
             } else {
                 tree.push_char(ch);

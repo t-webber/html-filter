@@ -32,7 +32,7 @@ r##"<a xlink:href="#">About</a>"##
 filter_radio: Filter::default().attribute_value("type", "radio").attribute_name("radio") =>
 r#"<input radio type="radio" name="radio" id="radio1" /><input radio type="radio" name="radio" id="radio2" />"#
 
-find_radio: Filter::default().attribute_value("type", "radio").attribute_value("id", "radio2") =>
+filter_radio_id: Filter::default().attribute_value("type", "radio").attribute_value("id", "radio2") =>
 r#"<input radio type="radio" name="radio" id="radio2" />"#
 
 filter_enabled: Filter::default().attribute_name("enabled") =>

@@ -162,17 +162,6 @@ impl Html {
         Self::Text(ch.to_string())
     }
 
-    /// Checks if the writer is currently in a comment
-    pub(crate) fn is_comment(&self) -> bool {
-        match self {
-            Self::Comment { full, .. } => !*full,
-            Self::Empty | Self::Text(_) | Self::Document { .. } => false,
-            Self::Tag { full, child, .. } => full.is_open() && child.is_comment(),
-            Self::Vec(vec) =>
-                safe_expect!(vec.last(), "Html vec initialised with one.").is_comment(),
-        }
-    }
-
     /// Checks if an html tree is empty
     pub(crate) fn is_empty(&self) -> bool {
         if let Self::Vec(vec) = self {

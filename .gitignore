@@ -3,4 +3,4 @@
 *.lock
 !.git*
 *.html
-!tests/data/index.html
+!tests/data/*.html
