@@ -8,7 +8,29 @@ use crate::errors::safe_unreachable;
 use crate::safe_expect;
 
 /// Dom tree structure to represent the parsed html.
+///
+/// This tree represents the whole parsed HTML. To create an [`Html`] from a
+/// string, use the [`crate::parse::parse_html`] function.
+///
+/// # Examples
+///
+/// ```
+/// use html_parser::prelude::*;
+///
+/// let _html: Html = parse_html(
+///     r#"<nav>
+///     <!-- Navigation menu -->
+///     <ul>
+///         <li href="first">First link</li>
+///         <li href="second">Second link</li>
+///         <li href="third">Third link</li>
+///     </ul>
+/// </nav>"#,
+/// )
+/// .unwrap();
+/// ```
 #[non_exhaustive]
+#[expect(private_interfaces, reason = "simplicity vs scalability")]
 #[derive(Debug, Default)]
 pub enum Html {
     /// Comment block
@@ -16,6 +38,7 @@ pub enum Html {
     /// # Example
     ///
     /// `<!-- some comment -->`
+    #[non_exhaustive]
     Comment {
         /// Content of the comment
         ///
@@ -39,6 +62,7 @@ pub enum Html {
     /// # Examples
     ///
     /// `<!doctype html>`
+    #[non_exhaustive]
     Document {
         /// Name of the tag
         ///
@@ -65,6 +89,7 @@ pub enum Html {
     /// - `<div id="blob">content</div>`
     /// - `<div attr />`
     /// - `</>`
+    #[non_exhaustive]
     Tag {
         /// Opening tag
         ///

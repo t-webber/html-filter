@@ -23,7 +23,43 @@ fn auto_doctest_1() {
 
 #[test]
 fn auto_doctest_2() {
-    // Auto generated from src/types/tag.rs:277
+    // Auto generated from src/types/html.rs:16
+    use html_parser::prelude::*;
+    let _html: Html = parse_html(
+        r#"<nav>
+        <!-- Navigation menu -->
+        <ul>
+            <li href="first">First link</li>
+            <li href="second">Second link</li>
+            <li href="third">Third link</li>
+        </ul>
+    </nav>"#,
+    )
+    .unwrap();
+}
+
+#[test]
+fn auto_doctest_3() {
+    // Auto generated from src/types/tag.rs:257
+    use html_parser::prelude::*;
+    let html = parse_html("<a enabled href='https://crates.io'>").unwrap();
+    if let Html::Tag { tag, .. } = html {
+        assert!(tag.as_name() == "a");
+        assert!(tag.find_attr_value("enabled").is_none());
+        assert!(
+            tag.find_attr_value("href")
+                .is_some_and(|value| value == "https://crates.io")
+        );
+        let value: String = tag.into_attr_value("href").unwrap();
+        assert!(&value == "https://crates.io");
+    } else {
+        unreachable!();
+    }
+}
+
+#[test]
+fn auto_doctest_4() {
+    // Auto generated from src/types/tag.rs:296
     use html_parser::prelude::*;
     let html = parse_html("<div />").unwrap();
     if let Html::Tag { tag, .. } = html {
@@ -34,8 +70,8 @@ fn auto_doctest_2() {
 }
 
 #[test]
-fn auto_doctest_3() {
-    // Auto generated from src/types/tag.rs:302
+fn auto_doctest_5() {
+    // Auto generated from src/types/tag.rs:321
     use html_parser::prelude::*;
     let html = parse_html(r#"<a id="std doc" enabled xlink:href="https://std.rs"/>"#).unwrap();
     if let Html::Tag { tag, .. } = html {
@@ -51,8 +87,8 @@ fn auto_doctest_3() {
 }
 
 #[test]
-fn auto_doctest_4() {
-    // Auto generated from src/types/tag.rs:344
+fn auto_doctest_6() {
+    // Auto generated from src/types/tag.rs:363
     use html_parser::prelude::*;
     let html = parse_html(r#"<a enabled/>"#).unwrap();
     if let Html::Tag { tag, .. } = html {
@@ -72,7 +108,7 @@ fn auto_doctest_4() {
 }
 
 #[test]
-fn auto_doctest_5() {
+fn auto_doctest_7() {
     // Auto generated from src/filter.rs:53
     #![allow(unused)]
     use html_parser::prelude::*;
@@ -84,14 +120,14 @@ fn auto_doctest_5() {
 }
 
 #[test]
-fn auto_doctest_6() {
+fn auto_doctest_8() {
     // Auto generated from src/filter.rs:76
     use html_parser::prelude::*;
     let _filter = Filter::default().depth(1).tag_name("a");
 }
 
 #[test]
-fn auto_doctest_7() {
+fn auto_doctest_9() {
     // Auto generated from src/filter.rs:191
     #![allow(unused)]
     html_parser::filter::Filter::default()
@@ -100,7 +136,7 @@ fn auto_doctest_7() {
 }
 
 #[test]
-fn auto_doctest_8() {
+fn auto_doctest_10() {
     // Auto generated from src/filter.rs:206
     #![allow(unused)]
     html_parser::filter::Filter::default()
@@ -109,7 +145,7 @@ fn auto_doctest_8() {
 }
 
 #[test]
-fn auto_doctest_9() {
+fn auto_doctest_11() {
     // Auto generated from src/filter.rs:225
     #![allow(unused)]
     html_parser::filter::Filter::default()

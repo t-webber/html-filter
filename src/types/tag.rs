@@ -252,7 +252,26 @@ impl fmt::Display for PrefixName {
 }
 
 /// Tag structure, with its name and attributes
-#[non_exhaustive]
+///
+/// # Examples
+///
+/// ```
+/// use html_parser::prelude::*;
+///
+/// let html = parse_html("<a enabled href='https://crates.io'>").unwrap();
+/// if let Html::Tag { tag, .. } = html {
+///     assert!(tag.as_name() == "a");
+///     assert!(tag.find_attr_value("enabled").is_none());
+///     assert!(
+///         tag.find_attr_value("href")
+///             .is_some_and(|value| value == "https://crates.io")
+///     );
+///     let value: String = tag.into_attr_value("href").unwrap();
+///     assert!(&value == "https://crates.io");
+/// } else {
+///     unreachable!();
+/// }
+/// ```
 #[expect(
     clippy::field_scoped_visibility_modifiers,
     reason = "use methods for API but visiblity needed by parser"
@@ -392,8 +411,7 @@ impl fmt::Display for Tag {
 }
 
 /// Builder returns by the parser when run on a tag.
-#[non_exhaustive]
-pub enum TagBuilder {
+pub(crate) enum TagBuilder {
     /// Closing tag
     ///
     /// # Examples
@@ -443,21 +461,10 @@ pub enum TagBuilder {
     OpenComment,
 }
 
-/// Response type of the attempt to closing a tag.
-#[non_exhaustive]
-pub enum TagClosingStatus {
-    /// No opened tag were found: all were already closed.
-    Full,
-    /// Tag successfully closed.
-    Success,
-    /// The last opened tag has the wrong name.
-    WrongName(String),
-}
-
 /// Closing type of the tag.
 #[derive(Debug)]
 #[non_exhaustive]
-pub enum TagType {
+pub(crate) enum TagType {
     /// Closed tag
     ///
     /// This means the closing part of the tag was found.
