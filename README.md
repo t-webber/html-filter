@@ -112,7 +112,7 @@ let link: Html = parse_html(html).expect("Invalid HTML").find(&filter).expect("N
 // Check the result: link contains `<a href="/home">Home</a>`
 if let Html::Tag { tag, child, .. } = link {
     if let Html::Text(text) = *child {
-        assert!(&tag.name == "a" && text == "Home");
+        assert!(tag.as_name() == "a" && text == "Home");
     } else {
         unreachable!()
     }

@@ -33,6 +33,7 @@
 #![expect(
     clippy::single_call_fn,
     clippy::mod_module_files,
+    clippy::pub_with_shorthand,
     clippy::pattern_type_mismatch,
     reason = "style"
 )]

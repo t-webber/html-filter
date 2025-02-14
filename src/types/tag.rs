@@ -18,7 +18,7 @@ use crate::errors::safe_unreachable;
 )]
 #[derive(Debug, Eq, Hash)]
 #[non_exhaustive]
-pub enum Attribute {
+pub(crate) enum Attribute {
     /// Name of the attribute, when it doesn't have a value
     ///
     /// # Examples
@@ -70,6 +70,22 @@ impl Attribute {
             *self = Self::NameValue { double_quote, name: take(name), value: String::new() }
         } else {
             safe_unreachable("Never create attribute value twice from parser.")
+        }
+    }
+
+    /// Returns the name of an attribute
+    const fn as_name(&self) -> &PrefixName {
+        match self {
+            Self::NameNoValue(prefix_name) => prefix_name,
+            Self::NameValue { name, .. } => name,
+        }
+    }
+
+    /// Returns the name of an attribute
+    const fn as_value(&self) -> Option<&String> {
+        match self {
+            Self::NameNoValue(_) => None,
+            Self::NameValue { value, .. } => Some(value),
         }
     }
 
@@ -137,7 +153,7 @@ impl fmt::Display for Attribute {
 /// - In `<a id="blob"/>`, the name is `a` and there is no prefix.
 #[non_exhaustive]
 #[derive(PartialEq, Eq, Debug, Hash)]
-pub enum PrefixName {
+pub(crate) enum PrefixName {
     /// Name of the fragment
     ///
     /// No prefix here, i.e., no colon found.
@@ -178,6 +194,25 @@ impl Default for PrefixName {
     }
 }
 
+impl From<&str> for PrefixName {
+    #[inline]
+    fn from(value: &str) -> Self {
+        if value.contains(':') {
+            let mut prefix = String::new();
+            let mut iter = value.chars();
+            while let Some(ch) = iter.next() {
+                if ch == ':' {
+                    break; // end of prefix
+                }
+                prefix.push(ch);
+            }
+            Self::Prefix(prefix, iter.collect())
+        } else {
+            Self::Name(value.to_owned())
+        }
+    }
+}
+
 impl From<String> for PrefixName {
     #[inline]
     fn from(value: String) -> Self {
@@ -210,17 +245,69 @@ impl fmt::Display for PrefixName {
 
 /// Tag structure, with its name and attributes
 #[non_exhaustive]
+#[expect(
+    clippy::field_scoped_visibility_modifiers,
+    reason = "use methods for API but visiblity needed by parser"
+)]
 #[derive(Default, Debug)]
 pub struct Tag {
     /// Attributes of the tag. See [`Attribute`].
-    pub attrs: Vec<Attribute>,
+    pub(crate) attrs: Vec<Attribute>,
     /// Name of the tag.
     ///
     /// # Examples
     ///
     /// - `<div id="blob">` as name `div`
     /// - `<>` as an empty name
-    pub name: String,
+    pub(crate) name: String,
+}
+
+impl Tag {
+    /// Returns the name of the tag
+    #[inline]
+    #[must_use]
+    pub const fn as_name(&self) -> &String {
+        &self.name
+    }
+
+    /// Find the value with the name of the attribute
+    ///
+    /// Returns
+    ///
+    /// - `Some(value)` if `name = value` is present in the [`Tag`]
+    /// - `None` if the attribute doesn't exist, or if it doesn't have a value
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use html_parser::prelude::*;
+    ///
+    /// let html = parse_html(r#"<a id="std doc" enabled href="https://std.rs"/>"#).unwrap();
+    ///
+    /// if let Html::Tag { tag, .. } = html {
+    ///     assert!(tag.find_value("enabled") == None);
+    ///     assert!(
+    ///         tag.find_value(String::from("href"))
+    ///             .map(|value| value.as_ref())
+    ///             == Some("https://std.rs")
+    ///     );
+    /// } else {
+    ///     unreachable!()
+    /// }
+    /// ```
+    #[inline]
+    #[must_use]
+    #[expect(private_bounds, reason = "!")] //TODO: I want polymorphism without making [`PrefixName public`]
+    pub fn find_value<T>(&self, name: T) -> Option<&String>
+    where
+        PrefixName: From<T>,
+    {
+        let prefix_name = PrefixName::from(name);
+        self.attrs
+            .iter()
+            .find(|attr| attr.as_name() == &prefix_name)
+            .and_then(|attr| attr.as_value())
+    }
 }
 
 #[expect(clippy::min_ident_chars, reason = "keep trait naming")]
