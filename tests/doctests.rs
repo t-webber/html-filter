@@ -4,6 +4,26 @@
 
 #[test]
 fn auto_doctest_1() {
+    // Auto generated from src/parse/mod.rs:18
+    use html_parser::prelude::*;
+    let html: &str = r#"
+    <!DOCTYPE html>
+    <html lang="en">
+        <head>
+            <title>Html sample</title>
+        </head>
+        <body>
+            <p>This is an html sample.</p>
+        </body>
+    </html>
+    "#;
+    let tree: Html = parse_html(html).expect("Invalid HTML");
+    assert!(format!("{tree}") == html);
+}
+
+#[test]
+fn auto_doctest_2() {
+    // Auto generated from src/types/tag.rs:277
     use html_parser::prelude::*;
     let html = parse_html("<div />").unwrap();
     if let Html::Tag { tag, .. } = html {
@@ -14,7 +34,8 @@ fn auto_doctest_1() {
 }
 
 #[test]
-fn auto_doctest_2() {
+fn auto_doctest_3() {
+    // Auto generated from src/types/tag.rs:302
     use html_parser::prelude::*;
     let html = parse_html(r#"<a id="std doc" enabled xlink:href="https://std.rs"/>"#).unwrap();
     if let Html::Tag { tag, .. } = html {
@@ -30,7 +51,8 @@ fn auto_doctest_2() {
 }
 
 #[test]
-fn auto_doctest_3() {
+fn auto_doctest_4() {
+    // Auto generated from src/types/tag.rs:344
     use html_parser::prelude::*;
     let html = parse_html(r#"<a enabled/>"#).unwrap();
     if let Html::Tag { tag, .. } = html {
@@ -50,7 +72,28 @@ fn auto_doctest_3() {
 }
 
 #[test]
-fn auto_doctest_4() {
+fn auto_doctest_5() {
+    // Auto generated from src/filter.rs:69
+    #![allow(unused)]
+    use html_parser::prelude::*;
+    Filter::default().comment(false).document(false); // Removes comments (`<!---->`) and document tags (`<!DOCTYPE html>`).
+    Filter::default().tag_name("a"); // Lists all the `<a>` tags and their content.
+    Filter::default().attribute_name("onclick"); // Lists all the tags with a `onclick` attribute.
+    Filter::default().attribute_value("id", "first-title"); // Get the element of `id` `"first-title`
+    Filter::default().tag_name("li").depth(1); // Lists all the `<li>` tags and their parent (usually `ol` or `ul`).
+}
+
+#[test]
+fn auto_doctest_6() {
+    // Auto generated from src/filter.rs:92
     use html_parser::prelude::*;
     let _filter = Filter::default().depth(1).tag_name("a");
+}
+
+#[test]
+fn auto_doctest_7() {
+    // Auto generated from src/filter.rs:195
+    #![allow(unused)]
+    use html_parser::prelude::*;
+    Filter::default().attribute_value("href", "second").depth(0);
 }
