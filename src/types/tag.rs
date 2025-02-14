@@ -264,6 +264,19 @@ pub struct Tag {
 
 impl Tag {
     /// Returns the name of the tag
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use html_parser::prelude::*;
+    ///
+    /// let html = parse_html("<div />").unwrap();
+    /// if let Html::Tag { tag, .. } = html {
+    ///     assert!(tag.as_name() == "div");
+    /// } else {
+    ///     unreachable!();
+    /// }
+    /// ```
     #[inline]
     #[must_use]
     pub const fn as_name(&self) -> &String {
@@ -282,15 +295,11 @@ impl Tag {
     /// ```
     /// use html_parser::prelude::*;
     ///
-    /// let html = parse_html(r#"<a id="std doc" enabled href="https://std.rs"/>"#).unwrap();
+    /// let html = parse_html(r#"<a id="std doc" enabled xlink:href="https://std.rs"/>"#).unwrap();
     ///
     /// if let Html::Tag { tag, .. } = html {
-    ///     assert!(tag.find_value("enabled") == None);
-    ///     assert!(
-    ///         tag.find_value(String::from("href"))
-    ///             .map(|value| value.as_ref())
-    ///             == Some("https://std.rs")
-    ///     );
+    ///     assert!(tag.find_value("enabled").is_none());
+    ///     assert!(tag.find_value("xlink:href").map(|value| value.as_ref()) == Some("https://std.rs"));
     /// } else {
     ///     unreachable!()
     /// }

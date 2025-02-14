@@ -69,7 +69,8 @@ pub struct Filter {
     ///
     /// ```
     /// use html_parser::prelude::*;
-    /// Filter::default().depth(1).tag_name("a");
+    ///
+    /// let _filter = Filter::default().depth(1).tag_name("a");
     /// ```
     ///
     /// the expected output is `<li>Click on the <a href="#">link</a><li>`.
