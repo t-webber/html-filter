@@ -8,11 +8,31 @@ use tag::parse_tag;
 use crate::types::html::Html;
 use crate::types::tag::TagBuilder;
 
-/// Parses html into a Dom tree.
+/// Parses an HTML string into a Dom tree.
 ///
 /// # Errors
 ///
-/// This function returns an error when the html input as an invalid syntax.
+/// This function returns an error when the input HTML's syntax is invalid.
+///
+/// # Examples
+///
+/// ```
+/// use html_parser::prelude::*;
+///
+/// let html: &str = r#"
+/// <!DOCTYPE html>
+/// <html lang="en">
+///     <head>
+///         <title>Html sample</title>
+///     </head>
+///     <body>
+///         <p>This is an html sample.</p>
+///     </body>
+/// </html>
+/// "#;
+/// let tree: Html = parse_html(html).expect("Invalid HTML");
+/// assert!(format!("{tree}") == html);
+/// ```
 #[inline]
 pub fn parse_html(html: &str) -> Result<Html, String> {
     let mut tree = Html::default();

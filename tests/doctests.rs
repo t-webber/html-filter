@@ -73,7 +73,7 @@ fn auto_doctest_4() {
 
 #[test]
 fn auto_doctest_5() {
-    // Auto generated from src/filter.rs:69
+    // Auto generated from src/filter.rs:53
     #![allow(unused)]
     use html_parser::prelude::*;
     Filter::default().comment(false).document(false); // Removes comments (`<!---->`) and document tags (`<!DOCTYPE html>`).
@@ -85,15 +85,34 @@ fn auto_doctest_5() {
 
 #[test]
 fn auto_doctest_6() {
-    // Auto generated from src/filter.rs:92
+    // Auto generated from src/filter.rs:76
     use html_parser::prelude::*;
     let _filter = Filter::default().depth(1).tag_name("a");
 }
 
 #[test]
 fn auto_doctest_7() {
-    // Auto generated from src/filter.rs:195
+    // Auto generated from src/filter.rs:191
     #![allow(unused)]
-    use html_parser::prelude::*;
-    Filter::default().attribute_value("href", "second").depth(0);
+    html_parser::filter::Filter::default()
+        .attribute_value("href", "second")
+        .depth(0);
+}
+
+#[test]
+fn auto_doctest_8() {
+    // Auto generated from src/filter.rs:206
+    #![allow(unused)]
+    html_parser::filter::Filter::default()
+        .attribute_value("href", "second")
+        .depth(1);
+}
+
+#[test]
+fn auto_doctest_9() {
+    // Auto generated from src/filter.rs:225
+    #![allow(unused)]
+    html_parser::filter::Filter::default()
+        .attribute_value("href", "second")
+        .depth(2);
 }
