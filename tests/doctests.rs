@@ -18,8 +18,12 @@ fn auto_doctest_2() {
     use html_parser::prelude::*;
     let html = parse_html(r#"<a id="std doc" enabled xlink:href="https://std.rs"/>"#).unwrap();
     if let Html::Tag { tag, .. } = html {
-        assert!(tag.find_value("enabled").is_none());
-        assert!(tag.find_value("xlink:href").map(|value| value.as_ref()) == Some("https://std.rs"));
+        assert!(tag.find_attr_value("enabled").is_none());
+        assert!(
+            tag.find_attr_value("xlink:href")
+                .map(|value| value.as_ref())
+                == Some("https://std.rs")
+        );
     } else {
         unreachable!()
     }
@@ -27,6 +31,26 @@ fn auto_doctest_2() {
 
 #[test]
 fn auto_doctest_3() {
+    use html_parser::prelude::*;
+    let html = parse_html(r#"<a enabled/>"#).unwrap();
+    if let Html::Tag { tag, .. } = html {
+        assert!(tag.into_attr_value("enabled").is_none());
+    } else {
+        unreachable!()
+    }
+    let html = parse_html(r#"<a id="std doc" href="https://std.rs"/>"#).unwrap();
+    if let Html::Tag { tag, .. } = html {
+        assert!(
+            tag.into_attr_value("href")
+                .is_some_and(|value| &value == "https://std.rs")
+        );
+    } else {
+        unreachable!()
+    }
+}
+
+#[test]
+fn auto_doctest_4() {
     use html_parser::prelude::*;
     let _filter = Filter::default().depth(1).tag_name("a");
 }

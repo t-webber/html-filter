@@ -81,8 +81,16 @@ impl Attribute {
         }
     }
 
-    /// Returns the name of an attribute
+    /// Returns the value of an attribute
     const fn as_value(&self) -> Option<&String> {
+        match self {
+            Self::NameNoValue(_) => None,
+            Self::NameValue { value, .. } => Some(value),
+        }
+    }
+
+    /// Returns the value of an attribute
+    fn into_value(self) -> Option<String> {
         match self {
             Self::NameNoValue(_) => None,
             Self::NameValue { value, .. } => Some(value),
@@ -283,9 +291,9 @@ impl Tag {
         &self.name
     }
 
-    /// Find the value with the name of the attribute
+    /// Finds the value of the attribute of the given name
     ///
-    /// Returns
+    /// # Returns
     ///
     /// - `Some(value)` if `name = value` is present in the [`Tag`]
     /// - `None` if the attribute doesn't exist, or if it doesn't have a value
@@ -298,16 +306,23 @@ impl Tag {
     /// let html = parse_html(r#"<a id="std doc" enabled xlink:href="https://std.rs"/>"#).unwrap();
     ///
     /// if let Html::Tag { tag, .. } = html {
-    ///     assert!(tag.find_value("enabled").is_none());
-    ///     assert!(tag.find_value("xlink:href").map(|value| value.as_ref()) == Some("https://std.rs"));
+    ///     assert!(tag.find_attr_value("enabled").is_none());
+    ///     assert!(
+    ///         tag.find_attr_value("xlink:href")
+    ///             .map(|value| value.as_ref())
+    ///             == Some("https://std.rs")
+    ///     );
     /// } else {
     ///     unreachable!()
     /// }
     /// ```
     #[inline]
     #[must_use]
-    #[expect(private_bounds, reason = "!")] //TODO: I want polymorphism without making [`PrefixName public`]
-    pub fn find_value<T>(&self, name: T) -> Option<&String>
+    #[expect(
+        private_bounds,
+        reason = "I want polymorphism without making PrefixName public"
+    )]
+    pub fn find_attr_value<T>(&self, name: T) -> Option<&String>
     where
         PrefixName: From<T>,
     {
@@ -316,6 +331,54 @@ impl Tag {
             .iter()
             .find(|attr| attr.as_name() == &prefix_name)
             .and_then(|attr| attr.as_value())
+    }
+
+    /// Finds the value of the attribute of the given name
+    ///
+    /// # Returns
+    ///
+    /// - `Some(value)` if `name = value` is present in the [`Tag`]
+    /// - `None` if the attribute doesn't exist, or if it doesn't have a value
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use html_parser::prelude::*;
+    ///
+    /// let html = parse_html(r#"<a enabled/>"#).unwrap();
+    ///
+    /// if let Html::Tag { tag, .. } = html {
+    ///     assert!(tag.into_attr_value("enabled").is_none());
+    /// } else {
+    ///     unreachable!()
+    /// }
+    ///
+    /// let html = parse_html(r#"<a id="std doc" href="https://std.rs"/>"#).unwrap();
+    ///
+    /// if let Html::Tag { tag, .. } = html {
+    ///     assert!(
+    ///         tag.into_attr_value("href")
+    ///             .is_some_and(|value| &value == "https://std.rs")
+    ///     );
+    /// } else {
+    ///     unreachable!()
+    /// }
+    /// ```
+    #[inline]
+    #[must_use]
+    #[expect(
+        private_bounds,
+        reason = "I want polymorphism without making PrefixName public"
+    )]
+    pub fn into_attr_value<T>(self, name: T) -> Option<String>
+    where
+        PrefixName: From<T>,
+    {
+        let prefix_name = PrefixName::from(name);
+        self.attrs
+            .into_iter()
+            .find(|attr| attr.as_name() == &prefix_name)?
+            .into_value()
     }
 }
 
