@@ -109,7 +109,7 @@ fn auto_doctest_6() {
 
 #[test]
 fn auto_doctest_7() {
-    // Auto generated from src/filter.rs:53
+    // Auto generated from src/filter/types.rs:20
     #![allow(unused)]
     use html_parser::prelude::*;
     Filter::new().comment(false).document(false); // Removes comments (`<!---->`) and document tags (`<!DOCTYPE html>`).
@@ -121,41 +121,41 @@ fn auto_doctest_7() {
 
 #[test]
 fn auto_doctest_8() {
-    // Auto generated from src/filter.rs:76
+    // Auto generated from src/filter/types.rs:43
     use html_parser::prelude::*;
     let _filter = Filter::new().depth(1).tag_name("a");
 }
 
 #[test]
 fn auto_doctest_9() {
-    // Auto generated from src/filter.rs:201
+    // Auto generated from src/filter/types.rs:196
     #![allow(unused)]
-    html_parser::filter::Filter::new()
+    html_parser::prelude::Filter::new()
         .attribute_value("href", "second")
         .depth(0);
 }
 
 #[test]
 fn auto_doctest_10() {
-    // Auto generated from src/filter.rs:216
+    // Auto generated from src/filter/types.rs:211
     #![allow(unused)]
-    html_parser::filter::Filter::new()
+    html_parser::prelude::Filter::new()
         .attribute_value("href", "second")
         .depth(1);
 }
 
 #[test]
 fn auto_doctest_11() {
-    // Auto generated from src/filter.rs:235
+    // Auto generated from src/filter/types.rs:230
     #![allow(unused)]
-    html_parser::filter::Filter::new()
+    html_parser::prelude::Filter::new()
         .attribute_value("href", "second")
         .depth(2);
 }
 
 #[test]
 fn auto_doctest_12() {
-    // Auto generated from src/filter.rs:284
+    // Auto generated from src/filter/types.rs:280
     use html_parser::prelude::*;
     let _filter: Filter = Filter::new();
 }
