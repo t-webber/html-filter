@@ -202,12 +202,13 @@ impl Default for PrefixName {
     }
 }
 
-impl From<&str> for PrefixName {
+impl<T: Into<String>> From<T> for PrefixName {
     #[inline]
-    fn from(value: &str) -> Self {
-        if value.contains(':') {
+    fn from(value: T) -> Self {
+        let value_str: String = value.into();
+        if value_str.contains(':') {
             let mut prefix = String::new();
-            let mut iter = value.chars();
+            let mut iter = value_str.chars();
             while let Some(ch) = iter.next() {
                 if ch == ':' {
                     break; // end of prefix
@@ -216,26 +217,7 @@ impl From<&str> for PrefixName {
             }
             Self::Prefix(prefix, iter.collect())
         } else {
-            Self::Name(value.to_owned())
-        }
-    }
-}
-
-impl From<String> for PrefixName {
-    #[inline]
-    fn from(value: String) -> Self {
-        if value.contains(':') {
-            let mut prefix = String::new();
-            let mut iter = value.chars();
-            while let Some(ch) = iter.next() {
-                if ch == ':' {
-                    break; // end of prefix
-                }
-                prefix.push(ch);
-            }
-            Self::Prefix(prefix, iter.collect())
-        } else {
-            Self::Name(value)
+            Self::Name(value_str)
         }
     }
 }
@@ -337,14 +319,7 @@ impl Tag {
     /// ```
     #[inline]
     #[must_use]
-    #[expect(
-        private_bounds,
-        reason = "I want polymorphism without making PrefixName public"
-    )]
-    pub fn find_attr_value<T>(&self, name: T) -> Option<&String>
-    where
-        PrefixName: From<T>,
-    {
+    pub fn find_attr_value<T: Into<String>>(&self, name: T) -> Option<&String> {
         let prefix_name = PrefixName::from(name);
         self.attrs
             .iter()
@@ -385,14 +360,7 @@ impl Tag {
     /// ```
     #[inline]
     #[must_use]
-    #[expect(
-        private_bounds,
-        reason = "I want polymorphism without making PrefixName public"
-    )]
-    pub fn into_attr_value<T>(self, name: T) -> Option<String>
-    where
-        PrefixName: From<T>,
-    {
+    pub fn into_attr_value<T: Into<String>>(self, name: T) -> Option<String> {
         let prefix_name = PrefixName::from(name);
         self.attrs
             .into_iter()
@@ -463,7 +431,6 @@ pub(crate) enum TagBuilder {
 
 /// Closing type of the tag.
 #[derive(Debug)]
-#[non_exhaustive]
 pub(crate) enum TagType {
     /// Closed tag
     ///

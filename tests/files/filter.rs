@@ -37,6 +37,9 @@ r#"<input radio type="radio" name="radio" id="radio2" />"#
 filter_enabled: Filter::new().attribute_name("enabled") =>
 "<button enabled /><input enabled />"
 
+filter_button_enabled: Filter::new().tag_name("button").attribute_name("enabled") =>
+"<button enabled />"
+
 filter_buttons: Filter::new().tag_name("button").tag_name("input") =>
 r#"
 <input type="sub\mit" id="name" name="name" />

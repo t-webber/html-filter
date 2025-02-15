@@ -97,21 +97,26 @@ pub struct Filter {
 }
 
 impl Filter {
-    //TODO: only works if either one if empty
     /// Method to check all the attributes are present.
     fn allowed_tag(&self, tag: &Tag) -> bool {
-        self.tags
-            .as_ref()
-            .is_some_and(|names| names.contains(&tag.name))
-            || self
-                .attrs
-                .as_ref()
-                .is_some_and(|wanted| wanted.iter().all(|attr| tag.attrs.contains(attr)))
+        match (self.tags.as_ref(), self.attrs.as_ref()) {
+            (None, None) => false,
+            (tags, attrs) =>
+                tags.is_none_or(|names| names.contains(&tag.name))
+                    && attrs.is_none_or(|wanted| wanted.iter().all(|attr| tag.attrs.contains(attr))),
+        }
     }
 
     #[inline]
     #[must_use]
     /// Specifies the name of an attribute in the wanted tags.
+    ///
+    /// This matches only tag attributes that don't have any value, such as
+    /// `enabled` in
+    ///
+    /// ```html
+    /// <button enabled type="submit" />
+    /// ```
     ///
     /// See [`Filter`] for usage information.
     pub fn attribute_name<N: Into<String>>(mut self, name: N) -> Self {
@@ -129,6 +134,9 @@ impl Filter {
     #[inline]
     #[must_use]
     /// Specifies the value of an attribute in the wanted tags.
+    ///
+    /// This matches only tag attributes that have the correct value for the
+    /// given name.
     ///
     /// See [`Filter`] for usage information.
     pub fn attribute_value<N: Into<String>, V: Into<String>>(mut self, name: N, value: V) -> Self {
