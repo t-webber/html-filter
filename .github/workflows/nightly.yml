@@ -63,7 +63,17 @@ jobs:
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4
+            - name: Restore cache
+              uses: actions/cache/restore@v4
+              with:
+                  path: ~/.cargo/
+                  key: cargo-cache
             - name: Install tarpaulin
               run: cargo install cargo-tarpaulin
+            - name: Update cache
+              uses: actions/cache/save@v4
+              with:
+                  path: ~/.cargo/
+                  key: cargo-cache
             - name: Check coverage
               run: cargo tarpaulin --fail-under 100
