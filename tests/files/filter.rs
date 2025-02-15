@@ -25,7 +25,7 @@ filter_comment: Filter::new().comment(true).document(false) =>
 filter_doctype: Filter::new().document(true) =>
 "<!><!DOCTYPE ><!DOCTYPE html>"
 
-filter_prefix: Filter::new().attribute_value("xlink:href", "#") =>
+filter_prefix: Filter::new().attribute_value("xlink:href", "#").text(true) =>
 r##"<a xlink:href="#">About</a>"##
 
 filter_radio: Filter::new().attribute_value("type", "radio").attribute_name("radio") =>
@@ -53,7 +53,7 @@ r#"
 <input type="file" />
 "#
 
-filter_tr: Filter::new().tag_name("tr") =>
+filter_tr: Filter::new().tag_name("tr").text(true) =>
 "<tr><th>ID</th><th>Name</th></tr><tr><td>1</td><td>Alice</td></tr><tr><td>2</td><td>Bob</td></tr>"
 
 depth_1: Filter::new().depth(1).tag_name("source") =>
@@ -63,7 +63,7 @@ r##"
 </video>
 "##
 
-depth_2: Filter::new().depth(2).tag_name("source") =>
+depth_2: Filter::new().depth(2).tag_name("source").text(true) =>
 r##"
 <section>
     <h2>Media</h2>
@@ -74,7 +74,7 @@ r##"
 </section>
 "##
 
-depth_multiple: Filter::new().depth(1).attribute_name("enabled") =>
+depth_multiple: Filter::new().depth(1).attribute_name("enabled").text(true).comment(true) =>
 r##"
 <form action="#" method="post">
     <input type="sub\mit" id="name" name="name" />

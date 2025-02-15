@@ -23,23 +23,6 @@ fn auto_doctest_1() {
 
 #[test]
 fn auto_doctest_2() {
-    // Auto generated from src/types/html.rs:16
-    use html_parser::prelude::*;
-    let _html: Html = parse_html(
-        r#"<nav>
-        <!-- Navigation menu -->
-        <ul>
-            <li href="first">First link</li>
-            <li href="second">Second link</li>
-            <li href="third">Third link</li>
-        </ul>
-    </nav>"#,
-    )
-    .unwrap();
-}
-
-#[test]
-fn auto_doctest_3() {
     // Auto generated from src/types/tag.rs:239
     use html_parser::prelude::*;
     let html = parse_html("<a enabled href='https://crates.io'>").unwrap();
@@ -58,7 +41,7 @@ fn auto_doctest_3() {
 }
 
 #[test]
-fn auto_doctest_4() {
+fn auto_doctest_3() {
     // Auto generated from src/types/tag.rs:278
     use html_parser::prelude::*;
     let html = parse_html("<div />").unwrap();
@@ -70,7 +53,7 @@ fn auto_doctest_4() {
 }
 
 #[test]
-fn auto_doctest_5() {
+fn auto_doctest_4() {
     // Auto generated from src/types/tag.rs:303
     use html_parser::prelude::*;
     let html = parse_html(r#"<a id="std doc" enabled xlink:href="https://std.rs"/>"#).unwrap();
@@ -87,7 +70,7 @@ fn auto_doctest_5() {
 }
 
 #[test]
-fn auto_doctest_6() {
+fn auto_doctest_5() {
     // Auto generated from src/types/tag.rs:338
     use html_parser::prelude::*;
     let html = parse_html(r#"<a enabled/>"#).unwrap();
@@ -105,6 +88,23 @@ fn auto_doctest_6() {
     } else {
         unreachable!()
     }
+}
+
+#[test]
+fn auto_doctest_6() {
+    // Auto generated from src/types/html.rs:16
+    use html_parser::prelude::*;
+    let _html: Html = parse_html(
+        r#"<nav>
+        <!-- Navigation menu -->
+        <ul>
+            <li href="first">First link</li>
+            <li href="second">Second link</li>
+            <li href="third">Third link</li>
+        </ul>
+    </nav>"#,
+    )
+    .unwrap();
 }
 
 #[test]
@@ -128,7 +128,7 @@ fn auto_doctest_8() {
 
 #[test]
 fn auto_doctest_9() {
-    // Auto generated from src/filter.rs:199
+    // Auto generated from src/filter.rs:201
     #![allow(unused)]
     html_parser::filter::Filter::new()
         .attribute_value("href", "second")
@@ -137,7 +137,7 @@ fn auto_doctest_9() {
 
 #[test]
 fn auto_doctest_10() {
-    // Auto generated from src/filter.rs:214
+    // Auto generated from src/filter.rs:216
     #![allow(unused)]
     html_parser::filter::Filter::new()
         .attribute_value("href", "second")
@@ -146,7 +146,7 @@ fn auto_doctest_10() {
 
 #[test]
 fn auto_doctest_11() {
-    // Auto generated from src/filter.rs:233
+    // Auto generated from src/filter.rs:235
     #![allow(unused)]
     html_parser::filter::Filter::new()
         .attribute_value("href", "second")
@@ -155,7 +155,7 @@ fn auto_doctest_11() {
 
 #[test]
 fn auto_doctest_12() {
-    // Auto generated from src/filter.rs:282
+    // Auto generated from src/filter.rs:284
     use html_parser::prelude::*;
     let _filter: Filter = Filter::new();
 }

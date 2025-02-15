@@ -82,8 +82,8 @@ pub struct Filter {
     ///
     /// the expected output is `<li>Click on the <a href="#">link</a><li>`.
     ///
-    /// - If the depth were 0, the output would have been only the `a` tag.
-    /// - If the depth were 2, the output would have been the whole the `ul`
+    /// - If the depth were `0`, the output would have been only the `a` tag.
+    /// - If the depth were `2`, the output would have been the whole the `ul`
     ///   tag.
     depth: usize,
     /// Html tags
@@ -97,14 +97,16 @@ pub struct Filter {
 }
 
 impl Filter {
-    /// Method to check all the attributes are present.
+    /// Checks whether a tag is allowed according to the filter or not.
     fn allowed_tag(&self, tag: &Tag) -> bool {
-        match (self.tags.as_ref(), self.attrs.as_ref()) {
+        let exception = match (self.tags.as_ref(), self.attrs.as_ref()) {
             (None, None) => false,
             (tags, attrs) =>
                 tags.is_none_or(|names| names.contains(&tag.name))
                     && attrs.is_none_or(|wanted| wanted.iter().all(|attr| tag.attrs.contains(attr))),
-        }
+        };
+        // self.types.tag ^ exception
+        exception
     }
 
     #[inline]
@@ -306,6 +308,19 @@ impl Filter {
         }
         self
     }
+
+    #[inline]
+    #[must_use]
+    /// Filters texts
+    ///
+    /// - If `text` is set to `true` (default), all texts are kept.
+    /// - If `text` is set to `false`, all texts are removed.
+    ///
+    /// See [`Filter`] for usage information.
+    pub const fn text(mut self, text: bool) -> Self {
+        self.types.text = text;
+        self
+    }
 }
 
 /// Status of the filtering on recursion calls
@@ -324,18 +339,30 @@ struct FilterSuccess {
 }
 
 impl FilterSuccess {
-    /// Creates a [`FilterSuccess`] from an [`Html`]
-    #[expect(clippy::unnecessary_wraps, reason = "useful for filter method")]
-    const fn found(html: Html) -> Option<Self> {
-        Some(Self { depth: DepthSuccess::Found(0), html })
-    }
-
     /// Increment the depth, if applicable
     #[inline]
     #[expect(clippy::unnecessary_wraps, reason = "useful for filter method")]
     fn incr(mut self) -> Option<Self> {
         self.depth = self.depth.incr();
         Some(self)
+    }
+
+    /// Creates a [`FilterSuccess`] from an [`Html`]
+    ///
+    /// This is the method to use when the node is considered `found`, i.e.,
+    /// when it was the node the user was looking for.
+    #[expect(clippy::unnecessary_wraps, reason = "useful for filter method")]
+    const fn make_found(html: Html) -> Option<Self> {
+        Some(Self { depth: DepthSuccess::Found(0), html })
+    }
+
+    /// Creates a [`FilterSuccess`] from an [`Html`]
+    ///
+    /// This is the method to use when the node isn't interesting alone, it can
+    /// be if it is in the right scope though.
+    #[expect(clippy::unnecessary_wraps, reason = "useful for filter method")]
+    const fn make_none(html: Html) -> Option<Self> {
+        Some(Self { depth: DepthSuccess::None, html })
     }
 }
 
@@ -347,9 +374,7 @@ impl Html {
     // TODO: users can implement this an be disapointed
     fn check_depth(&self, max_depth: usize, filter: &Filter) -> Option<usize> {
         match self {
-            Self::Empty | Self::Text(_) => None,
-            Self::Comment { .. } => filter.types.comment.then_some(0),
-            Self::Document { .. } => filter.types.document.then_some(0),
+            Self::Empty | Self::Text(_) | Self::Comment { .. } | Self::Document { .. } => None,
             Self::Tag { tag, .. } if filter.allowed_tag(tag) => Some(0),
             Self::Tag { .. } | Self::Vec(_) if max_depth == 0 => None,
             Self::Tag { child, .. } => child
@@ -379,7 +404,7 @@ impl Html {
 
     /// Filters html based on a defined filter.
     ///
-    /// See [`Filter`] to know how to define a filter.
+    /// See [`Filter`] to learn how to create filters.
     ///
     /// Filters allow you to select the portions of the html code you want to
     /// keep or remove.
@@ -391,7 +416,7 @@ impl Html {
     #[inline]
     #[must_use]
     pub fn filter(self, filter: &Filter) -> Self {
-        self.filter_aux(filter).html
+        self.filter_aux(filter, false).html
     }
 
     /// Wrapper for [`Self::filter`]
@@ -410,16 +435,18 @@ impl Html {
         clippy::arithmetic_side_effects,
         reason = "incr depth when smaller than filter_depth"
     )]
-    fn filter_aux(self, filter: &Filter) -> FilterSuccess {
+    fn filter_aux(self, filter: &Filter, found: bool) -> FilterSuccess {
+        // let input = format!("{self:?}").chars().take(150).collect::<String>();
         let output = match self {
-            Self::Comment { .. } if !filter.types.comment => None,
-            Self::Document { .. } if !filter.types.document => None,
-            Self::Text(txt) if txt.chars().all(char::is_whitespace) => None,
+            Self::Comment { .. } if found || !filter.types.comment => None,
+            Self::Document { .. } if found || !filter.types.document => None,
+            Self::Text(txt) if found || txt.chars().all(char::is_whitespace) => None,
 
-            Self::Tag { ref tag, .. } if filter.allowed_tag(tag) => FilterSuccess::found(self),
-            Self::Tag { child, .. } if filter.depth == 0 => child.filter_aux(filter).incr(),
+            Self::Tag { ref tag, .. } if filter.allowed_tag(tag) =>
+                FilterSuccess::make_found(self.filter_light(&filter.types)),
+            Self::Tag { child, .. } if filter.depth == 0 => child.filter_aux(filter, found).incr(),
             Self::Tag { child, tag, full } => {
-                let rec = child.filter_aux(filter);
+                let rec = child.filter_aux(filter, found);
                 match rec.depth {
                     DepthSuccess::None => None,
                     DepthSuccess::Success => Some(rec),
@@ -444,13 +471,17 @@ impl Html {
                 {
                     Some(depth) if *depth < filter.depth => Some(FilterSuccess {
                         depth: DepthSuccess::Found(*depth),
-                        html: Self::Vec(vec),
+                        html: Self::Vec(
+                            vec.into_iter()
+                                .map(|child| child.filter_light(&filter.types))
+                                .collect(),
+                        ),
                     }),
                     Some(_) => Some(FilterSuccess {
                         depth: DepthSuccess::Success,
                         html: Self::Vec(
                             vec.into_iter()
-                                .map(|child| child.filter_aux(filter))
+                                .map(|child| child.filter_aux(filter, true))
                                 .filter(|child| !child.html.is_empty())
                                 .map(|child| child.html)
                                 .collect::<Vec<_>>(),
@@ -459,9 +490,9 @@ impl Html {
                     None => {
                         let mut filtered = vec
                             .into_iter()
-                            .map(|child| child.filter_aux(filter))
+                            .map(|child| child.filter_aux(filter, false))
                             .filter(|node| !node.html.is_empty())
-                            .collect::<Vec<FilterSuccess>>();
+                            .collect::<Vec<_>>();
                         if filtered.len() <= 1 {
                             filtered.pop()
                         } else {
@@ -479,10 +510,43 @@ impl Html {
             }
 
             Self::Text(_) | Self::Empty => None,
-            Self::Comment { .. } | Self::Document { .. } => FilterSuccess::found(self),
+            Self::Comment { .. } | Self::Document { .. } => FilterSuccess::make_none(self),
         }
         .unwrap_or_default();
+        //         println!(
+        //             "
+        // ------------------------------------------------------
+        // {input}
+        // =>
+        // {:?}\n{}
+        // ------------------------------------------------------
+        // ",
+        //             output.depth, output.html
+        //         );
         output
+    }
+
+    /// Light filter without complicated logic, just filtering on types.
+    ///
+    /// This method does take into account the [`Filter::tag_name`],
+    ///   [`Filter::attribute_name`] and [`Filter::attribute_value`] methods,
+    /// only the types of [`HtmlFilterType`].
+    #[coverage(off)]
+    fn filter_light(self, filter: &HtmlFilterType) -> Self {
+        match self {
+            Self::Text(_) if filter.text => self,
+            Self::Comment { .. } if filter.comment => self,
+            Self::Document { .. } if filter.document => self,
+            Self::Tag { tag, full, child } =>
+                Self::Tag { tag, full, child: Box::new(child.filter_light(filter)) },
+            Self::Vec(vec) => Self::Vec(
+                vec.into_iter()
+                    .map(|child| child.filter_light(filter))
+                    .collect(),
+            ),
+            Self::Empty | Self::Text(_) | Self::Comment { .. } | Self::Document { .. } =>
+                Self::Empty,
+        }
     }
 
     /// Finds an html node based on a defined filter.
@@ -537,4 +601,16 @@ struct HtmlFilterType {
     ///
     /// `<!-- some comment -->`
     document: bool,
+    // /// Html tags
+    // ///
+    // /// # Examples
+    // ///
+    // /// `<p>`, `<a />` or `<br>`
+    // tag: bool,
+    /// Html text node
+    ///
+    /// # Examples
+    ///
+    /// In `<p>Hello world</p>`, `Hello world` is a text node.
+    text: bool,
 }
