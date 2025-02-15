@@ -23,7 +23,7 @@ fn auto_doctest_1() {
 
 #[test]
 fn auto_doctest_2() {
-    // Auto generated from src/types/tag.rs:239
+    // Auto generated from src/types/tag.rs:217
     use html_parser::prelude::*;
     let html = parse_html("<a enabled href='https://crates.io'>").unwrap();
     if let Html::Tag { tag, .. } = html {
@@ -42,7 +42,7 @@ fn auto_doctest_2() {
 
 #[test]
 fn auto_doctest_3() {
-    // Auto generated from src/types/tag.rs:278
+    // Auto generated from src/types/tag.rs:256
     use html_parser::prelude::*;
     let html = parse_html("<div />").unwrap();
     if let Html::Tag { tag, .. } = html {
@@ -54,7 +54,7 @@ fn auto_doctest_3() {
 
 #[test]
 fn auto_doctest_4() {
-    // Auto generated from src/types/tag.rs:303
+    // Auto generated from src/types/tag.rs:281
     use html_parser::prelude::*;
     let html = parse_html(r#"<a id="std doc" enabled xlink:href="https://std.rs"/>"#).unwrap();
     if let Html::Tag { tag, .. } = html {
@@ -71,7 +71,7 @@ fn auto_doctest_4() {
 
 #[test]
 fn auto_doctest_5() {
-    // Auto generated from src/types/tag.rs:338
+    // Auto generated from src/types/tag.rs:316
     use html_parser::prelude::*;
     let html = parse_html(r#"<a enabled/>"#).unwrap();
     if let Html::Tag { tag, .. } = html {
@@ -109,7 +109,7 @@ fn auto_doctest_6() {
 
 #[test]
 fn auto_doctest_7() {
-    // Auto generated from src/filter/types.rs:20
+    // Auto generated from src/filter/types.rs:19
     #![allow(unused)]
     use html_parser::prelude::*;
     Filter::new().comment(false).document(false); // Removes comments (`<!---->`) and document tags (`<!DOCTYPE html>`).
@@ -121,14 +121,14 @@ fn auto_doctest_7() {
 
 #[test]
 fn auto_doctest_8() {
-    // Auto generated from src/filter/types.rs:43
+    // Auto generated from src/filter/types.rs:47
     use html_parser::prelude::*;
     let _filter = Filter::new().depth(1).tag_name("a");
 }
 
 #[test]
 fn auto_doctest_9() {
-    // Auto generated from src/filter/types.rs:196
+    // Auto generated from src/filter/types.rs:189
     #![allow(unused)]
     html_parser::prelude::Filter::new()
         .attribute_value("href", "second")
@@ -137,7 +137,7 @@ fn auto_doctest_9() {
 
 #[test]
 fn auto_doctest_10() {
-    // Auto generated from src/filter/types.rs:211
+    // Auto generated from src/filter/types.rs:204
     #![allow(unused)]
     html_parser::prelude::Filter::new()
         .attribute_value("href", "second")
@@ -146,7 +146,7 @@ fn auto_doctest_10() {
 
 #[test]
 fn auto_doctest_11() {
-    // Auto generated from src/filter/types.rs:230
+    // Auto generated from src/filter/types.rs:223
     #![allow(unused)]
     html_parser::prelude::Filter::new()
         .attribute_value("href", "second")
@@ -155,7 +155,7 @@ fn auto_doctest_11() {
 
 #[test]
 fn auto_doctest_12() {
-    // Auto generated from src/filter/types.rs:280
+    // Auto generated from src/filter/types.rs:317
     use html_parser::prelude::*;
     let _filter: Filter = Filter::new();
 }

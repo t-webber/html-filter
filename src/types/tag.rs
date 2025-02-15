@@ -16,7 +16,7 @@ use crate::errors::safe_unreachable;
     clippy::derived_hash_with_manual_eq,
     reason = "hash on enum doesn't depend of variant data"
 )]
-#[derive(Debug, Eq, Hash)]
+#[derive(Debug, Hash)]
 #[non_exhaustive]
 pub(crate) enum Attribute {
     /// Name of the attribute, when it doesn't have a value
@@ -74,7 +74,7 @@ impl Attribute {
     }
 
     /// Returns the name of an attribute
-    const fn as_name(&self) -> &PrefixName {
+    pub const fn as_name(&self) -> &PrefixName {
         match self {
             Self::NameNoValue(prefix_name) => prefix_name,
             Self::NameValue { name, .. } => name,
@@ -82,7 +82,7 @@ impl Attribute {
     }
 
     /// Returns the value of an attribute
-    const fn as_value(&self) -> Option<&String> {
+    pub const fn as_value(&self) -> Option<&String> {
         match self {
             Self::NameNoValue(_) => None,
             Self::NameValue { value, .. } => Some(value),
@@ -112,28 +112,6 @@ impl From<PrefixName> for Attribute {
     #[inline]
     fn from(name: PrefixName) -> Self {
         Self::NameNoValue(name)
-    }
-}
-
-#[expect(clippy::missing_trait_methods, reason = "ne default applicable")]
-impl PartialEq for Attribute {
-    #[inline]
-    fn eq(&self, other: &Self) -> bool {
-        match self {
-            Self::NameNoValue(l0) =>
-                if let Self::NameNoValue(r0) = other {
-                    l0 == r0
-                } else {
-                    false
-                },
-            Self::NameValue { name: l_name, value: l_value, .. } => {
-                if let Self::NameValue { name: r_name, value: r_value, .. } = other {
-                    l_name == r_name && l_value == r_value
-                } else {
-                    false
-                }
-            }
-        }
     }
 }
 
@@ -256,7 +234,7 @@ impl fmt::Display for PrefixName {
 /// ```
 #[expect(
     clippy::field_scoped_visibility_modifiers,
-    reason = "use methods for API but visiblity needed by parser"
+    reason = "use methods for API but visibility needed by parser"
 )]
 #[derive(Default, Debug)]
 pub struct Tag {
