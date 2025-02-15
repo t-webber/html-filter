@@ -12,31 +12,21 @@ env:
     CARGO_TERM_COLOR: always
 
 jobs:
-    install:
-        runs-on: ubuntu-latest
-
-        steps:
-            - uses: actions/checkout@v4
-            - name: Install nightly
-              run: rustup update nightly
-            - name: Default nightly
-              run: rustup default nightly
-
     check:
-        needs: install
         runs-on: ubuntu-latest
 
         steps:
-            - uses: actions/checkout@v4
+            - name: Checkout repository
+              uses: actions/checkout@v4
             - name: Cargo clippy
               run: cargo clippy --all -- --verbose -D warnings
 
     build:
-        needs: install
         runs-on: ubuntu-latest
 
         steps:
-            - uses: actions/checkout@v4
+            - name: Checkout repository
+              uses: actions/checkout@v4
             - name: Cargo build
               run: cargo build --release --verbose
 
@@ -44,33 +34,35 @@ jobs:
         runs-on: ubuntu-latest
 
         steps:
-            - uses: actions/checkout@v4
+            - name: Checkout repository
+              uses: actions/checkout@v4
             - name: Run tests
               run: cargo test --verbose
 
     doc:
-        needs: install
         runs-on: ubuntu-latest
 
         steps:
-            - uses: actions/checkout@v4
-            - name: Check doc
+            - name: Checkout repository
+              uses: actions/checkout@v4
+            - name: Check documentation
               run: RUSTDOCFLAGS="-D warnings" cargo doc --document-private-items --all --verbose --release
 
     fmt:
-        needs: install
         runs-on: ubuntu-latest
 
         steps:
-            - uses: actions/checkout@v4
-            - name: Check doc
+            - name: Checkout repository
+              uses: actions/checkout@v4
+            - name: Check formatting
               run: cargo fmt -- --check
 
     coverage:
         runs-on: ubuntu-latest
 
         steps:
-            - uses: actions/checkout@v4
+            - name: Checkout repository
+              uses: actions/checkout@v4
             - name: Install tarpaulin
               run: cargo install cargo-tarpaulin
             - name: Check coverage

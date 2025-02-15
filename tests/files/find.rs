@@ -23,7 +23,7 @@ macro_rules! test_find {
 
 test_find!(
 
-find_section: Filter::default().tag_name("section") =>
+find_section: Filter::new().tag_name("section") =>
 r##"<section>
         <h2>Forms</h2>
         <form action="#" method="post">

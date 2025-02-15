@@ -112,25 +112,25 @@ fn auto_doctest_7() {
     // Auto generated from src/filter.rs:53
     #![allow(unused)]
     use html_parser::prelude::*;
-    Filter::default().comment(false).document(false); // Removes comments (`<!---->`) and document tags (`<!DOCTYPE html>`).
-    Filter::default().tag_name("a"); // Lists all the `<a>` tags and their content.
-    Filter::default().attribute_name("onclick"); // Lists all the tags with a `onclick` attribute.
-    Filter::default().attribute_value("id", "first-title"); // Get the element of `id` `"first-title`
-    Filter::default().tag_name("li").depth(1); // Lists all the `<li>` tags and their parent (usually `ol` or `ul`).
+    Filter::new().comment(false).document(false); // Removes comments (`<!---->`) and document tags (`<!DOCTYPE html>`).
+    Filter::new().tag_name("a"); // Lists all the `<a>` tags and their content.
+    Filter::new().attribute_name("onclick"); // Lists all the tags with a `onclick` attribute.
+    Filter::new().attribute_value("id", "first-title"); // Get the element of `id` `"first-title`
+    Filter::new().tag_name("li").depth(1); // Lists all the `<li>` tags and their parent (usually `ol` or `ul`).
 }
 
 #[test]
 fn auto_doctest_8() {
     // Auto generated from src/filter.rs:76
     use html_parser::prelude::*;
-    let _filter = Filter::default().depth(1).tag_name("a");
+    let _filter = Filter::new().depth(1).tag_name("a");
 }
 
 #[test]
 fn auto_doctest_9() {
     // Auto generated from src/filter.rs:191
     #![allow(unused)]
-    html_parser::filter::Filter::default()
+    html_parser::filter::Filter::new()
         .attribute_value("href", "second")
         .depth(0);
 }
@@ -139,7 +139,7 @@ fn auto_doctest_9() {
 fn auto_doctest_10() {
     // Auto generated from src/filter.rs:206
     #![allow(unused)]
-    html_parser::filter::Filter::default()
+    html_parser::filter::Filter::new()
         .attribute_value("href", "second")
         .depth(1);
 }
@@ -148,7 +148,14 @@ fn auto_doctest_10() {
 fn auto_doctest_11() {
     // Auto generated from src/filter.rs:225
     #![allow(unused)]
-    html_parser::filter::Filter::default()
+    html_parser::filter::Filter::new()
         .attribute_value("href", "second")
         .depth(2);
+}
+
+#[test]
+fn auto_doctest_12() {
+    // Auto generated from src/filter.rs:274
+    use html_parser::prelude::*;
+    let _filter: Filter = Filter::new();
 }

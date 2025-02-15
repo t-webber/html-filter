@@ -69,7 +69,7 @@ let html: &str = r##"
 "##;
 
 // Create your filter
-let filter = Filter::default().tag_name("li");
+let filter = Filter::new().tag_name("li");
 
 // Parse your html
 let filtered_tree: Html = parse_html(html).expect("Invalid HTML").filter(&filter);
@@ -104,7 +104,7 @@ let html: &str = r##"
 "##;
 
 // Create your filter
-let filter = Filter::default().tag_name("a");
+let filter = Filter::new().tag_name("a");
 
 // Parse your html
 let link: Html = parse_html(html).expect("Invalid HTML").find(&filter).expect("No `a` tags");
