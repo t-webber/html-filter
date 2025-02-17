@@ -1,13 +1,14 @@
 //! Module to define structs to filter
 
-use super::element::ElementFilter;
+use super::NodeTypeFilter;
+use super::element::{BlackWhiteList, ValueAssociateHash};
 use crate::types::tag::Tag;
 
 /// Filters to select the wanted elements of an Html tree.
 ///
 /// The [`Filter`] structures allows you to
 /// - remove some nodes: use the [`Self::comment`] (to remove all comments of
-///   the form `<!-- comment -->`) or [`Self::document`] (to remove all document
+///   the form `<!-- comment -->`) or [`Self::doctype`] (to remove all doctype
 ///   type nodes, such as `<!DOCTYPE html>`) methods.
 /// - select some nodes, by searching them with their name (with the
 ///   [`Self::tag_name`] method) or attribute.s (with the
@@ -22,7 +23,7 @@ use crate::types::tag::Tag;
 ///
 /// use html_parser::prelude::*;
 ///
-/// Filter::new().comment(false).document(false); // Removes comments (`<!---->`) and document tags (`<!DOCTYPE html>`).
+/// Filter::new().comment(false).doctype(false); // Removes comments (`<!---->`) and doctype tags (`<!DOCTYPE html>`).
 /// Filter::new().tag_name("a"); // Lists all the `<a>` tags and their content.
 /// Filter::new().attribute_name("onclick"); // Lists all the tags with a `onclick` attribute.
 /// Filter::new().attribute_value("id", "first-title"); // Get the element of `id` `"first-title`
@@ -37,7 +38,7 @@ pub struct Filter {
     /// html tree, but also those that ought to be remove from the final.
     ///
     /// This includes attributes with or without values.
-    attrs: ElementFilter<Option<String>>,
+    attrs: ValueAssociateHash,
     /// Depth in which to embed the required nodes
     ///
     /// # Examples
@@ -65,9 +66,9 @@ pub struct Filter {
     ///  # Examples
     ///
     /// `<a href="link" />`
-    tags: ElementFilter<()>,
+    tags: BlackWhiteList,
     /// Filter by type of html node.
-    types: HtmlFilterType,
+    types: NodeTypeFilter,
 }
 
 /// Private methods for [`Filter`]
@@ -78,41 +79,149 @@ impl Filter {
     }
 
     /// Returns the types of nodes that must be kept according to the filter.
-    pub(super) const fn as_types(&self) -> &HtmlFilterType {
+    pub(super) const fn as_types(&self) -> &NodeTypeFilter {
         &self.types
     }
 
     /// Checks if comments must be kept according to the filter.
     pub(super) const fn comment_allowed(&self) -> bool {
-        self.types.comment
+        self.types.comment_allowed()
     }
 
     /// Checks if doctypes must be kept according to the filter.
-    pub(super) const fn document_allowed(&self) -> bool {
-        self.types.document
+    pub(super) const fn doctype_allowed(&self) -> bool {
+        self.types.doctype_allowed()
     }
 
     /// Checks if a given tag must be kept according to the filter..
     pub(super) fn tag_allowed(&self, tag: &Tag) -> bool {
-        tag.attrs
-            .iter()
-            .fold(self.tags.check(&tag.name, &|()| true, true), |acc, attr| {
-                acc.and(&self.attrs.check(
-                    &attr.as_name().to_string(),
-                    &|target| target.as_ref() == attr.as_value(),
-                    false,
-                ))
-            })
-            .is_explicitly_authorised()
+        let name_allowed = self.tags.check(&tag.name);
+        let attrs_allowed = self.attrs.check(&tag.attrs);
+        let is_empty = self.attrs.is_empty() && self.tags.is_empty();
+        name_allowed
+            .and(&attrs_allowed)
+            .is_explicitly_authorised(is_empty)
+    }
+
+    /// Checks if a given tag must be kept according to the filter..
+    pub(super) fn tag_explicitly_allowed(&self, tag: &Tag) -> bool {
+        let name_allowed = self.tags.check(&tag.name);
+        let attrs_allowed = self.attrs.check(&tag.attrs);
+        name_allowed
+            .and(&attrs_allowed)
+            .is_explicitly_authorised(false)
     }
 
     /// Checks if texts must be kept according to the filter.
     pub(super) const fn text_allowed(&self) -> bool {
-        self.types.text
+        self.types.text_allowed()
     }
 }
 
-/// Public API for [`Filter`]
+/// Public API for [`Filter`] on node-type-filters (texts, doctypes, comments,
+/// etc.)
+impl Filter {
+    /// Removes the comments
+    ///
+    /// Doctypes and texts are kept, unless said otherwise by the user.
+    #[inline]
+    #[must_use]
+    pub const fn all_except_comment(mut self) -> Self {
+        self.types.set_only_comment(false);
+        self
+    }
+
+    /// Removes the doctypes
+    ///
+    /// Comments and texts are kept, unless said otherwise by the user.
+    #[inline]
+    #[must_use]
+    pub const fn all_except_doctype(mut self) -> Self {
+        self.types.set_only_doctype(false);
+        self
+    }
+
+    /// Removes the texts
+    ///
+    /// Comments and doctypes are kept, unless said otherwise by the user.
+    #[inline]
+    #[must_use]
+    pub const fn all_except_text(mut self) -> Self {
+        self.types.set_only_text(false);
+        self
+    }
+
+    #[inline]
+    #[must_use]
+    /// Sets the filter for comments
+    ///
+    /// If `comment` is set to `true` (default), comments are kept.
+    /// If `comment` is set to `false`, comments are removed.
+    ///
+    /// See [`Filter`] for usage information.
+    pub const fn comment(mut self, comment: bool) -> Self {
+        self.types.set_comment(comment);
+        self
+    }
+
+    #[inline]
+    #[must_use]
+    /// Sets the filter for doctype tags
+    ///
+    /// If `doctype` is set to `true` (default), doctype tags are kept.
+    /// If `doctype` is set to `false`, doctype tags are removed.
+    ///
+    /// See [`Filter`] for usage information.
+    pub const fn doctype(mut self, doctype: bool) -> Self {
+        self.types.set_doctype(doctype);
+        self
+    }
+
+    /// Keeps only the comments
+    ///
+    /// Doctypes and texts are removed, unless said otherwise by the user.
+    #[inline]
+    #[must_use]
+    pub const fn none_except_comment(mut self) -> Self {
+        self.types.set_only_comment(true);
+        self
+    }
+
+    /// Keeps only the doctypes
+    ///
+    /// Comments and texts are removed, unless said otherwise by the user.
+    #[inline]
+    #[must_use]
+    pub const fn none_except_doctype(mut self) -> Self {
+        self.types.set_only_doctype(true);
+        self
+    }
+
+    /// Keeps only the texts
+    ///
+    /// Comments and doctypes are removed, unless said otherwise by the user.
+    #[inline]
+    #[must_use]
+    pub const fn none_except_text(mut self) -> Self {
+        self.types.set_only_text(true);
+        self
+    }
+
+    #[inline]
+    #[must_use]
+    /// Filters texts
+    ///
+    /// - If `text` is set to `true` (default), all texts are kept.
+    /// - If `text` is set to `false`, all texts are removed.
+    ///
+    /// See [`Filter`] for usage information.
+    pub const fn text(mut self, text: bool) -> Self {
+        self.types.set_text(text);
+        self
+    }
+}
+
+/// Public API for [`Filter`] on tags and attributes
 impl Filter {
     #[inline]
     #[must_use]
@@ -141,19 +250,6 @@ impl Filter {
     /// See [`Filter`] for usage information.
     pub fn attribute_value<N: Into<String>, V: Into<String>>(mut self, name: N, value: V) -> Self {
         self.attrs.push(name.into(), Some(value.into()), true);
-        self
-    }
-
-    #[inline]
-    #[must_use]
-    /// Filters comments
-    ///
-    /// If `comment` is set to `true` (default), comments are kept.
-    /// If `comment` is set to `false`, comments are removed.
-    ///
-    /// See [`Filter`] for usage information.
-    pub const fn comment(mut self, comment: bool) -> Self {
-        self.types.comment = comment;
         self
     }
 
@@ -229,7 +325,7 @@ impl Filter {
     /// ```
     ///
     /// will return (note that even the comment was kept, if you want to remove
-    /// the comment, you must add `.comment(false` to the filter):
+    /// the comment, you must add `.comment(false)` to the filter):
     ///
     /// ```html
     /// <nav>
@@ -241,25 +337,8 @@ impl Filter {
     ///     </ul>
     /// </nav>
     /// ```
-    //TODO: c'est vrai ca que pour enlever on met commentaire ?
     pub const fn depth(mut self, depth: usize) -> Self {
         self.depth = depth;
-        self
-    }
-
-    #[inline]
-    #[must_use]
-    /// Filters document-style tags
-    ///
-    /// A document-style tag is a tag that starts with an exclamation mark, such
-    /// as `<!DOCTYPE html>`.
-    ///
-    /// If `document` is set to `true` (default), document-style tags are kept.
-    /// If `document` is set to `false`, document-style tags are removed.
-    ///
-    /// See [`Filter`] for usage information.
-    pub const fn document(mut self, document: bool) -> Self {
-        self.types.document = document;
         self
     }
 
@@ -302,14 +381,15 @@ impl Filter {
     /// Specifies the tag name of the wanted tags.
     ///
     /// See [`Filter`] for usage information.
+    #[expect(unused_must_use, reason = "filter does not yet support results")]
     pub fn except_tag_name<N: Into<String>>(mut self, name: N) -> Self {
-        self.tags.push(name.into(), (), false);
+        self.tags.push(name.into(), false);
         self
     }
 
     /// Creates a default [`Filter`]
     ///
-    /// By default, *comments* and *documents* are allowed, however no node is
+    /// By default, *comments* and *doctypes* are allowed, however no node is
     /// wanted, so filtering on a default filter will return an empty
     /// [`Html`](super::Html).
     ///
@@ -326,52 +406,22 @@ impl Filter {
         Self::default()
     }
 
+    /// Disable all tags, except those explicitly whitelisted
+    #[inline]
+    #[must_use]
+    pub const fn no_tags(mut self) -> Self {
+        self.tags.set_default(false);
+        self
+    }
+
     #[inline]
     #[must_use]
     /// Specifies the tag name of the wanted tags.
     ///
     /// See [`Filter`] for usage information.
+    #[expect(unused_must_use, reason = "filter does not yet support results")]
     pub fn tag_name<N: Into<String>>(mut self, name: N) -> Self {
-        self.tags.push(name.into(), (), true);
+        self.tags.push(name.into(), true);
         self
     }
-
-    #[inline]
-    #[must_use]
-    /// Filters texts
-    ///
-    /// - If `text` is set to `true` (default), all texts are kept.
-    /// - If `text` is set to `false`, all texts are removed.
-    ///
-    /// See [`Filter`] for usage information.
-    pub const fn text(mut self, text: bool) -> Self {
-        self.types.text = text;
-        self
-    }
-}
-
-/// Types of html nodes to filter
-///
-/// Set the elements to `true` iff you want them to appear in the filtered
-/// output
-#[derive(Default, Debug)]
-pub(super) struct HtmlFilterType {
-    /// Html comment
-    ///
-    /// # Examples
-    ///
-    /// `<!-- some comment -->`
-    pub comment: bool,
-    /// Html document tags
-    ///
-    /// # Examples
-    ///
-    /// `<!-- some comment -->`
-    pub document: bool,
-    /// Html text node
-    ///
-    /// # Examples
-    ///
-    /// In `<p>Hello world</p>`, `Hello world` is a text node.
-    pub text: bool,
 }

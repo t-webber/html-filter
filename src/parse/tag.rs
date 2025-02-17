@@ -163,8 +163,8 @@ pub fn parse_tag(chars: &mut Chars<'_>) -> Result<TagBuilder, String> {
 }
 
 /// Builds a [`TagBuilder`] with the parsing information from [`parse_tag`].
-fn return_tag(document: bool, close: Close, mut tag: Tag) -> Result<TagBuilder, String> {
-    Ok(match (document, close) {
+fn return_tag(doctype: bool, close: Close, mut tag: Tag) -> Result<TagBuilder, String> {
+    Ok(match (doctype, close) {
         (true, Close::After) => return invalid_err('/', "doctype"),
         (true, Close::Before) => return invalid_err('!', "closing tag"),
         (true, Close::None) => {
@@ -182,7 +182,7 @@ fn return_tag(document: bool, close: Close, mut tag: Tag) -> Result<TagBuilder, 
             } else {
                 None
             };
-            TagBuilder::Document { name: tag.name, attr }
+            TagBuilder::Doctype { name: tag.name, attr }
         }
         (false, Close::None) => TagBuilder::Open(tag),
         (false, Close::Before) => {

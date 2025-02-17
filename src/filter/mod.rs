@@ -8,11 +8,13 @@
 //! [`Filter`].
 
 mod element;
+mod node_type;
 pub mod types;
 
 use core::cmp::Ordering;
 
-use types::{Filter, HtmlFilterType};
+use node_type::NodeTypeFilter;
+use types::Filter;
 
 use crate::safe_expect;
 use crate::types::html::Html;
@@ -95,11 +97,11 @@ impl Html {
     ///
     /// This methods stop checking after a maximum depth, as the current node
     /// will be discarded if it is deeper in the tree.
-    // TODO: users can implement this an be disappointed
     fn check_depth(&self, max_depth: usize, filter: &Filter) -> Option<usize> {
-        match self {
-            Self::Empty | Self::Text(_) | Self::Comment { .. } | Self::Document { .. } => None,
-            Self::Tag { tag, .. } if filter.tag_allowed(tag) => Some(0),
+        // let input = format!("{self:?}").chars().take(200).collect::<String>();
+        let output = match self {
+            Self::Empty | Self::Text(_) | Self::Comment { .. } | Self::Doctype { .. } => None,
+            Self::Tag { tag, .. } if filter.tag_explicitly_allowed(tag) => Some(0),
             Self::Tag { .. } | Self::Vec(_) if max_depth == 0 => None,
             Self::Tag { child, .. } => child
                 .check_depth(
@@ -123,7 +125,17 @@ impl Html {
                     }
                 })
                 .unwrap_or(Some(0)),
-        }
+        };
+        //         println!(
+        //             "
+        // ~~~~~~~~~~~~~~~~~~~~~~~~
+        // {input}
+        // =>
+        // {output:?}
+        // ~~~~~~~~~~~~~~~~~~~~~~~~
+        // "
+        //         );
+        output
     }
 
     /// Filters html based on a defined filter.
@@ -163,7 +175,7 @@ impl Html {
         // let input = format!("{self:?}").chars().take(150).collect::<String>();
         let output = match self {
             Self::Comment { .. } if found || !filter.comment_allowed() => None,
-            Self::Document { .. } if found || !filter.document_allowed() => None,
+            Self::Doctype { .. } if found || !filter.doctype_allowed() => None,
             Self::Text(txt)
                 if found || !filter.text_allowed() || txt.chars().all(char::is_whitespace) =>
                 None,
@@ -218,7 +230,9 @@ impl Html {
                         let mut filtered = vec
                             .into_iter()
                             .map(|child| child.filter_aux(filter, false))
-                            .filter(|node| !node.html.is_empty())
+                            .filter(|node| {
+                                !node.html.is_empty() // && node.depth.successful(filter.as_depth())
+                            })
                             .collect::<Vec<_>>();
                         if filtered.len() <= 1 {
                             filtered.pop()
@@ -237,7 +251,7 @@ impl Html {
             }
 
             Self::Text(_) | Self::Empty => None,
-            Self::Comment { .. } | Self::Document { .. } => FilterSuccess::make_none(self),
+            Self::Comment { .. } | Self::Doctype { .. } => FilterSuccess::make_none(self),
         }
         .unwrap_or_default();
         //         println!(
@@ -247,7 +261,7 @@ impl Html {
         // =>
         // {:?}\n{}
         // ------------------------------------------------------
-        //         ",
+        //                         ",
         //             output.depth, output.html
         //         );
         output
@@ -257,13 +271,13 @@ impl Html {
     ///
     /// This method does take into account the [`Filter::tag_name`],
     ///   [`Filter::attribute_name`] and [`Filter::attribute_value`] methods,
-    /// only the types of [`HtmlFilterType`].
+    /// only the types of [`NodeTypeFilter`].
     #[coverage(off)]
-    fn filter_light(self, filter: &HtmlFilterType) -> Self {
+    fn filter_light(self, filter: &NodeTypeFilter) -> Self {
         match self {
-            Self::Text(_) if filter.text => self,
-            Self::Comment { .. } if filter.comment => self,
-            Self::Document { .. } if filter.document => self,
+            Self::Text(_) if filter.text_allowed() => self,
+            Self::Comment { .. } if filter.comment_allowed() => self,
+            Self::Doctype { .. } if filter.doctype_allowed() => self,
             Self::Tag { tag, full, child } =>
                 Self::Tag { tag, full, child: Box::new(child.filter_light(filter)) },
             Self::Vec(vec) => Self::Vec(
@@ -271,7 +285,7 @@ impl Html {
                     .map(|child| child.filter_light(filter))
                     .collect(),
             ),
-            Self::Empty | Self::Text(_) | Self::Comment { .. } | Self::Document { .. } =>
+            Self::Empty | Self::Text(_) | Self::Comment { .. } | Self::Doctype { .. } =>
                 Self::Empty,
         }
     }
@@ -292,7 +306,7 @@ impl Html {
     pub fn find(self, filter: &Filter) -> Option<Self> {
         match self {
             Self::Comment { .. } if !filter.comment_allowed() => None,
-            Self::Document { .. } if !filter.document_allowed() => None,
+            Self::Doctype { .. } if !filter.doctype_allowed() => None,
             Self::Text(txt) if txt.chars().all(char::is_whitespace) => None,
 
             Self::Tag { ref tag, .. } if filter.tag_allowed(tag) => Some(self),
@@ -305,7 +319,7 @@ impl Html {
                 }
                 None
             }
-            Self::Comment { .. } | Self::Document { .. } | Self::Empty | Self::Text(_) => None,
+            Self::Comment { .. } | Self::Doctype { .. } | Self::Empty | Self::Text(_) => None,
         }
     }
 }

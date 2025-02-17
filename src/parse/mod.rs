@@ -101,8 +101,8 @@ fn parse_html_aux(chars: &mut Chars<'_>, tree: &mut Html) -> Result<(), String> 
                 tree.push_char(ch);
             } else if ch == '<' {
                 match parse_tag(chars)? {
-                    TagBuilder::Document { name, attr } =>
-                        tree.push_node(Html::Document { name, attr }),
+                    TagBuilder::Doctype { name, attr } =>
+                        tree.push_node(Html::Doctype { name, attr }),
                     TagBuilder::Open(tag) => {
                         if tag.name == "style" {
                             style = true;

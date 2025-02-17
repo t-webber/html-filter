@@ -6,6 +6,7 @@ use html_parser::prelude::*;
 pub mod filter;
 pub mod find;
 pub mod full;
+pub mod strings;
 
 fn format_html(html: &str) -> String {
     let mut old = html

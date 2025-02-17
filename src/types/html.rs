@@ -63,7 +63,7 @@ pub enum Html {
     ///
     /// `<!doctype html>`
     #[non_exhaustive]
-    Document {
+    Doctype {
         /// Name of the tag
         ///
         /// # Examples
@@ -137,7 +137,7 @@ impl Html {
                     *full = true;
                     true
                 },
-            Self::Text(_) | Self::Empty | Self::Document { .. } => false,
+            Self::Text(_) | Self::Empty | Self::Doctype { .. } => false,
             Self::Tag { full, child, .. } => full.is_open() && child.close_comment(),
             Self::Vec(vec) =>
                 safe_expect!(vec.last_mut(), "Html vec built with one.").close_comment(),
@@ -207,7 +207,7 @@ impl Html {
         match self {
             Self::Empty | Self::Vec(_) => safe_unreachable("Vec or Empty can't be in vec"),
             Self::Tag { full, .. } => full.is_open(),
-            Self::Document { .. } => false,
+            Self::Doctype { .. } => false,
             Self::Text(_) => is_char,
             Self::Comment { full, .. } => !*full,
         }
@@ -218,7 +218,7 @@ impl Html {
         match self {
             Self::Empty => *self = Self::from_char(ch),
             Self::Tag { child, full: TagType::Opened, .. } => child.push_char(ch),
-            Self::Document { .. }
+            Self::Doctype { .. }
             | Self::Tag { full: TagType::Closed | TagType::SelfClosing, .. } =>
                 *self = Self::Vec(vec![take(self), Self::from_char(ch)]),
             Self::Text(text) => text.push(ch),
@@ -254,7 +254,7 @@ impl Html {
             Self::Empty => *self = node,
             Self::Tag { child, full: TagType::Opened, .. } => child.push_node(node),
             Self::Text(_)
-            | Self::Document { .. }
+            | Self::Doctype { .. }
             | Self::Tag { full: TagType::Closed | TagType::SelfClosing, .. } =>
                 *self = Self::Vec(vec![take(self), node]),
             Self::Vec(vec) => {
@@ -293,7 +293,7 @@ impl fmt::Display for Html {
                 TagType::Opened => write!(f, "<{tag}>{child}"),
                 TagType::SelfClosing => write!(f, "<{tag} />"),
             },
-            Self::Document { name, attr } => match (name, attr) {
+            Self::Doctype { name, attr } => match (name, attr) {
                 (name_str, Some(attr_str)) => write!(f, "<!{name_str} {attr_str}>"),
                 (name_str, None) if name_str.is_empty() => write!(f, "<!>"),
                 (name_str, None) => write!(f, "<!{name_str} >"),

@@ -369,7 +369,7 @@ pub(crate) enum TagBuilder {
     /// # Examples
     ///
     /// `<!doctype html>`
-    Document {
+    Doctype {
         /// Name of the document tag.
         ///
         /// # Examples
