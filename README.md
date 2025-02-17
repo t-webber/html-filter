@@ -7,7 +7,11 @@
 [![coverage](https://img.shields.io/badge/Coverage-100%25-purple)](https://github.com/t-webber/html-parser/actions/workflows/nightly.yml)
 [![rust-edition](https://img.shields.io/badge/Rust--edition-2024-darkred?logo=Rust)](https://doc.rust-lang.org/stable/edition-guide/rust-2024/)
 
-This is a rust library that lexes and parses C source files.
+This is a rust library that parses html source files and allows you to search and filter in this Html with a specific set of rules.
+
+> Do not use this parser to check the syntax of your HTML code. Many HTML files are parsed without any errors by this parser, as the sole objective is to get a parsed version. Only breaking syntax errors raises errors.
+>
+> Obviously, all valid HTML files work fine.
 
 ## Standard
 

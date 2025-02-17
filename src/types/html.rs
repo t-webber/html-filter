@@ -7,6 +7,10 @@ use super::tag::{Tag, TagType};
 use crate::errors::safe_unreachable;
 use crate::safe_expect;
 
+/// Wrapper for bool to manage visibility
+#[derive(Debug)]
+struct CommentFull(bool);
+
 /// Dom tree structure to represent the parsed html.
 ///
 /// This tree represents the whole parsed HTML. To create an [`Html`] from a
@@ -53,7 +57,7 @@ pub enum Html {
         /// # Examples
         ///
         /// In the previous example, the content is `some content`.
-        full: bool,
+        full: CommentFull,
     },
     /// Document tag.
     ///
@@ -131,10 +135,10 @@ impl Html {
     pub(crate) fn close_comment(&mut self) -> bool {
         match self {
             Self::Comment { full, .. } =>
-                if *full {
+                if full.0 {
                     false
                 } else {
-                    *full = true;
+                    full.0 = true;
                     true
                 },
             Self::Text(_) | Self::Empty | Self::Doctype { .. } => false,
@@ -209,7 +213,7 @@ impl Html {
             Self::Tag { full, .. } => full.is_open(),
             Self::Doctype { .. } => false,
             Self::Text(_) => is_char,
-            Self::Comment { full, .. } => !*full,
+            Self::Comment { full, .. } => !full.0,
         }
     }
 
@@ -230,7 +234,7 @@ impl Html {
                 vec.push(Self::from_char(ch));
             }
             Self::Comment { content, full } => {
-                if *full {
+                if full.0 {
                     // This means the comment is at the root
                     *self = Self::Vec(vec![take(self), Self::from_char(ch)]);
                 } else {
@@ -242,7 +246,7 @@ impl Html {
 
     /// Pushes a block comment into the html tree
     pub(crate) fn push_comment(&mut self) {
-        self.push_node(Self::Comment { content: String::new(), full: false });
+        self.push_node(Self::Comment { content: String::new(), full: CommentFull(false) });
     }
 
     /// Pushes an html tree into another one.
@@ -303,7 +307,7 @@ impl fmt::Display for Html {
             Self::Comment { content, full } => f
                 .write_str("<!--")
                 .and_then(|()| f.write_str(content))
-                .and_then(|()| if *full { f.write_str("-->") } else { Ok(()) }),
+                .and_then(|()| if full.0 { f.write_str("-->") } else { Ok(()) }),
         }
     }
 }

@@ -23,7 +23,7 @@ fn auto_doctest_1() {
 
 #[test]
 fn auto_doctest_2() {
-    // Auto generated from src/types/html.rs:16
+    // Auto generated from src/types/html.rs:20
     use html_parser::prelude::*;
     let _html: Html = parse_html(
         r#"<nav>
@@ -40,7 +40,7 @@ fn auto_doctest_2() {
 
 #[test]
 fn auto_doctest_3() {
-    // Auto generated from src/types/tag.rs:217
+    // Auto generated from src/types/tag.rs:216
     use html_parser::prelude::*;
     let html = parse_html("<a enabled href='https://crates.io'>").unwrap();
     if let Html::Tag { tag, .. } = html {

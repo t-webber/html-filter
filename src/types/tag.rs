@@ -17,7 +17,7 @@ use crate::errors::safe_unreachable;
     reason = "hash on enum doesn't depend of variant data"
 )]
 #[derive(Debug, Hash)]
-#[non_exhaustive]
+
 pub(crate) enum Attribute {
     /// Name of the attribute, when it doesn't have a value
     ///
@@ -30,7 +30,6 @@ pub(crate) enum Attribute {
     /// # Examples
     ///
     /// `<div id="blob"/>`
-    #[non_exhaustive]
     NameValue {
         /// Whether double or single quotes were used to define the value
         ///
@@ -137,7 +136,7 @@ impl fmt::Display for Attribute {
 ///
 /// - In `<a:b id="blob"/>`, the prefix is `a` and the name is `b`.
 /// - In `<a id="blob"/>`, the name is `a` and there is no prefix.
-#[non_exhaustive]
+
 #[derive(PartialEq, Eq, Debug, Hash)]
 pub(crate) enum PrefixName {
     /// Name of the fragment
@@ -236,6 +235,7 @@ impl fmt::Display for PrefixName {
     clippy::field_scoped_visibility_modifiers,
     reason = "use methods for API but visibility needed by parser"
 )]
+#[non_exhaustive]
 #[derive(Default, Debug)]
 pub struct Tag {
     /// Attributes of the tag. See [`Attribute`].

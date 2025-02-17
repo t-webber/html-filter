@@ -49,8 +49,8 @@ impl BlackWhiteList {
 
     /// Checks if no elements were specified
     #[inline]
-    pub fn is_empty(&self) -> bool {
-        self.items.is_empty() && self.default
+    pub const fn is_empty(&self) -> bool {
+        self.whitelist_empty && self.default
     }
 
     /// Pushes an element as whitelisted or blacklisted

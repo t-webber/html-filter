@@ -19,31 +19,31 @@ macro_rules! test_filter {
 
 test_filter!(
 
-filter_doctype: Filter::new().no_tags().none_except_doctype() =>
+doctype: Filter::new().no_tags().none_except_doctype() =>
 "<!><!DOCTYPE ><!DOCTYPE html>"
 
-filter_prefix: Filter::new().attribute_value("xlink:href", "#").none_except_text() =>
+prefix: Filter::new().attribute_value("xlink:href", "#").none_except_text() =>
 r##"<a xlink:href="#">About</a>"##
 
-filter_radio: Filter::new().attribute_value("type", "radio").attribute_name("radio") =>
+radio: Filter::new().attribute_value("type", "radio").attribute_name("radio") =>
 r#"<input radio type="radio" name="radio" id="radio1" /><input radio type="radio" name="radio" id="radio2" />"#
 
-filter_radio_id: Filter::new().attribute_value("type", "radio").attribute_value("id", "radio2") =>
+radio_id: Filter::new().attribute_value("type", "radio").attribute_value("id", "radio2") =>
 r#"<input radio type="radio" name="radio" id="radio2" />"#
 
-filter_radio_id_except: Filter::new().attribute_value("type", "radio").except_attribute_value("id", "radio2") =>
+radio_id_except: Filter::new().attribute_value("type", "radio").except_attribute_value("id", "radio2") =>
 r#"<input radio type="radio" name="radio" id="radio1" />"#
 
-filter_enabled: Filter::new().attribute_name("enabled") =>
+enabled: Filter::new().attribute_name("enabled") =>
 "<button enabled /><input enabled />"
 
-filter_input_enabled: Filter::new().attribute_name("enabled").except_tag_name("button") =>
+input_enabled: Filter::new().attribute_name("enabled").except_tag_name("button") =>
 "<input enabled />"
 
-filter_button_enabled: Filter::new().except_tag_name("button").tag_name("button").attribute_name("enabled") =>
+button_enabled: Filter::new().except_tag_name("button").tag_name("button").attribute_name("enabled") =>
 "<button enabled />"
 
-filter_buttons: Filter::new().tag_name("button").tag_name("input") =>
+buttons: Filter::new().tag_name("button").tag_name("input") =>
 r#"
 <input type="sub\mit" id="name" name="name" />
 <input type='sub"mit' value="Submit" />
@@ -56,7 +56,7 @@ r#"
 <input type="file" />
 "#
 
-filter_non_radio_input: Filter::new().except_attribute_name("radio").tag_name("input") =>
+non_radio_input: Filter::new().except_attribute_name("radio").tag_name("input") =>
 r#"
 <input type="sub\mit" id="name" name="name" />
 <input type='sub"mit' value="Submit" />
@@ -66,7 +66,7 @@ r#"
 <input type="file" />
 "#
 
-filter_tr: Filter::new().tag_name("tr").text(true) =>
+tr: Filter::new().tag_name("tr").text(true) =>
 "<tr><th>ID</th><th>Name</th></tr><tr><td>1</td><td>Alice</td></tr><tr><td>2</td><td>Bob</td></tr>"
 
 depth_1: Filter::new().depth(1).tag_name("source") =>
@@ -87,7 +87,7 @@ r##"
 </section>
 "##
 
-filter_tag: Filter::new().tag_name("form").attribute_value("action", "#") =>
+tag: Filter::new().tag_name("form").attribute_value("action", "#") =>
 r##"
 <form action="#" method="post">
     <input type="sub\mit" id="name" name="name" />
@@ -140,7 +140,7 @@ r##"
 </section>
 "##
 
-filter_depth_with_comment: Filter::new().depth(1).attribute_value("border", "1").comment(true) =>
+depth_with_comment: Filter::new().depth(1).attribute_value("border", "1").comment(true) =>
 r##"
 <section>
     <h2><!--- Table --->Table</h2>
@@ -165,7 +165,7 @@ r##"
 </section>
 "##
 
-filter_depth_no_comment: Filter::new().depth(1).attribute_value("border", "1").comment(false) =>
+depth_no_comment: Filter::new().depth(1).attribute_value("border", "1").comment(false) =>
 r##"
 <section>
     <h2>Table</h2>
@@ -189,5 +189,6 @@ r##"
     </table>
 </section>
 "##
+
 
 );
