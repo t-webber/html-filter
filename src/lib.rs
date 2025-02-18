@@ -59,3 +59,11 @@ pub mod prelude {
     pub use crate::types::tag::Tag;
 }
 pub mod types;
+
+/// A const equivalent of the [`Option::unwrap_or`] method.
+const fn unwrap_or(opt: Option<bool>, default: bool) -> bool {
+    match opt {
+        Some(val) => val,
+        None => default,
+    }
+}

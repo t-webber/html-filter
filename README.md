@@ -111,7 +111,7 @@ let html: &str = r##"
 let filter = Filter::new().tag_name("a");
 
 // Parse your html
-let link: Html = parse_html(html).expect("Invalid HTML").find(&filter).expect("No `a` tags");
+let link: Html = parse_html(html).expect("Invalid HTML").find(&filter);
 
 // Check the result: link contains `<a href="/home">Home</a>`
 if let Html::Tag { tag, child, .. } = link {

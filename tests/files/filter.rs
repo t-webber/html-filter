@@ -66,7 +66,7 @@ r#"
 <input type="file" />
 "#
 
-tr: Filter::new().tag_name("tr").text(true) =>
+tr: Filter::new().tag_name("tr").comment(false) =>
 "<tr><th>ID</th><th>Name</th></tr><tr><td>1</td><td>Alice</td></tr><tr><td>2</td><td>Bob</td></tr>"
 
 depth_1: Filter::new().depth(1).tag_name("source") =>
@@ -87,7 +87,7 @@ r##"
 </section>
 "##
 
-tag: Filter::new().tag_name("form").attribute_value("action", "#") =>
+tag: Filter::new().tag_name("form").attribute_value("action", "#").comment(false) =>
 r##"
 <form action="#" method="post">
     <input type="sub\mit" id="name" name="name" />
@@ -96,7 +96,7 @@ r##"
 </form>
 "##
 
-depth_multiple: Filter::new().depth(1).attribute_name("enabled").comment(true) =>
+depth_multiple: Filter::new().depth(1).attribute_name("enabled") =>
 r##"
 <form action="#" method="post">
     <input type="sub\mit" id="name" name="name" />
@@ -118,7 +118,7 @@ r##"
 </section>
 "##
 
-depth_multiple_no_text: Filter::new().depth(1).attribute_name("enabled").none_except_comment() =>
+depth_multiple_no_text: Filter::new().depth(1).attribute_name("enabled").text(false) =>
 r##"
 <form action="#" method="post">
     <input type="sub\mit" id="name" name="name" />

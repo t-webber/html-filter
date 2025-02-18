@@ -3,6 +3,7 @@
 use super::NodeTypeFilter;
 use super::element::{BlackWhiteList, ValueAssociateHash};
 use crate::types::tag::Tag;
+use crate::unwrap_or;
 
 /// Filters to select the wanted elements of an Html tree.
 ///
@@ -78,41 +79,44 @@ impl Filter {
         self.depth
     }
 
-    /// Returns the types of nodes that must be kept according to the filter.
-    pub(super) const fn as_types(&self) -> &NodeTypeFilter {
-        &self.types
+    /// Checks if comments must be kept according to the filter.
+    pub(super) const fn comment_allowed(&self) -> bool {
+        unwrap_or(self.types.comment_allowed(), true)
     }
 
     /// Checks if comments must be kept according to the filter.
-    pub(super) const fn comment_allowed(&self) -> bool {
-        self.types.comment_allowed()
+    pub(super) fn comment_explicitly_allowed(&self) -> bool {
+        unwrap_or(self.types.comment_allowed(), self.is_empty())
     }
 
     /// Checks if doctypes must be kept according to the filter.
-    pub(super) const fn doctype_allowed(&self) -> bool {
-        self.types.doctype_allowed()
+    pub(super) fn doctype_allowed(&self) -> bool {
+        unwrap_or(self.types.doctype_allowed(), self.is_empty())
     }
 
-    /// Checks if a given tag must be kept according to the filter..
+    /// Checks if no rules were given concerning tags and attributes
+    #[inline]
+    fn is_empty(&self) -> bool {
+        self.tags.is_empty() && self.attrs.is_empty()
+    }
+
+    /// Checks if a given tag must be kept according to the filter
     pub(super) fn tag_allowed(&self, tag: &Tag) -> bool {
         let name_allowed = self.tags.check(&tag.name);
         let attrs_allowed = self.attrs.check(&tag.attrs);
-        let is_empty = self.attrs.is_empty() && self.tags.is_empty();
         name_allowed
             .and(&attrs_allowed)
-            .is_explicitly_authorised(is_empty)
+            .is_allowed_or(self.is_empty())
     }
 
-    /// Checks if a given tag must be kept according to the filter..
+    /// Checks if a given tag has an explicit rule, rule to keep this tag
     pub(super) fn tag_explicitly_allowed(&self, tag: &Tag) -> bool {
         let name_allowed = self.tags.check(&tag.name);
         let attrs_allowed = self.attrs.check(&tag.attrs);
-        name_allowed
-            .and(&attrs_allowed)
-            .is_explicitly_authorised(false)
+        name_allowed.and(&attrs_allowed).is_allowed_or(false)
     }
 
-    /// Checks if texts must be kept according to the filter.
+    /// Checks if texts must be kept according to the filter
     pub(super) const fn text_allowed(&self) -> bool {
         self.types.text_allowed()
     }
@@ -121,6 +125,16 @@ impl Filter {
 /// Public API for [`Filter`] on node-type-filters (texts, doctypes, comments,
 /// etc.)
 impl Filter {
+    /// Keeps everything: comments, doctypes and texts
+    #[inline]
+    #[must_use]
+    pub const fn all(mut self, all: bool) -> Self {
+        self.types.set_comment(all);
+        self.types.set_doctype(all);
+        self.types.set_text(all);
+        self
+    }
+
     /// Removes the comments
     ///
     /// Doctypes and texts are kept, unless said otherwise by the user.

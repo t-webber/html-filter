@@ -30,6 +30,29 @@ macro_rules! make_tests {
 
 make_tests!(
 
+all: Filter::new() => "
+<!DOCTYPE html>
+<!-- comment 1 -->
+<html>
+    A first text
+    <!-- with comment -->
+    <p>
+        A <strong>first</strong> text
+        <!-- with comment -->
+        <img />
+    </p>
+</html>
+"
+
+only_tags: Filter::new().all(false) => "
+<html>
+    <p>
+        <strong></strong>
+        <img />
+    </p>
+</html>
+"
+
 text: Filter::new().none_except_text() => "
 <html>
     A first text

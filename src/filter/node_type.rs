@@ -3,6 +3,8 @@
 //! Set the elements to `true` iff you want them to appear in the filtered
 //! output
 
+use crate::unwrap_or;
+
 /// Types of html nodes to filter
 ///
 /// Set the elements to `true` iff you want them to appear in the filtered
@@ -46,12 +48,12 @@ impl NodeTypeFilter {
     /* getters */
 
     /// Checks if comments are allowed
-    pub const fn comment_allowed(&self) -> bool {
-        unwrap_or(self.comment, false)
+    pub const fn comment_allowed(&self) -> Option<bool> {
+        self.comment
     }
     /// Checks if doctypes are allowed
-    pub const fn doctype_allowed(&self) -> bool {
-        unwrap_or(self.doctype, false)
+    pub const fn doctype_allowed(&self) -> Option<bool> {
+        self.doctype
     }
     /// Checks if texts are allowed
     pub const fn text_allowed(&self) -> bool {
@@ -103,13 +105,5 @@ impl NodeTypeFilter {
         if self.text.is_none() {
             self.text = Some(keep);
         }
-    }
-}
-
-/// A const equivalent of the [`Option::unwrap_or`] method.
-const fn unwrap_or(opt: Option<bool>, default: bool) -> bool {
-    match opt {
-        Some(val) => val,
-        None => default,
     }
 }

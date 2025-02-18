@@ -34,7 +34,7 @@ impl BlackWhiteList {
     pub fn check(&self, name: &String) -> ElementState {
         self.items.get(name).map_or_else(
             || {
-                if self.whitelist_empty {
+                if self.is_empty() && self.default {
                     ElementState::NotSpecified
                 } else {
                     ElementState::BlackListed
@@ -50,7 +50,7 @@ impl BlackWhiteList {
     /// Checks if no elements were specified
     #[inline]
     pub const fn is_empty(&self) -> bool {
-        self.whitelist_empty && self.default
+        self.whitelist_empty
     }
 
     /// Pushes an element as whitelisted or blacklisted
@@ -109,7 +109,7 @@ impl ElementState {
     }
 
     /// Checks if an element was explicitly authorised, i.e., is whitelisted
-    pub const fn is_explicitly_authorised(&self, default: bool) -> bool {
+    pub const fn is_allowed_or(&self, default: bool) -> bool {
         match self {
             Self::BlackListed => false,
             Self::NotSpecified => default,
@@ -134,7 +134,7 @@ impl ValueAssociateHash {
         let attrs_map: HashMap<_, _> = attrs
             .iter()
             .map(|attr| (attr.as_name().to_string(), attr.as_value()))
-            .collect(); //TODO: necessary map
+            .collect();
         for (wanted_name, wanted_value) in &self.whitelist {
             match attrs_map.get(wanted_name) {
                 None => return ElementState::BlackListed,
