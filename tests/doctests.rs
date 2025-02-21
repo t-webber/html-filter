@@ -4,6 +4,59 @@
 
 #[test]
 fn auto_doctest_1() {
+    // Auto generated from src/filter/types.rs:21
+    #![allow(unused)]
+    use html_parser::prelude::*;
+    Filter::new().comment(false).doctype(false); // Removes comments (`<!---->`) and doctype tags (`<!DOCTYPE html>`).
+    Filter::new().tag_name("a"); // Lists all the `<a>` tags and their content.
+    Filter::new().attribute_name("onclick"); // Lists all the tags with a `onclick` attribute.
+    Filter::new().attribute_value("id", "first-title"); // Get the element of `id` `"first-title`
+    Filter::new().tag_name("li").depth(1); // Lists all the `<li>` tags and their parent (usually `ol` or `ul`).
+}
+
+#[test]
+fn auto_doctest_2() {
+    // Auto generated from src/filter/types.rs:49
+    use html_parser::prelude::*;
+    let _filter = Filter::new().depth(1).tag_name("a");
+}
+
+#[test]
+fn auto_doctest_3() {
+    // Auto generated from src/filter/types.rs:305
+    #![allow(unused)]
+    html_parser::prelude::Filter::new()
+        .attribute_value("href", "second")
+        .depth(0);
+}
+
+#[test]
+fn auto_doctest_4() {
+    // Auto generated from src/filter/types.rs:320
+    #![allow(unused)]
+    html_parser::prelude::Filter::new()
+        .attribute_value("href", "second")
+        .depth(1);
+}
+
+#[test]
+fn auto_doctest_5() {
+    // Auto generated from src/filter/types.rs:339
+    #![allow(unused)]
+    html_parser::prelude::Filter::new()
+        .attribute_value("href", "second")
+        .depth(2);
+}
+
+#[test]
+fn auto_doctest_6() {
+    // Auto generated from src/filter/types.rs:417
+    use html_parser::prelude::*;
+    let _filter: Filter = Filter::new();
+}
+
+#[test]
+fn auto_doctest_7() {
     // Auto generated from src/parse/mod.rs:18
     use html_parser::prelude::*;
     let html: &str = r#"
@@ -22,7 +75,7 @@ fn auto_doctest_1() {
 }
 
 #[test]
-fn auto_doctest_2() {
+fn auto_doctest_8() {
     // Auto generated from src/types/html.rs:20
     use html_parser::prelude::*;
     let _html: Html = parse_html(
@@ -39,7 +92,7 @@ fn auto_doctest_2() {
 }
 
 #[test]
-fn auto_doctest_3() {
+fn auto_doctest_9() {
     // Auto generated from src/types/tag.rs:216
     use html_parser::prelude::*;
     let html = parse_html("<a enabled href='https://crates.io'>").unwrap();
@@ -58,7 +111,7 @@ fn auto_doctest_3() {
 }
 
 #[test]
-fn auto_doctest_4() {
+fn auto_doctest_10() {
     // Auto generated from src/types/tag.rs:256
     use html_parser::prelude::*;
     let html = parse_html("<div />").unwrap();
@@ -70,7 +123,7 @@ fn auto_doctest_4() {
 }
 
 #[test]
-fn auto_doctest_5() {
+fn auto_doctest_11() {
     // Auto generated from src/types/tag.rs:281
     use html_parser::prelude::*;
     let html = parse_html(r#"<a id="std doc" enabled xlink:href="https://std.rs"/>"#).unwrap();
@@ -87,7 +140,7 @@ fn auto_doctest_5() {
 }
 
 #[test]
-fn auto_doctest_6() {
+fn auto_doctest_12() {
     // Auto generated from src/types/tag.rs:316
     use html_parser::prelude::*;
     let html = parse_html(r#"<a enabled/>"#).unwrap();
@@ -105,57 +158,4 @@ fn auto_doctest_6() {
     } else {
         unreachable!()
     }
-}
-
-#[test]
-fn auto_doctest_7() {
-    // Auto generated from src/filter/types.rs:21
-    #![allow(unused)]
-    use html_parser::prelude::*;
-    Filter::new().comment(false).doctype(false); // Removes comments (`<!---->`) and doctype tags (`<!DOCTYPE html>`).
-    Filter::new().tag_name("a"); // Lists all the `<a>` tags and their content.
-    Filter::new().attribute_name("onclick"); // Lists all the tags with a `onclick` attribute.
-    Filter::new().attribute_value("id", "first-title"); // Get the element of `id` `"first-title`
-    Filter::new().tag_name("li").depth(1); // Lists all the `<li>` tags and their parent (usually `ol` or `ul`).
-}
-
-#[test]
-fn auto_doctest_8() {
-    // Auto generated from src/filter/types.rs:49
-    use html_parser::prelude::*;
-    let _filter = Filter::new().depth(1).tag_name("a");
-}
-
-#[test]
-fn auto_doctest_9() {
-    // Auto generated from src/filter/types.rs:299
-    #![allow(unused)]
-    html_parser::prelude::Filter::new()
-        .attribute_value("href", "second")
-        .depth(0);
-}
-
-#[test]
-fn auto_doctest_10() {
-    // Auto generated from src/filter/types.rs:314
-    #![allow(unused)]
-    html_parser::prelude::Filter::new()
-        .attribute_value("href", "second")
-        .depth(1);
-}
-
-#[test]
-fn auto_doctest_11() {
-    // Auto generated from src/filter/types.rs:333
-    #![allow(unused)]
-    html_parser::prelude::Filter::new()
-        .attribute_value("href", "second")
-        .depth(2);
-}
-
-#[test]
-fn auto_doctest_12() {
-    // Auto generated from src/filter/types.rs:411
-    use html_parser::prelude::*;
-    let _filter: Filter = Filter::new();
 }

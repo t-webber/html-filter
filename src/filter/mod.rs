@@ -314,6 +314,7 @@ impl Html {
             Self::Text(_) if filter.text_allowed() => self,
             Self::Comment { .. } if filter.comment_allowed() => self,
             Self::Doctype { .. } if filter.doctype_allowed() => self,
+            Self::Tag { tag, .. } if filter.tag_explicitly_blacklisted(&tag) => Self::Empty,
             Self::Tag { tag, full, child } =>
                 Self::Tag { tag, full, child: Box::new(child.filter_light(filter)) },
             Self::Vec(vec) => Self::Vec(

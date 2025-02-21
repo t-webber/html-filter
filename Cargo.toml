@@ -13,3 +13,4 @@ readme = "README.md"
 [dependencies]
 
 [features]
+debug = []

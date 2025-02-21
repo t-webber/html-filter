@@ -31,7 +31,7 @@ pub struct BlackWhiteList {
 
 impl BlackWhiteList {
     /// Check the status of an element
-    pub fn check(&self, name: &String) -> ElementState {
+    pub fn check(&self, name: &str) -> ElementState {
         self.items.get(name).map_or_else(
             || {
                 if self.is_empty() && self.default {
@@ -51,6 +51,11 @@ impl BlackWhiteList {
     #[inline]
     pub const fn is_empty(&self) -> bool {
         self.whitelist_empty
+    }
+
+    /// Checks if a name was explicitly blacklisted
+    pub fn is_explicitly_blacklisted(&self, name: &str) -> bool {
+        self.items.get(name).map_or_else(|| false, |keep| !*keep)
     }
 
     /// Pushes an element as whitelisted or blacklisted
@@ -161,6 +166,23 @@ impl ValueAssociateHash {
     #[inline]
     pub fn is_empty(&self) -> bool {
         self.whitelist.is_empty() && self.blacklist.is_empty()
+    }
+
+    /// Checks if one of the attributes was explicitly blacklisted
+    pub fn is_explicitly_blacklisted(&self, attrs: &[Attribute]) -> bool {
+        let blacklist = self
+            .blacklist
+            .iter()
+            .map(|(name, value)| (name, value))
+            .collect::<HashMap<_, _>>();
+        for attr in attrs {
+            if let Some(value) = blacklist.get(&attr.as_name().to_string()) {
+                if attr.as_value() == value.as_ref() {
+                    return true;
+                }
+            }
+        }
+        false
     }
 
     /// Adds a rule for the attribute `name`

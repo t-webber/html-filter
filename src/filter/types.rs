@@ -116,6 +116,12 @@ impl Filter {
         name_allowed.and(&attrs_allowed).is_allowed_or(false)
     }
 
+    /// Checks if a given tag has an explicit rule, rule to keep this tag
+    pub(super) fn tag_explicitly_blacklisted(&self, tag: &Tag) -> bool {
+        self.tags.is_explicitly_blacklisted(&tag.name)
+            || self.attrs.is_explicitly_blacklisted(&tag.attrs)
+    }
+
     /// Checks if texts must be kept according to the filter
     pub(super) const fn text_allowed(&self) -> bool {
         self.types.text_allowed()

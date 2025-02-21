@@ -140,6 +140,27 @@ r##"
 </section>
 "##
 
+depth_multiple_no_text_no_submit: Filter::new().depth(1).attribute_name("enabled").text(false).except_attribute_value("value", "Submit") =>
+r##"
+<form action="#" method="post">
+    <input type="sub\mit" id="name" name="name" />
+    <!-- prettier-ignore -->
+    <button enabled/>
+</form>
+<section>
+    <h2></h2>
+    <ul>
+        <li></li>
+        <li></li>
+    </ul>
+    <ol>
+        <li></li>
+        <li></li>
+    </ol>
+    <input enabled />
+</section>
+"##
+
 depth_with_comment: Filter::new().depth(1).attribute_value("border", "1").comment(true) =>
 r##"
 <section>
@@ -189,6 +210,121 @@ r##"
     </table>
 </section>
 "##
+
+no_script_style:     Filter::new().except_tag_name("script").except_tag_name("style") =>
+r##"
+<!>
+<!DOCTYPE >
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Test HTML</title>
+    </head>
+    <body>
+        <header>
+            <h1>Test Page</h1>
+            <nav>
+                <ul>
+                    <!--@<li> -->
+                    <li><a xlink:href="#">About</a></li>
+                    <li>
+                        <!-- prettier-ignore -->
+                        <a href="#">Contact<br> us</a>
+                    </li>
+                </ul>
+            </nav>
+        </header>
+        <main class="container">
+            <section>
+                <h2>Forms</h2>
+                <form action="#" method="post">
+                    <input type="sub\mit" id="name" name="name" />
+                    <input type='sub"mit' value="Submit" />
+                    <!-- prettier-ignore -->
+                    <button enabled/>
+                </form>
+            </section>
+
+            <section>
+                <h2><!--- Table --->Table</h2>
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>Alice</td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>Bob</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section>
+                <h2>Lists</h2>
+                <ul>
+                    <li>Item 1</li>
+                    <li>Item 2</li>
+                </ul>
+                <ol>
+                    <li>First</li>
+                    <li>Second</li>
+                </ol>
+                <input enabled />
+            </section>
+
+            <section>
+                <h2>Divs & Spans</h2>
+                <div class="box"></div>
+                <div class="box"></div>
+                <div class="box"></div>
+                <span>Inline span</span>
+            </section>
+
+            <section>
+                <h2>Media</h2>
+                <img src="test.jpg" alt="Test Image" />
+                <video controls>
+                    <source src="test.mp4" type="video/mp4" />
+                </video>
+            </section>
+
+            <section>
+                <h2>Embedded Script</h2>
+            </section>
+
+            <section>
+                <h2>Forms with Various Inputs</h2>
+                <form>
+                    <input type="checkbox" id="check" />
+                    <label for="check">Check me</label>
+                    <input radio type="radio" name="radio" id="radio1" />
+                    <label for="radio1">Option 1</label>
+                    <input radio type="radio" name="radio" id="radio2" />
+                    <label for="radio2">Option 2</label>
+                    <input type="date" />
+                    <input type="file" />
+                </form>
+            </section>
+        </main>
+
+        <footer>
+            <p>2025 Test Footer</p>
+        </footer>
+
+    </body>
+</html>
+"##
+
 
 
 );
