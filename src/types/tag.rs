@@ -18,7 +18,7 @@ use crate::errors::safe_unreachable;
 )]
 #[derive(Debug, Hash)]
 
-pub(crate) enum Attribute {
+pub enum Attribute {
     /// Name of the attribute, when it doesn't have a value
     ///
     /// # Examples
@@ -138,7 +138,7 @@ impl fmt::Display for Attribute {
 /// - In `<a id="blob"/>`, the name is `a` and there is no prefix.
 
 #[derive(PartialEq, Eq, Debug, Hash)]
-pub(crate) enum PrefixName {
+pub enum PrefixName {
     /// Name of the fragment
     ///
     /// No prefix here, i.e., no colon found.
@@ -357,7 +357,7 @@ impl fmt::Display for Tag {
 }
 
 /// Builder returns by the parser when run on a tag.
-pub(crate) enum TagBuilder {
+pub enum TagBuilder {
     /// Closing tag
     ///
     /// # Examples
@@ -409,7 +409,7 @@ pub(crate) enum TagBuilder {
 
 /// Closing type of the tag.
 #[derive(Debug)]
-pub(crate) enum TagType {
+pub enum TagType {
     /// Closed tag
     ///
     /// This means the closing part of the tag was found.
