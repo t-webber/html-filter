@@ -5,8 +5,7 @@ use core::mem::take;
 
 use super::html::Html;
 use super::tag::{Tag, TagType};
-use crate::errors::safe_unreachable;
-use crate::safe_expect;
+use crate::errors::{safe_expect, safe_unreachable};
 
 /// Wrapper for bool to manage visibility
 #[derive(Debug)]
@@ -151,7 +150,7 @@ impl HtmlBuilder {
     pub fn close_tag_aux(&mut self, name: &str) -> bool {
         if let Self::Tag { tag, full: full @ TagType::Opened, child } = self {
             child.close_tag_aux(name)
-                || (tag.name == name && {
+                || (tag.as_name() == name && {
                     *full = TagType::Closed;
                     true
                 })
@@ -279,7 +278,7 @@ impl fmt::Display for HtmlBuilder {
         match self {
             Self::Empty => "".fmt(f),
             Self::Tag { tag, full, child } => match full {
-                TagType::Closed => write!(f, "<{tag}>{child}</{}>", tag.name),
+                TagType::Closed => write!(f, "<{tag}>{child}</{}>", tag.as_name()),
                 TagType::Opened => write!(f, "<{tag}>{child}"),
                 TagType::SelfClosing => write!(f, "<{tag} />"),
             },

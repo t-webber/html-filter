@@ -24,7 +24,7 @@ pub enum Attribute {
     /// # Examples
     ///
     /// In `<button />`, the name of the attribute is `button`.
-    NameNoValue(PrefixName),
+    NameNoValue(String),
     /// Name of the attribute
     ///
     /// # Examples
@@ -45,7 +45,7 @@ pub enum Attribute {
         /// # Note
         ///
         /// Attribute names can have prefixes, like in `<a xlink:href="link"/>`
-        name: PrefixName,
+        name: String,
         /// Value of the attribute
         ///
         /// # Examples
@@ -73,10 +73,9 @@ impl Attribute {
     }
 
     /// Returns the name of an attribute
-    pub const fn as_name(&self) -> &PrefixName {
+    pub const fn as_name(&self) -> &String {
         match self {
-            Self::NameNoValue(prefix_name) => prefix_name,
-            Self::NameValue { name, .. } => name,
+            Self::NameNoValue(name) | Self::NameValue { name, .. } => name,
         }
     }
 
@@ -96,7 +95,7 @@ impl Attribute {
         }
     }
 
-    /// Pushes a character into the value of the [`PrefixName`]
+    /// Pushes a character into the attribute's value
     #[coverage(off)]
     pub(crate) fn push_value(&mut self, ch: char) {
         if let Self::NameValue { value, .. } = self {
@@ -107,9 +106,9 @@ impl Attribute {
     }
 }
 
-impl From<PrefixName> for Attribute {
+impl From<String> for Attribute {
     #[inline]
-    fn from(name: PrefixName) -> Self {
+    fn from(name: String) -> Self {
         Self::NameNoValue(name)
     }
 }
@@ -124,88 +123,6 @@ impl fmt::Display for Attribute {
                 let del = if *double_quote { '"' } else { '\'' };
                 write!(f, "={del}{value}{del}")
             }),
-        }
-    }
-}
-
-/// [`Tag`] name with optionally a prefix.
-///
-/// The prefix of a tag name is the part before the colon.
-///
-/// # Examples
-///
-/// - In `<a:b id="blob"/>`, the prefix is `a` and the name is `b`.
-/// - In `<a id="blob"/>`, the name is `a` and there is no prefix.
-
-#[derive(PartialEq, Eq, Debug, Hash)]
-pub enum PrefixName {
-    /// Name of the fragment
-    ///
-    /// No prefix here, i.e., no colon found.
-    Name(String),
-    /// Prefix and name of the fragment
-    Prefix(String, String),
-}
-
-impl PrefixName {
-    /// Pushes a character into a [`PrefixName`]
-    pub(crate) fn push_char(&mut self, ch: char) {
-        match self {
-            Self::Name(name) | Self::Prefix(_, name) => name.push(ch),
-        }
-    }
-
-    /// Pushes a colon into a [`PrefixName`]
-    ///
-    /// This informs us that there was a prefix.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if there is already a prefix, i.e., if a colon as
-    /// already been found.
-    pub(crate) fn push_colon(&mut self) -> Result<(), &'static str> {
-        *self = match self {
-            Self::Name(name) => Self::Prefix(take(name), String::new()),
-            Self::Prefix(..) => return Err("Found 2 colons ':' in attribute name."),
-        };
-        Ok(())
-    }
-}
-
-impl Default for PrefixName {
-    #[inline]
-    fn default() -> Self {
-        Self::Name(String::new())
-    }
-}
-
-impl<T: Into<String>> From<T> for PrefixName {
-    #[inline]
-    fn from(value: T) -> Self {
-        let value_str: String = value.into();
-        if value_str.contains(':') {
-            let mut prefix = String::new();
-            let mut iter = value_str.chars();
-            while let Some(ch) = iter.next() {
-                if ch == ':' {
-                    break; // end of prefix
-                }
-                prefix.push(ch);
-            }
-            Self::Prefix(prefix, iter.collect())
-        } else {
-            Self::Name(value_str)
-        }
-    }
-}
-
-#[expect(clippy::min_ident_chars, reason = "keep trait naming")]
-impl fmt::Display for PrefixName {
-    #[inline]
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::Name(name) => name.fmt(f),
-            Self::Prefix(prefix, name) => write!(f, "{prefix}:{name}"),
         }
     }
 }
@@ -231,25 +148,43 @@ impl fmt::Display for PrefixName {
 ///     unreachable!();
 /// }
 /// ```
-#[expect(
-    clippy::field_scoped_visibility_modifiers,
-    reason = "use methods for API but visibility needed by parser"
-)]
 #[non_exhaustive]
 #[derive(Default, Debug)]
 pub struct Tag {
     /// Attributes of the tag. See [`Attribute`].
-    pub(crate) attrs: Vec<Attribute>,
+    attrs: Box<[Attribute]>,
     /// Name of the tag.
     ///
     /// # Examples
     ///
     /// - `<div id="blob">` as name `div`
     /// - `<>` as an empty name
-    pub(crate) name: String,
+    name: String,
 }
 
 impl Tag {
+    /// Returns the attributes of the tag
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use html_parser::prelude::*;
+    ///
+    /// let html = parse_html("<div id='blob' />").unwrap();
+    /// if let Html::Tag { tag, .. } = html {
+    ///     let attr = tag.as_attrs().first().unwrap();
+    ///     assert!(attr.as_name() == "id");
+    ///     assert!(attr.as_value().is_some_and(|value| value == "blob"));
+    /// } else {
+    ///     unreachable!();
+    /// }
+    /// ```
+    #[inline]
+    #[must_use]
+    pub const fn as_attrs(&self) -> &[Attribute] {
+        &self.attrs
+    }
+
     /// Returns the name of the tag
     ///
     /// # Examples
@@ -266,6 +201,7 @@ impl Tag {
     /// ```
     #[inline]
     #[must_use]
+    #[coverage(off)]
     pub const fn as_name(&self) -> &String {
         &self.name
     }
@@ -297,11 +233,10 @@ impl Tag {
     /// ```
     #[inline]
     #[must_use]
-    pub fn find_attr_value<T: Into<String>>(&self, name: T) -> Option<&String> {
-        let prefix_name = PrefixName::from(name);
+    pub fn find_attr_value<T: AsRef<str>>(&self, name: T) -> Option<&String> {
         self.attrs
             .iter()
-            .find(|attr| attr.as_name() == &prefix_name)
+            .find(|attr| attr.as_name() == name.as_ref())
             .and_then(|attr| attr.as_value())
     }
 
@@ -338,12 +273,16 @@ impl Tag {
     /// ```
     #[inline]
     #[must_use]
-    pub fn into_attr_value<T: Into<String>>(self, name: T) -> Option<String> {
-        let prefix_name = PrefixName::from(name);
+    pub fn into_attr_value<T: AsRef<str>>(self, name: T) -> Option<String> {
         self.attrs
             .into_iter()
-            .find(|attr| attr.as_name() == &prefix_name)?
+            .find(|attr| attr.as_name() == name.as_ref())?
             .into_value()
+    }
+
+    /// Creates a tag from a name and an array of [`Attribute`]
+    pub(crate) const fn new(name: String, attrs: Box<[Attribute]>) -> Self {
+        Self { attrs, name }
     }
 }
 

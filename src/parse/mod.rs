@@ -105,9 +105,9 @@ fn parse_html_aux(chars: &mut Chars<'_>, tree: &mut HtmlBuilder) -> Result<(), S
                     TagBuilder::Doctype { name, attr } =>
                         tree.push_node(HtmlBuilder::Doctype { name, attr }),
                     TagBuilder::Open(tag) => {
-                        if tag.name == "style" {
+                        if tag.as_name() == "style" {
                             style = true;
-                        } else if tag.name == "script" {
+                        } else if tag.as_name() == "script" {
                             script = true;
                         }
                         tree.push_tag(tag, false);

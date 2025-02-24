@@ -24,11 +24,9 @@ make_err_test!(
 
 bang_closing: "</!doc h>" => "Invalid character '!' in closing tag."
 invalid_dash: "<!-audio>" => "Invalid character '-' in doctype."
-doctype_col: "<!dx xml:>" => "Invalid character ':' in doctype attribute."
 doctype_val: "<!dx h=''>" => "Doctype attribute must not have a value."
 close_doctype: "<!doc />" => "Invalid character '/' in doctype."
 invalid_bang: "<button!>" => "Invalid character '!' in tag name."
-double_colon: "<ab c::d>" => "Found 2 colons ':' in attribute name."
 prefix_name: "<image:br>" => "Invalid character ':' in tag name."
 invalid_equal: "<p id=a>" => "Invalid character 'a': expected ''' or '\"' after '=' sign."
 unclosed_tag: "<textarea" => "EOF: Missing closing '>'."

@@ -26,7 +26,7 @@ use crate::unwrap_or;
 ///
 /// Filter::new().comment(false).doctype(false); // Removes comments (`<!---->`) and doctype tags (`<!DOCTYPE html>`).
 /// Filter::new().tag_name("a"); // Lists all the `<a>` tags and their content.
-/// Filter::new().attribute_name("onclick"); // Lists all the tags with a `onclick` attribute.
+/// Filter::new().attribute_name("onClick"); // Lists all the tags with a `onClick` attribute.
 /// Filter::new().attribute_value("id", "first-title"); // Get the element of `id` `"first-title`
 /// Filter::new().tag_name("li").depth(1); // Lists all the `<li>` tags and their parent (usually `ol` or `ul`).
 /// ```
@@ -102,8 +102,8 @@ impl Filter {
 
     /// Checks if a given tag must be kept according to the filter
     pub(super) fn tag_allowed(&self, tag: &Tag) -> bool {
-        let name_allowed = self.tags.check(&tag.name);
-        let attrs_allowed = self.attrs.check(&tag.attrs);
+        let name_allowed = self.tags.check(tag.as_name());
+        let attrs_allowed = self.attrs.check(tag.as_attrs());
         name_allowed
             .and(&attrs_allowed)
             .is_allowed_or(self.is_empty())
@@ -111,15 +111,15 @@ impl Filter {
 
     /// Checks if a given tag has an explicit rule, rule to keep this tag
     pub(super) fn tag_explicitly_allowed(&self, tag: &Tag) -> bool {
-        let name_allowed = self.tags.check(&tag.name);
-        let attrs_allowed = self.attrs.check(&tag.attrs);
+        let name_allowed = self.tags.check(tag.as_name());
+        let attrs_allowed = self.attrs.check(tag.as_attrs());
         name_allowed.and(&attrs_allowed).is_allowed_or(false)
     }
 
     /// Checks if a given tag has an explicit rule, rule to keep this tag
     pub(super) fn tag_explicitly_blacklisted(&self, tag: &Tag) -> bool {
-        self.tags.is_explicitly_blacklisted(&tag.name)
-            || self.attrs.is_explicitly_blacklisted(&tag.attrs)
+        self.tags.is_explicitly_blacklisted(tag.as_name())
+            || self.attrs.is_explicitly_blacklisted(tag.as_attrs())
     }
 
     /// Checks if texts must be kept according to the filter

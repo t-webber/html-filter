@@ -16,9 +16,8 @@ use core::cmp::Ordering;
 use node_type::NodeTypeFilter;
 use types::Filter;
 
-use crate::errors::safe_unreachable;
+use crate::errors::{safe_expect, safe_unreachable};
 use crate::prelude::{Html, Tag};
-use crate::safe_expect;
 
 /// State to follow if the wanted nodes where found at what depth
 ///

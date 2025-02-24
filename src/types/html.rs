@@ -114,8 +114,8 @@ impl fmt::Display for Html {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Empty => "".fmt(f),
-            Self::Tag { tag, child } if tag.name == "br" => write!(f, "<br>{child}"),
-            Self::Tag { tag, child } => write!(f, "<{tag}>{child}</{}>", tag.name),
+            Self::Tag { tag, child } if tag.as_name() == "br" => write!(f, "<br>{child}"),
+            Self::Tag { tag, child } => write!(f, "<{tag}>{child}</{}>", tag.as_name()),
             Self::Doctype { name, attr } => match (name, attr) {
                 (name_str, Some(attr_str)) => write!(f, "<!{name_str} {attr_str}>"),
                 (name_str, None) if name_str.is_empty() => write!(f, "<!>"),

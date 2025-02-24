@@ -4,8 +4,9 @@
 //! If they happen, it is asked to the user to raise an issue on the system
 //! version control.
 
+#![expect(clippy::arbitrary_source_item_ordering, reason = "macro used")]
+
 /// Macro to add a developer error with a generic failure text.
-#[macro_export]
 macro_rules! safe_expect {
     ($code:expr, $reason:expr) => {
         $code.expect(&format!(
@@ -45,3 +46,5 @@ We will try to fix it as soon as possible.
 "
     )
 }
+
+pub(super) use safe_expect;
