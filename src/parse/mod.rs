@@ -5,7 +5,8 @@ use core::str::Chars;
 
 use tag::parse_tag;
 
-use crate::types::html::Html;
+use crate::prelude::Html;
+use crate::types::html_builder::HtmlBuilder;
 use crate::types::tag::TagBuilder;
 
 /// Parses an HTML string into a Dom tree.
@@ -35,10 +36,10 @@ use crate::types::tag::TagBuilder;
 /// ```
 #[inline]
 pub fn parse_html(html: &str) -> Result<Html, String> {
-    let mut tree = Html::default();
+    let mut tree = HtmlBuilder::default();
     let mut chars = html.chars();
     match parse_html_aux(&mut chars, &mut tree) {
-        Ok(()) => Ok(tree),
+        Ok(()) => Ok(tree.into_html()),
         Err(err) => Err(err),
         //         Err(err) => Err(format!(
         //             "
@@ -57,7 +58,7 @@ pub fn parse_html(html: &str) -> Result<Html, String> {
 }
 
 /// Wrapper for the [`parse_html`] function.
-fn parse_html_aux(chars: &mut Chars<'_>, tree: &mut Html) -> Result<(), String> {
+fn parse_html_aux(chars: &mut Chars<'_>, tree: &mut HtmlBuilder) -> Result<(), String> {
     let mut dash_count: u32 = 0;
     let mut style = false;
     let mut script = false;
@@ -102,7 +103,7 @@ fn parse_html_aux(chars: &mut Chars<'_>, tree: &mut Html) -> Result<(), String> 
             } else if ch == '<' {
                 match parse_tag(chars)? {
                     TagBuilder::Doctype { name, attr } =>
-                        tree.push_node(Html::Doctype { name, attr }),
+                        tree.push_node(HtmlBuilder::Doctype { name, attr }),
                     TagBuilder::Open(tag) => {
                         if tag.name == "style" {
                             style = true;

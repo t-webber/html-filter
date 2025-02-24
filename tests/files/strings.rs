@@ -7,10 +7,10 @@ const INPUT: &str = "
 <!-- comment 1 -->
 <html>
     A first text
-    <!-- with comment -->
+    <!-- first comment -->
     <p>
         A <strong>first</strong> text
-        <!-- with comment -->
+        <!-- second comment -->
         <img />
     </p>
 </html>
@@ -35,10 +35,10 @@ all: Filter::new() => "
 <!-- comment 1 -->
 <html>
     A first text
-    <!-- with comment -->
+    <!-- first comment -->
     <p>
         A <strong>first</strong> text
-        <!-- with comment -->
+        <!-- second comment -->
         <img />
     </p>
 </html>
@@ -65,10 +65,10 @@ text: Filter::new().none_except_text() => "
 comment: Filter::new().none_except_comment() => "
 <!-- comment 1 -->
 <html>
-    <!-- with comment -->
+    <!-- first comment -->
     <p>
         <strong></strong>
-        <!-- with comment -->
+        <!-- second comment -->
         <img />
     </p>
 </html>"
@@ -81,10 +81,10 @@ text_comment: Filter::new().all_except_doctype() => "
 <!-- comment 1 -->
 <html>
     A first text
-    <!-- with comment -->
+    <!-- first comment -->
     <p>
         A <strong>first</strong> text
-        <!-- with comment -->
+        <!-- second comment -->
         <img />
     </p>
 </html>"
@@ -103,10 +103,10 @@ doctype_comment: Filter::new().all_except_text() => "
 <!DOCTYPE html>
 <!-- comment 1 -->
 <html>
-    <!-- with comment -->
+    <!-- first comment -->
     <p>
         <strong></strong>
-        <!-- with comment -->
+        <!-- second comment -->
         <img />
     </p>
 </html>"
