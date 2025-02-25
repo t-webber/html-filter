@@ -7,10 +7,12 @@
 //! For more information on how to define the filtering rules, please refer to
 //! [`Filter`].
 
+extern crate alloc;
 mod element;
 mod node_type;
 pub mod types;
 
+use alloc::borrow::Cow;
 use core::cmp::Ordering;
 
 use node_type::NodeTypeFilter;
@@ -87,9 +89,10 @@ impl FilterSuccess {
     ///
     /// This is the method to use when the node isn't interesting alone, it can
     /// be if it is in the right scope though.
+    #[inline]
     #[expect(clippy::unnecessary_wraps, reason = "useful for filter method")]
-    const fn make_none(html: Html) -> Option<Self> {
-        Some(Self { depth: DepthSuccess::None, html })
+    fn make_none(html: Cow<'_, Html>) -> Option<Self> {
+        Some(Self { depth: DepthSuccess::None, html: html.into_owned() })
     }
 }
 
@@ -99,8 +102,7 @@ impl Html {
     /// This methods stop checking after a maximum depth, as the current node
     /// will be discarded if it is deeper in the tree.
     fn check_depth(&self, max_depth: usize, filter: &Filter) -> Option<usize> {
-        // let input = format!("{self:?}").chars().take(200).collect::<String>();
-        let output = match self {
+        match self {
             Self::Empty | Self::Text(_) | Self::Comment { .. } | Self::Doctype { .. } => None,
             Self::Tag { tag, .. } if filter.tag_explicitly_allowed(tag) => Some(0),
             Self::Tag { .. } | Self::Vec(_) if max_depth == 0 => None,
@@ -126,19 +128,7 @@ impl Html {
                     }
                 })
                 .unwrap_or(Some(0)),
-        };
-        //         println!(
-        //             "
-        // ~~~~~~~~~~~~~~~~~~~~~~~~
-        // {input}
-
-        // =>
-        // {output:?}
-
-        // ~~~~~~~~~~~~~~~~~~~~~~~~
-        //      "
-        //         );
-        output
+        }
     }
 
     /// Filters html based on a defined filter.
@@ -155,168 +145,7 @@ impl Html {
     #[inline]
     #[must_use]
     pub fn filter(self, filter: &Filter) -> Self {
-        self.filter_aux(filter, false).html
-    }
-
-    /// Wrapper for [`Self::filter`]
-    ///
-    /// Refer to [`Self::filter`] for documentation.
-    ///
-    /// This methods takes an additional `clean` boolean to indicate when a tag
-    /// returns the child. In that case, the texts must disappear if present at
-    /// root.
-    ///
-    /// This methods returns a wrapper of the final html in a [`FilterSuccess`]
-    /// to follow the current depth of the last found node. See
-    /// [`FilterSuccess`] for more information.
-    fn filter_aux(self, filter: &Filter, found: bool) -> FilterSuccess {
-        // let input = format!(
-        //     "{self:?}
-        // "
-        // )
-        // .chars()
-        // .take(150)
-        // .collect::<String>();
-        let output = match self {
-            Self::Comment { .. } if found || !filter.comment_explicitly_allowed() => None,
-            Self::Doctype { .. } if found || !filter.doctype_allowed() => None,
-            Self::Text(txt)
-                if found || !filter.text_allowed() || txt.chars().all(char::is_whitespace) =>
-                None,
-
-            Self::Tag { tag, child } => Self::filter_aux_tag(*child, tag, filter, found),
-            Self::Vec(vec) => Self::filter_aux_vec(vec, filter),
-
-            Self::Text(_) | Self::Empty => None,
-            Self::Comment { .. } | Self::Doctype { .. } => FilterSuccess::make_none(self),
-        }
-        .unwrap_or_default();
-        //         println!(
-        //             "
-        // ------------------------------------------------------
-        // {input}
-
-        // =>
-        // {:?}
-        // \n{}
-
-        // ------------------------------------------------------
-        //                              ",
-        //             output.depth, output.html
-        //         );
-        output
-    }
-
-    /// Auxiliary method for [`Self::filter_aux`] on [`Html::Vec`]
-    #[expect(
-        clippy::arithmetic_side_effects,
-        reason = "incr depth when smaller than filter_depth"
-    )]
-    fn filter_aux_tag(
-        child: Self,
-        tag: Tag,
-        filter: &Filter,
-        found: bool,
-    ) -> Option<FilterSuccess> {
-        if filter.tag_allowed(&tag) {
-            FilterSuccess::make_found(Self::Tag {
-                tag,
-                child: Box::new(child.filter_light(filter)),
-            })
-        } else if filter.as_depth() == 0 {
-            child.filter_aux(filter, found).incr()
-        } else {
-            let rec = child.filter_aux(filter, found);
-            match rec.depth {
-                DepthSuccess::None => None,
-                DepthSuccess::Success => Some(rec),
-                DepthSuccess::Found(depth) => match depth.cmp(&filter.as_depth()) {
-                    Ordering::Less => Some(FilterSuccess {
-                        depth: DepthSuccess::Found(depth + 1),
-                        html: Self::Tag { tag, child: Box::new(rec.html) },
-                    }),
-                    Ordering::Equal | Ordering::Greater =>
-                        Some(FilterSuccess { depth: DepthSuccess::Success, html: rec.html }),
-                },
-            }
-        }
-    }
-
-    /// Auxiliary method for [`Self::filter_aux`] on [`Html::Vec`]
-    #[expect(
-        clippy::arithmetic_side_effects,
-        reason = "incr depth when smaller than filter_depth"
-    )]
-    fn filter_aux_vec(vec: Box<[Self]>, filter: &Filter) -> Option<FilterSuccess> {
-        match vec
-            .iter()
-            .filter_map(|child| child.check_depth(filter.as_depth() + 1, filter))
-            .min()
-        {
-            Some(depth) if depth < filter.as_depth() => Some(FilterSuccess {
-                depth: DepthSuccess::Found(depth),
-                html: Self::Vec(
-                    vec.into_iter()
-                        .map(|child| child.filter_light(filter))
-                        .collect(),
-                ),
-            }),
-            Some(_) => Some(FilterSuccess {
-                depth: DepthSuccess::Success,
-                html: Self::Vec(
-                    vec.into_iter()
-                        .map(|child| child.filter_aux(filter, true))
-                        .filter(|child| !child.html.is_empty())
-                        .map(|child| child.html)
-                        .collect(),
-                ),
-            }),
-            None => {
-                let mut filtered = vec
-                    .into_iter()
-                    .map(|child| child.filter_aux(filter, false))
-                    .filter(|node| {
-                        !node.html.is_empty() // && node.depth.successful(filter.as_depth())
-                    })
-                    .collect::<Vec<_>>();
-                if filtered.len() <= 1 {
-                    filtered.pop()
-                } else {
-                    filtered
-                        .iter()
-                        .map(|child| child.depth)
-                        .min()
-                        .map(|depth| FilterSuccess {
-                            depth,
-                            html: Self::Vec(filtered.into_iter().map(|child| child.html).collect()),
-                        })
-                }
-            }
-        }
-    }
-
-    /// Light filter without complicated logic, just filtering on types.
-    ///
-    /// This method does take into account the [`Filter::tag_name`],
-    ///   [`Filter::attribute_name`] and [`Filter::attribute_value`] methods,
-    /// only the types of [`NodeTypeFilter`].
-    #[coverage(off)]
-    fn filter_light(self, filter: &Filter) -> Self {
-        match self {
-            Self::Text(_) if filter.text_allowed() => self,
-            Self::Comment { .. } if filter.comment_allowed() => self,
-            Self::Doctype { .. } if filter.doctype_allowed() => self,
-            Self::Tag { tag, .. } if filter.tag_explicitly_blacklisted(&tag) => Self::Empty,
-            Self::Tag { tag, child } =>
-                Self::Tag { tag, child: Box::new(child.filter_light(filter)) },
-            Self::Vec(vec) => Self::Vec(
-                vec.into_iter()
-                    .map(|child| child.filter_light(filter))
-                    .collect(),
-            ),
-            Self::Empty | Self::Text(_) | Self::Comment { .. } | Self::Doctype { .. } =>
-                Self::Empty,
-        }
+        filter_aux(Cow::Owned(self), filter, false).html
     }
 
     /// Finds an html node based on a defined filter.
@@ -349,5 +178,215 @@ impl Html {
         } else {
             self
         }
+    }
+
+    /// Filters html based on a defined filter.
+    ///
+    /// Equivalent of [`Html::filter`] when data is not owned.
+    #[inline]
+    #[must_use]
+    pub fn to_filtered(&self, filter: &Filter) -> Self {
+        filter_aux(Cow::Borrowed(self), filter, false).html
+    }
+
+    /// Finds an html node based on a defined filter.
+    ///
+    /// Equivalent of [`Html::find`] when data is not owned.
+    //TODO: data except first is cloned
+    #[inline]
+    #[must_use]
+    pub fn to_found(&self, filter: &Filter) -> Self {
+        self.to_filtered(filter).into_first()
+    }
+}
+
+/// Wrapper for [`Html::filter`]
+///
+/// Refer to [`Html::filter`] for documentation.
+///
+/// This methods takes an additional `clean` boolean to indicate when a tag
+/// returns the child. In that case, the texts must disappear if present at
+/// root.
+///
+/// This methods returns a wrapper of the final html in a [`FilterSuccess`]
+/// to follow the current depth of the last found node. See
+/// [`FilterSuccess`] for more information.
+#[allow(clippy::allow_attributes, reason = "expect is buggy")]
+#[allow(
+    clippy::enum_glob_use,
+    reason = "heavy syntax and Html is the main struct"
+)]
+fn filter_aux(cow_html: Cow<'_, Html>, filter: &Filter, found: bool) -> FilterSuccess {
+    use Html::*;
+    match cow_html {
+        Cow::Borrowed(Comment(_)) | Cow::Owned(Comment(_))
+            if found || !filter.comment_explicitly_allowed() =>
+            None,
+        Cow::Borrowed(Doctype { .. }) | Cow::Owned(Doctype { .. })
+            if found || !filter.doctype_allowed() =>
+            None,
+        Cow::Borrowed(Doctype { .. } | Comment(_)) | Cow::Owned(Doctype { .. } | Comment(_)) =>
+            FilterSuccess::make_none(cow_html),
+        Cow::Borrowed(Text(_) | Empty) | Cow::Owned(Text(_) | Empty) => None,
+        Cow::Borrowed(Tag { tag, child }) =>
+            filter_aux_tag(Cow::Borrowed(&**child), Cow::Borrowed(tag), filter, found),
+        Cow::Owned(Tag { tag, child }) =>
+            filter_aux_tag(Cow::Owned(*child), Cow::Owned(tag), filter, found),
+        Cow::Borrowed(Vec(vec)) => filter_aux_vec(Cow::Borrowed(vec), filter),
+        Cow::Owned(Vec(vec)) => filter_aux_vec(Cow::Owned(vec), filter),
+    }
+    .unwrap_or_default()
+}
+
+/// Auxiliary method for [`filter_aux`] on [`Html::Tag`]
+#[expect(
+    clippy::arithmetic_side_effects,
+    reason = "incr depth when smaller than filter_depth"
+)]
+fn filter_aux_tag(
+    child: Cow<'_, Html>,
+    tag: Cow<'_, Tag>,
+    filter: &Filter,
+    found: bool,
+) -> Option<FilterSuccess> {
+    if filter.tag_allowed(tag.as_ref()) {
+        FilterSuccess::make_found(Html::Tag {
+            tag: tag.into_owned(),
+            child: Box::new(filter_light(child, filter)),
+        })
+    } else if filter.as_depth() == 0 {
+        filter_aux(child, filter, found).incr()
+    } else {
+        let rec = filter_aux(child, filter, found);
+        match rec.depth {
+            DepthSuccess::None => None,
+            DepthSuccess::Success => Some(rec),
+            DepthSuccess::Found(depth) => match depth.cmp(&filter.as_depth()) {
+                Ordering::Less => Some(FilterSuccess {
+                    depth: DepthSuccess::Found(depth + 1),
+                    html: Html::Tag { tag: tag.into_owned(), child: Box::new(rec.html) },
+                }),
+                Ordering::Equal | Ordering::Greater =>
+                    Some(FilterSuccess { depth: DepthSuccess::Success, html: rec.html }),
+            },
+        }
+    }
+}
+
+/// Auxiliary method for [`filter_aux`] on [`Html::Vec`]
+#[expect(
+    clippy::arithmetic_side_effects,
+    reason = "incr depth when smaller than filter_depth"
+)]
+fn filter_aux_vec(vec: Cow<'_, Box<[Html]>>, filter: &Filter) -> Option<FilterSuccess> {
+    match vec
+        .as_ref()
+        .iter()
+        .filter_map(|child| child.check_depth(filter.as_depth() + 1, filter))
+        .min()
+    {
+        Some(depth) if depth < filter.as_depth() => Some(FilterSuccess {
+            depth: DepthSuccess::Found(depth),
+            html: Html::Vec(
+                vec.iter()
+                    .map(|child| filter_light(Cow::Borrowed(child), filter))
+                    .collect(),
+            ),
+        }),
+        Some(_) => Some(FilterSuccess {
+            depth: DepthSuccess::Success,
+            html: Html::Vec(into_iter_filter_map_collect(vec, |child| {
+                let rec = filter_aux(child, filter, true);
+                if rec.html.is_empty() {
+                    None
+                } else {
+                    Some(rec.html)
+                }
+            })),
+        }),
+        None => {
+            let mut filtered: Vec<FilterSuccess> = into_iter_filter_map_collect(vec, |child| {
+                let rec = filter_aux(child, filter, false);
+                if rec.html.is_empty() { None } else { Some(rec) }
+            });
+            if filtered.len() <= 1 {
+                filtered.pop()
+            } else {
+                filtered
+                    .iter()
+                    .map(|child| child.depth)
+                    .min()
+                    .map(|depth| FilterSuccess {
+                        depth,
+                        html: Html::Vec(filtered.into_iter().map(|child| child.html).collect()),
+                    })
+            }
+        }
+    }
+}
+
+/// Light filter without complicated logic, just filtering on types.
+///
+/// This method does take into account the [`Filter::tag_name`],
+///   [`Filter::attribute_name`] and [`Filter::attribute_value`] methods,
+/// only the types of [`NodeTypeFilter`].
+///
+/// The return type is [`Html`] and not [`Cow`] has it is only called on
+/// successes.
+#[coverage(off)]
+#[allow(clippy::allow_attributes, reason = "expect is buggy")]
+#[allow(
+    clippy::enum_glob_use,
+    reason = "heavy syntax and Html is the main struct"
+)]
+fn filter_light(cow_html: Cow<'_, Html>, filter: &Filter) -> Html {
+    use Html::*;
+    match cow_html {
+        Cow::Borrowed(Text(_)) | Cow::Owned(Text(_)) if filter.text_allowed() =>
+            cow_html.into_owned(),
+        Cow::Borrowed(Comment(_)) | Cow::Owned(Comment(_)) if filter.comment_allowed() =>
+            cow_html.into_owned(),
+        Cow::Borrowed(Doctype { .. }) | Cow::Owned(Doctype { .. }) if filter.doctype_allowed() =>
+            cow_html.into_owned(),
+        Cow::Borrowed(Tag { tag, .. }) if filter.tag_explicitly_blacklisted(tag) => Html::Empty,
+        Cow::Owned(Tag { tag, .. }) if filter.tag_explicitly_blacklisted(&tag) => Html::Empty,
+        Cow::Borrowed(Tag { tag, child }) => Tag {
+            tag: tag.to_owned(),
+            child: Box::new(filter_light(Cow::Borrowed(&**child), filter)),
+        },
+        Cow::Owned(Tag { tag, child }) =>
+            Tag { tag, child: Box::new(filter_light(Cow::Owned(*child), filter)) },
+        Cow::Borrowed(Vec(vec)) => Html::Vec(
+            vec.into_iter()
+                .map(|child| filter_light(Cow::Borrowed(child), filter))
+                .collect(),
+        ),
+        Cow::Owned(Vec(vec)) => Html::Vec(
+            vec.into_iter()
+                .map(|child| filter_light(Cow::Owned(child), filter))
+                .collect(),
+        ),
+        Cow::Borrowed(Empty | Text(_) | Comment { .. } | Doctype { .. })
+        | Cow::Owned(Empty | Text(_) | Comment { .. } | Doctype { .. }) => Html::Empty,
+    }
+}
+
+/// Method to apply [`Iterator::filter_map`] on an iterator inside a Cow,
+/// without losing the Cow.
+pub fn into_iter_filter_map_collect<T, U, V, F>(cow: Cow<'_, Box<[T]>>, map: F) -> V
+where
+    T: Clone,
+    V: FromIterator<U>,
+    F: Fn(Cow<'_, T>) -> Option<U>,
+{
+    match cow {
+        Cow::Borrowed(borrowed) => borrowed
+            .into_iter()
+            .filter_map(|elt| map(Cow::Borrowed(elt)))
+            .collect(),
+        Cow::Owned(owned) => owned
+            .into_iter()
+            .filter_map(|elt| map(Cow::Owned(elt)))
+            .collect(),
     }
 }

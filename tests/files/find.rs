@@ -10,8 +10,11 @@ macro_rules! test_find {
             #[test]
             fn $name() {
                 let content = read_to_string("tests/data/index.html").unwrap();
-                let tree = parse_html(&content).unwrap_or_else(|err| panic!("{err}")).find(&$filter);
-                test_maker(stringify!($name), $expect, tree, $filter);
+                let tree = parse_html(&content).unwrap_or_else(|err| panic!("{err}"));
+                let found_cloned = (&tree).to_found(&$filter);
+                let found = tree.find(&$filter);
+                test_maker(stringify!($name), $expect, found_cloned, $filter);
+                test_maker(stringify!($name), $expect, found, $filter);
             }
         )*
     };

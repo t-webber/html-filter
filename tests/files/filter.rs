@@ -10,8 +10,11 @@ macro_rules! test_filter {
             #[test]
             fn $name() {
                 let content = read_to_string("tests/data/index.html").unwrap();
-                let tree = parse_html(&content).unwrap_or_else(|err| panic!("{err}")).filter(&$filter);
-                test_maker(stringify!($name), $expect, tree, $filter)
+                let tree = parse_html(&content).unwrap_or_else(|err| panic!("{err}"));
+                let filtered_cloned = (&tree).to_filtered(&$filter);
+                let filtered = tree.filter(&$filter);
+                test_maker(stringify!($name), $expect, filtered_cloned, $filter);
+                test_maker(stringify!($name), $expect, filtered, $filter);
             }
         )*
     };

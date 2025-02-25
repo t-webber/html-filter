@@ -4,6 +4,23 @@
 
 #[test]
 fn auto_doctest_1() {
+    // Auto generated from src/types/html.rs:13
+    use html_parser::prelude::*;
+    let _html: Html = parse_html(
+        r#"<nav>
+        <!-- Navigation menu -->
+        <ul>
+            <li href="first">First link</li>
+            <li href="second">Second link</li>
+            <li href="third">Third link</li>
+        </ul>
+    </nav>"#,
+    )
+    .unwrap();
+}
+
+#[test]
+fn auto_doctest_2() {
     // Auto generated from src/types/tag.rs:133
     use html_parser::prelude::*;
     let html = parse_html("<a enabled href='https://crates.io'>").unwrap();
@@ -22,7 +39,7 @@ fn auto_doctest_1() {
 }
 
 #[test]
-fn auto_doctest_2() {
+fn auto_doctest_3() {
     // Auto generated from src/types/tag.rs:169
     use html_parser::prelude::*;
     let html = parse_html("<div id='blob' />").unwrap();
@@ -36,7 +53,7 @@ fn auto_doctest_2() {
 }
 
 #[test]
-fn auto_doctest_3() {
+fn auto_doctest_4() {
     // Auto generated from src/types/tag.rs:191
     use html_parser::prelude::*;
     let html = parse_html("<div />").unwrap();
@@ -48,7 +65,7 @@ fn auto_doctest_3() {
 }
 
 #[test]
-fn auto_doctest_4() {
+fn auto_doctest_5() {
     // Auto generated from src/types/tag.rs:217
     use html_parser::prelude::*;
     let html = parse_html(r#"<a id="std doc" enabled xlink:href="https://std.rs"/>"#).unwrap();
@@ -65,7 +82,7 @@ fn auto_doctest_4() {
 }
 
 #[test]
-fn auto_doctest_5() {
+fn auto_doctest_6() {
     // Auto generated from src/types/tag.rs:251
     use html_parser::prelude::*;
     let html = parse_html(r#"<a enabled/>"#).unwrap();
@@ -83,23 +100,6 @@ fn auto_doctest_5() {
     } else {
         unreachable!()
     }
-}
-
-#[test]
-fn auto_doctest_6() {
-    // Auto generated from src/types/html.rs:13
-    use html_parser::prelude::*;
-    let _html: Html = parse_html(
-        r#"<nav>
-        <!-- Navigation menu -->
-        <ul>
-            <li href="first">First link</li>
-            <li href="second">Second link</li>
-            <li href="third">Third link</li>
-        </ul>
-    </nav>"#,
-    )
-    .unwrap();
 }
 
 #[test]
