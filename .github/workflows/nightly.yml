@@ -76,4 +76,4 @@ jobs:
                   path: ~/.cargo/
                   key: cargo-cache
             - name: Check coverage
-              run: cargo tarpaulin --fail-under 100
+              run: cargo tarpaulin --doc --tests  --fail-under 100
