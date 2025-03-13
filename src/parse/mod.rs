@@ -18,7 +18,7 @@ use crate::types::tag::TagBuilder;
 /// # Examples
 ///
 /// ```
-/// use html_parser::prelude::*;
+/// use html_filter::prelude::*;
 ///
 /// let html: &str = r#"
 /// <!DOCTYPE html>

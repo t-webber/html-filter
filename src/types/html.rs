@@ -12,7 +12,7 @@ use super::tag::Tag;
 /// # Examples
 ///
 /// ```
-/// use html_parser::prelude::*;
+/// use html_filter::prelude::*;
 ///
 /// let _html: Html = parse_html(
 ///     r#"<nav>

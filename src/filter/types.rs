@@ -22,7 +22,7 @@ use crate::unwrap_or;
 /// ```
 /// #![allow(unused)]
 ///
-/// use html_parser::prelude::*;
+/// use html_filter::prelude::*;
 ///
 /// Filter::new().comment(false).doctype(false); // Removes comments (`<!---->`) and doctype tags (`<!DOCTYPE html>`).
 /// Filter::new().tag_name("a"); // Lists all the `<a>` tags and their content.
@@ -48,7 +48,7 @@ pub struct Filter {
     /// href="#">link</a><li></ul></nav>` and we search with the filter
     ///
     /// ```
-    /// use html_parser::prelude::*;
+    /// use html_filter::prelude::*;
     ///
     /// let _filter = Filter::new().depth(1).tag_name("a");
     /// ```
@@ -305,7 +305,7 @@ impl Filter {
     ///
     /// ```
     /// #![allow(unused)]
-    /// html_parser::prelude::Filter::new()
+    /// html_filter::prelude::Filter::new()
     ///     .attribute_value("href", "second")
     ///     .depth(0);
     /// ```
@@ -320,7 +320,7 @@ impl Filter {
     ///
     /// ```
     /// #![allow(unused)]
-    /// html_parser::prelude::Filter::new()
+    /// html_filter::prelude::Filter::new()
     ///     .attribute_value("href", "second")
     ///     .depth(1);
     /// ```
@@ -339,7 +339,7 @@ impl Filter {
     ///
     /// ```
     /// #![allow(unused)]
-    /// html_parser::prelude::Filter::new()
+    /// html_filter::prelude::Filter::new()
     ///     .attribute_value("href", "second")
     ///     .depth(2);
     /// ```
@@ -416,7 +416,7 @@ impl Filter {
     /// # Examples
     ///
     /// ```
-    /// use html_parser::prelude::*;
+    /// use html_filter::prelude::*;
     ///
     /// let _filter: Filter = Filter::new();
     /// ```

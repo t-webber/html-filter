@@ -132,7 +132,7 @@ impl fmt::Display for Attribute {
 /// # Examples
 ///
 /// ```
-/// use html_parser::prelude::*;
+/// use html_filter::prelude::*;
 ///
 /// let html = parse_html("<a enabled href='https://crates.io'>").unwrap();
 /// if let Html::Tag { tag, .. } = html {
@@ -168,7 +168,7 @@ impl Tag {
     /// # Examples
     ///
     /// ```
-    /// use html_parser::prelude::*;
+    /// use html_filter::prelude::*;
     ///
     /// let html = parse_html("<div id='blob' />").unwrap();
     /// if let Html::Tag { tag, .. } = html {
@@ -190,7 +190,7 @@ impl Tag {
     /// # Examples
     ///
     /// ```
-    /// use html_parser::prelude::*;
+    /// use html_filter::prelude::*;
     ///
     /// let html = parse_html("<div />").unwrap();
     /// if let Html::Tag { tag, .. } = html {
@@ -216,7 +216,7 @@ impl Tag {
     /// # Examples
     ///
     /// ```
-    /// use html_parser::prelude::*;
+    /// use html_filter::prelude::*;
     ///
     /// let html = parse_html(r#"<a id="std doc" enabled xlink:href="https://std.rs"/>"#).unwrap();
     ///
@@ -250,7 +250,7 @@ impl Tag {
     /// # Examples
     ///
     /// ```
-    /// use html_parser::prelude::*;
+    /// use html_filter::prelude::*;
     ///
     /// let html = parse_html(r#"<a enabled/>"#).unwrap();
     ///

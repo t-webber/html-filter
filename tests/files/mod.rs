@@ -1,7 +1,7 @@
 use std::fmt::Debug;
 use std::fs;
 
-use html_parser::prelude::*;
+use html_filter::prelude::*;
 
 pub mod filter;
 pub mod find;

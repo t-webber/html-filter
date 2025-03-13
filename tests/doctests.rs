@@ -5,7 +5,7 @@
 #[test]
 fn auto_doctest_1() {
     // Auto generated from src/types/html.rs:13
-    use html_parser::prelude::*;
+    use html_filter::prelude::*;
     let _html: Html = parse_html(
         r#"<nav>
         <!-- Navigation menu -->
@@ -22,7 +22,7 @@ fn auto_doctest_1() {
 #[test]
 fn auto_doctest_2() {
     // Auto generated from src/types/tag.rs:133
-    use html_parser::prelude::*;
+    use html_filter::prelude::*;
     let html = parse_html("<a enabled href='https://crates.io'>").unwrap();
     if let Html::Tag { tag, .. } = html {
         assert!(tag.as_name() == "a");
@@ -41,7 +41,7 @@ fn auto_doctest_2() {
 #[test]
 fn auto_doctest_3() {
     // Auto generated from src/types/tag.rs:169
-    use html_parser::prelude::*;
+    use html_filter::prelude::*;
     let html = parse_html("<div id='blob' />").unwrap();
     if let Html::Tag { tag, .. } = html {
         let attr = tag.as_attrs().first().unwrap();
@@ -55,7 +55,7 @@ fn auto_doctest_3() {
 #[test]
 fn auto_doctest_4() {
     // Auto generated from src/types/tag.rs:191
-    use html_parser::prelude::*;
+    use html_filter::prelude::*;
     let html = parse_html("<div />").unwrap();
     if let Html::Tag { tag, .. } = html {
         assert!(tag.as_name() == "div");
@@ -67,7 +67,7 @@ fn auto_doctest_4() {
 #[test]
 fn auto_doctest_5() {
     // Auto generated from src/types/tag.rs:217
-    use html_parser::prelude::*;
+    use html_filter::prelude::*;
     let html = parse_html(r#"<a id="std doc" enabled xlink:href="https://std.rs"/>"#).unwrap();
     if let Html::Tag { tag, .. } = html {
         assert!(tag.find_attr_value("enabled").is_none());
@@ -84,7 +84,7 @@ fn auto_doctest_5() {
 #[test]
 fn auto_doctest_6() {
     // Auto generated from src/types/tag.rs:251
-    use html_parser::prelude::*;
+    use html_filter::prelude::*;
     let html = parse_html(r#"<a enabled/>"#).unwrap();
     if let Html::Tag { tag, .. } = html {
         assert!(tag.into_attr_value("enabled").is_none());
@@ -106,7 +106,7 @@ fn auto_doctest_6() {
 fn auto_doctest_7() {
     // Auto generated from src/filter/types.rs:21
     #![allow(unused)]
-    use html_parser::prelude::*;
+    use html_filter::prelude::*;
     Filter::new().comment(false).doctype(false); // Removes comments (`<!---->`) and doctype tags (`<!DOCTYPE html>`).
     Filter::new().tag_name("a"); // Lists all the `<a>` tags and their content.
     Filter::new().attribute_name("onClick"); // Lists all the tags with a `onClick` attribute.
@@ -117,7 +117,7 @@ fn auto_doctest_7() {
 #[test]
 fn auto_doctest_8() {
     // Auto generated from src/filter/types.rs:49
-    use html_parser::prelude::*;
+    use html_filter::prelude::*;
     let _filter = Filter::new().depth(1).tag_name("a");
 }
 
@@ -125,7 +125,7 @@ fn auto_doctest_8() {
 fn auto_doctest_9() {
     // Auto generated from src/filter/types.rs:305
     #![allow(unused)]
-    html_parser::prelude::Filter::new()
+    html_filter::prelude::Filter::new()
         .attribute_value("href", "second")
         .depth(0);
 }
@@ -134,7 +134,7 @@ fn auto_doctest_9() {
 fn auto_doctest_10() {
     // Auto generated from src/filter/types.rs:320
     #![allow(unused)]
-    html_parser::prelude::Filter::new()
+    html_filter::prelude::Filter::new()
         .attribute_value("href", "second")
         .depth(1);
 }
@@ -143,7 +143,7 @@ fn auto_doctest_10() {
 fn auto_doctest_11() {
     // Auto generated from src/filter/types.rs:339
     #![allow(unused)]
-    html_parser::prelude::Filter::new()
+    html_filter::prelude::Filter::new()
         .attribute_value("href", "second")
         .depth(2);
 }
@@ -151,14 +151,14 @@ fn auto_doctest_11() {
 #[test]
 fn auto_doctest_12() {
     // Auto generated from src/filter/types.rs:417
-    use html_parser::prelude::*;
+    use html_filter::prelude::*;
     let _filter: Filter = Filter::new();
 }
 
 #[test]
 fn auto_doctest_13() {
     // Auto generated from src/parse/mod.rs:19
-    use html_parser::prelude::*;
+    use html_filter::prelude::*;
     let html: &str = r#"
     <!DOCTYPE html>
     <html lang="en">

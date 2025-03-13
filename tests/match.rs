@@ -1,4 +1,4 @@
-use html_parser::prelude::*;
+use html_filter::prelude::*;
 
 #[test]
 fn manual() {

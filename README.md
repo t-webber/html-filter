@@ -7,28 +7,26 @@
 [![coverage](https://img.shields.io/badge/Coverage-100%25-purple)](https://github.com/t-webber/html-parser/actions/workflows/nightly.yml)
 [![rust-edition](https://img.shields.io/badge/Rust--edition-2024-darkred?logo=Rust)](https://doc.rust-lang.org/stable/edition-guide/rust-2024/)
 
-This is a rust library that parses html source files and allows you to search and filter in this Html with a specific set of rules.
+This is a rust library that parses html source files and allows you to search in and filter this Html with a specific set of rules.
 
 > Do not use this parser to check the syntax of your HTML code. Many HTML files are parsed without any errors by this parser, as the sole objective is to get a parsed version. Only breaking syntax errors raises errors.
 >
 > Obviously, all valid HTML files work fine.
 
-## Standard
-
-This is a simple lightweight html parser, that converts an html file (in the `str` format) to a tree representing the html tags and text.
+This is a simple lightweight html parser, that converts an html file (in the `&str` format) to a tree representing the html tags and text.
 
 ## Getting started
 
 You can install it with
 
 ```shell
-cargo add html_parser
+cargo add html_filter
 ```
 
 then us it like this:
 
 ```rust
-use html_parser::prelude::*;
+use html_filter::prelude::*;
 
 let html: &str = r#"
 <!DOCTYPE html>
@@ -46,6 +44,7 @@ let html: &str = r#"
 let tree: Html = parse_html(html).expect("Invalid HTML");
 
 // Now you can use it!
+// Beware, this doesn't always work as you can have ways to write the same HTML.
 assert!(format!("{tree}") == html);
 ```
 
@@ -56,7 +55,7 @@ You can also use the `find` and `filter` methods to manage this html. To do this
 ### Filter
 
 ```rust
-use html_parser::prelude::*;
+use html_filter::prelude::*;
 
 let html: &str = r##"
   <section>
@@ -91,7 +90,7 @@ if let Html::Vec(links) = filtered_tree {
 The finder returns the first element that respects the filter:
 
 ```rust
-use html_parser::prelude::*;
+use html_filter::prelude::*;
 
 let html: &str = r##"
   <section>

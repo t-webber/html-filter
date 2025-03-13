@@ -1,12 +1,12 @@
 [package]
-name = "html_parser"
+name = "html-filter"
 version = "0.1.0"
 edition = "2024"
 description = "Crate to parse, filter, search and edit an HTML file."
 license-file = "LICENSE"
-repository = "https://github.com/t-webber/html-parser"
-keywords = ["parser", "HTML", "scraping"]
-categories = ["parser", "HTML", "scraping"]
+repository = "https://github.com/t-webber/html-filter"
+keywords = ["parser", "html", "scraping"]
+categories = ["command-line-interface", "parser-implementations", "parsing"]
 readme = "README.md"
 
 
