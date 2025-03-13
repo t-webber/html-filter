@@ -7,6 +7,12 @@ use crate::prelude::Html;
 use crate::types::html_builder::HtmlBuilder;
 use crate::types::tag::TagBuilder;
 
+/// Tags that cannot have a content
+///
+/// This means that they are always self-closing tags: `<meta>` and `<br>` are
+/// closed.
+const AUTO_CLOSING_TAGS: [&str; 2] = ["meta", "br"];
+
 impl Html {
     /// Parses an HTML string into a Dom tree.
     ///

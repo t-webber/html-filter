@@ -157,7 +157,7 @@ fn auto_doctest_12() {
 
 #[test]
 fn auto_doctest_13() {
-    // Auto generated from src/parse/mod.rs:18
+    // Auto generated from src/parse/mod.rs:24
     use html_filter::prelude::*;
     let html: &str = r#"
     <!DOCTYPE html>

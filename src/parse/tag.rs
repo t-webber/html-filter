@@ -6,6 +6,7 @@
 use core::mem::take;
 use core::str::Chars;
 
+use super::AUTO_CLOSING_TAGS;
 use crate::errors::safe_expect;
 use crate::types::tag::{Attribute, Tag, TagBuilder};
 
@@ -150,6 +151,8 @@ impl TagBuilder {
                 };
                 Self::Doctype { name, attr }
             }
+            (false, Close::None) if AUTO_CLOSING_TAGS.contains(&name.as_str()) =>
+                Self::OpenClose(Tag::from((name, attrs.into_boxed_slice()))),
             (false, Close::None) => Self::Open(Tag::from((name, attrs.into_boxed_slice()))),
             (false, Close::Before) => {
                 if !attrs.is_empty() {

@@ -66,7 +66,10 @@ fn format_html(html: &str) -> String {
         }
         formatted = out;
     }
-    handle_auto_closing(&formatted).replace(" >", ">")
+    handle_auto_closing(&formatted)
+        .replace(" >", ">")
+        .replace("> </meta>", ">")
+        .replace("> </br>", ">")
 }
 
 fn test_maker<T: Debug>(name: &str, expected: &str, output: Html, msg: T) {

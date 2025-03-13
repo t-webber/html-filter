@@ -214,13 +214,14 @@ r##"
 </section>
 "##
 
-no_script_style:     Filter::new().except_tag_name("script").except_tag_name("style") =>
+no_script_style: Filter::new().except_tag_name("script").except_tag_name("style") =>
 r##"
 <!>
 <!DOCTYPE >
 <!DOCTYPE html>
 <html lang="en">
     <head>
+        <!-- prettier-ignore -->
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Test HTML</title>
