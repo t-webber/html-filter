@@ -85,18 +85,18 @@ impl Filter {
     }
 
     /// Checks if comments must be kept according to the filter.
-    pub(super) fn comment_explicitly_allowed(&self) -> bool {
+    pub(super) const fn comment_explicitly_allowed(&self) -> bool {
         unwrap_or(self.types.comment_allowed(), self.is_empty())
     }
 
     /// Checks if doctypes must be kept according to the filter.
-    pub(super) fn doctype_allowed(&self) -> bool {
+    pub(super) const fn doctype_allowed(&self) -> bool {
         unwrap_or(self.types.doctype_allowed(), self.is_empty())
     }
 
     /// Checks if no rules were given concerning tags and attributes
     #[inline]
-    fn is_empty(&self) -> bool {
+    const fn is_empty(&self) -> bool {
         self.tags.is_empty() && self.attrs.is_empty()
     }
 

@@ -164,7 +164,7 @@ impl ValueAssociateHash {
 
     /// Checks if the [`ValueAssociateHash`] wasn't given any rules.
     #[inline]
-    pub fn is_empty(&self) -> bool {
+    pub const fn is_empty(&self) -> bool {
         self.whitelist.is_empty() && self.blacklist.is_empty()
     }
 
