@@ -7,7 +7,7 @@ macro_rules! make_err_test {
             fn $name() {
                 let html = $html;
                 let expected = $err;
-                if let Err(err) = parse_html(html) {
+                if let Err(err) = Html::parse(html) {
                     assert!(
                         err == expected,
                         "Error mismatch! Expected\n{expected}\nbut found \n{err}\n."

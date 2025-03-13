@@ -7,14 +7,14 @@ use super::tag::Tag;
 /// Dom tree structure to represent the parsed html.
 ///
 /// This tree represents the whole parsed HTML. To create an [`Html`] from a
-/// string, use the [`crate::parse::parse_html`] function.
+/// string, use the [`Html::parse`] function.
 ///
 /// # Examples
 ///
 /// ```
 /// use html_filter::prelude::*;
 ///
-/// let _html: Html = parse_html(
+/// let _html: Html = Html::parse(
 ///     r#"<nav>
 ///     <!-- Navigation menu -->
 ///     <ul>
@@ -27,7 +27,7 @@ use super::tag::Tag;
 /// .unwrap();
 /// ```
 #[non_exhaustive]
-#[derive(Debug, Default, Clone)]
+#[derive(Default, Debug, Clone)]
 pub enum Html {
     /// Comment block
     ///
@@ -106,11 +106,16 @@ impl Html {
     pub(crate) const fn is_empty(&self) -> bool {
         matches!(self, Self::Empty)
     }
+
+    /// Creates an empty [`Html`]
+    #[must_use]
+    pub const fn new() -> Self {
+        Self::Empty
+    }
 }
 
 #[expect(clippy::min_ident_chars, reason = "keep trait naming")]
 impl fmt::Display for Html {
-    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Empty => "".fmt(f),

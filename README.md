@@ -41,7 +41,7 @@ let html: &str = r#"
 "#;
 
 // Parse your html
-let tree: Html = parse_html(html).expect("Invalid HTML");
+let tree: Html = Html::parse(html).expect("Invalid HTML");
 
 // Now you can use it!
 // Beware, this doesn't always work as you can have ways to write the same HTML.
@@ -75,7 +75,7 @@ let html: &str = r##"
 let filter = Filter::new().tag_name("li");
 
 // Parse your html
-let filtered_tree: Html = parse_html(html).expect("Invalid HTML").filter(&filter);
+let filtered_tree: Html = Html::parse(html).expect("Invalid HTML").filter(&filter);
 
 // Check the result: filtered_tree contains the 4 lis from the above html string
 if let Html::Vec(links) = filtered_tree {
@@ -110,7 +110,7 @@ let html: &str = r##"
 let filter = Filter::new().tag_name("a");
 
 // Parse your html
-let link: Html = parse_html(html).expect("Invalid HTML").find(&filter);
+let link: Html = Html::parse(html).expect("Invalid HTML").find(&filter);
 
 // Check the result: link contains `<a href="/home">Home</a>`
 if let Html::Tag { tag, child, .. } = link {
@@ -123,3 +123,18 @@ if let Html::Tag { tag, child, .. } = link {
     unreachable!()
 }
 ```
+
+## License
+
+Licensed under either of
+
+-   [Apache License, Version 2.0](LICENSE-APACHE)
+-   [MIT license](LICENSE-MIT)
+
+at your option.
+
+## Contribution
+
+Unless you explicitly state otherwise, any contribution intentionally submitted
+for inclusion in the work by you, as defined in the Apache-2.0 license, shall be
+dual licensed as above, without any additional terms or conditions.

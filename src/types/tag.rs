@@ -107,7 +107,6 @@ impl Attribute {
 }
 
 impl From<String> for Attribute {
-    #[inline]
     fn from(name: String) -> Self {
         Self::NameNoValue(name)
     }
@@ -115,7 +114,6 @@ impl From<String> for Attribute {
 
 #[expect(clippy::min_ident_chars, reason = "keep trait naming")]
 impl fmt::Display for Attribute {
-    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::NameNoValue(prefix_name) => write!(f, " {prefix_name}"),
@@ -134,7 +132,7 @@ impl fmt::Display for Attribute {
 /// ```
 /// use html_filter::prelude::*;
 ///
-/// let html = parse_html("<a enabled href='https://crates.io'>").unwrap();
+/// let html = Html::parse("<a enabled href='https://crates.io'>").unwrap();
 /// if let Html::Tag { tag, .. } = html {
 ///     assert!(tag.as_name() == "a");
 ///     assert!(tag.find_attr_value("enabled").is_none());
@@ -149,7 +147,7 @@ impl fmt::Display for Attribute {
 /// }
 /// ```
 #[non_exhaustive]
-#[derive(Default, Debug, Clone)]
+#[derive(Debug, Clone)]
 pub struct Tag {
     /// Attributes of the tag. See [`Attribute`].
     attrs: Box<[Attribute]>,
@@ -170,7 +168,7 @@ impl Tag {
     /// ```
     /// use html_filter::prelude::*;
     ///
-    /// let html = parse_html("<div id='blob' />").unwrap();
+    /// let html = Html::parse("<div id='blob' />").unwrap();
     /// if let Html::Tag { tag, .. } = html {
     ///     let attr = tag.as_attrs().first().unwrap();
     ///     assert!(attr.as_name() == "id");
@@ -179,7 +177,6 @@ impl Tag {
     ///     unreachable!();
     /// }
     /// ```
-    #[inline]
     #[must_use]
     pub const fn as_attrs(&self) -> &[Attribute] {
         &self.attrs
@@ -192,14 +189,13 @@ impl Tag {
     /// ```
     /// use html_filter::prelude::*;
     ///
-    /// let html = parse_html("<div />").unwrap();
+    /// let html = Html::parse("<div />").unwrap();
     /// if let Html::Tag { tag, .. } = html {
     ///     assert!(tag.as_name() == "div");
     /// } else {
     ///     unreachable!();
     /// }
     /// ```
-    #[inline]
     #[must_use]
     #[coverage(off)]
     pub const fn as_name(&self) -> &String {
@@ -218,7 +214,7 @@ impl Tag {
     /// ```
     /// use html_filter::prelude::*;
     ///
-    /// let html = parse_html(r#"<a id="std doc" enabled xlink:href="https://std.rs"/>"#).unwrap();
+    /// let html = Html::parse(r#"<a id="std doc" enabled xlink:href="https://std.rs"/>"#).unwrap();
     ///
     /// if let Html::Tag { tag, .. } = html {
     ///     assert!(tag.find_attr_value("enabled").is_none());
@@ -231,7 +227,6 @@ impl Tag {
     ///     unreachable!()
     /// }
     /// ```
-    #[inline]
     #[must_use]
     pub fn find_attr_value<T: AsRef<str>>(&self, name: T) -> Option<&String> {
         self.attrs
@@ -252,7 +247,7 @@ impl Tag {
     /// ```
     /// use html_filter::prelude::*;
     ///
-    /// let html = parse_html(r#"<a enabled/>"#).unwrap();
+    /// let html = Html::parse(r#"<a enabled/>"#).unwrap();
     ///
     /// if let Html::Tag { tag, .. } = html {
     ///     assert!(tag.into_attr_value("enabled").is_none());
@@ -260,7 +255,7 @@ impl Tag {
     ///     unreachable!()
     /// }
     ///
-    /// let html = parse_html(r#"<a id="std doc" href="https://std.rs"/>"#).unwrap();
+    /// let html = Html::parse(r#"<a id="std doc" href="https://std.rs"/>"#).unwrap();
     ///
     /// if let Html::Tag { tag, .. } = html {
     ///     assert!(
@@ -271,7 +266,6 @@ impl Tag {
     ///     unreachable!()
     /// }
     /// ```
-    #[inline]
     #[must_use]
     pub fn into_attr_value<T: AsRef<str>>(self, name: T) -> Option<String> {
         self.attrs
@@ -279,16 +273,16 @@ impl Tag {
             .find(|attr| attr.as_name() == name.as_ref())?
             .into_value()
     }
+}
 
-    /// Creates a tag from a name and an array of [`Attribute`]
-    pub(crate) const fn new(name: String, attrs: Box<[Attribute]>) -> Self {
+impl From<(String, Box<[Attribute]>)> for Tag {
+    fn from((name, attrs): (String, Box<[Attribute]>)) -> Self {
         Self { attrs, name }
     }
 }
 
 #[expect(clippy::min_ident_chars, reason = "keep trait naming")]
 impl fmt::Display for Tag {
-    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(&self.name)?;
         self.attrs.iter().try_for_each(|attr| attr.fmt(f))

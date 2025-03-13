@@ -2,13 +2,13 @@
 name = "html-filter"
 version = "0.1.0"
 edition = "2024"
-description = "Crate to parse, filter, search and edit an HTML file."
-license-file = "LICENSE"
-repository = "https://github.com/t-webber/html-filter"
-keywords = ["parser", "html", "scraping"]
-categories = ["command-line-interface", "parser-implementations", "parsing"]
 readme = "README.md"
-
+authors = ["Tom Webber"]
+license = "MIT OR Apache-2.0"
+keywords = ["parser", "html", "scraping"]
+description = "Crate to parse, filter, search and edit an HTML file."
+repository = "https://github.com/t-webber/html-filter"
+categories = ["command-line-interface", "parser-implementations", "parsing"]
 
 [dependencies]
 

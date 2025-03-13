@@ -189,7 +189,6 @@ impl HtmlBuilder {
     /// This is to check if a new node needs to be created for the next data.
     ///
     /// This method is different if the input is a char or not.
-    #[inline]
     #[coverage(off)]
     pub fn is_pushable(&self, is_char: bool) -> bool {
         match self {
@@ -273,7 +272,6 @@ impl HtmlBuilder {
 #[coverage(off)]
 #[expect(clippy::min_ident_chars, reason = "keep trait naming")]
 impl fmt::Display for HtmlBuilder {
-    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Empty => "".fmt(f),

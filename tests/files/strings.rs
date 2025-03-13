@@ -21,7 +21,7 @@ macro_rules! make_tests {
         $(
             #[test]
             fn $name() {
-                let tree = parse_html(INPUT).unwrap().filter(&$filter);
+                let tree = Html::parse(INPUT).unwrap().filter(&$filter);
                 test_maker(stringify!($name), $expect, tree, $filter)
             }
         )*

@@ -14,7 +14,7 @@ fn manual() {
 </body>
 </html>
     "##;
-    let tree = parse_html(html).unwrap();
+    let tree = Html::parse(html).unwrap();
     if let Html::Vec(vec) = &tree {
         for elt in vec {
             if let Html::Tag { tag, child, .. } = elt {

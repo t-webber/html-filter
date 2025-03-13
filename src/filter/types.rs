@@ -95,7 +95,6 @@ impl Filter {
     }
 
     /// Checks if no rules were given concerning tags and attributes
-    #[inline]
     const fn is_empty(&self) -> bool {
         self.tags.is_empty() && self.attrs.is_empty()
     }
@@ -132,7 +131,6 @@ impl Filter {
 /// etc.)
 impl Filter {
     /// Keeps everything: comments, doctypes and texts
-    #[inline]
     #[must_use]
     pub const fn all(mut self, all: bool) -> Self {
         self.types.set_comment(all);
@@ -144,7 +142,6 @@ impl Filter {
     /// Removes the comments
     ///
     /// Doctypes and texts are kept, unless said otherwise by the user.
-    #[inline]
     #[must_use]
     pub const fn all_except_comment(mut self) -> Self {
         self.types.set_only_comment(false);
@@ -154,7 +151,6 @@ impl Filter {
     /// Removes the doctypes
     ///
     /// Comments and texts are kept, unless said otherwise by the user.
-    #[inline]
     #[must_use]
     pub const fn all_except_doctype(mut self) -> Self {
         self.types.set_only_doctype(false);
@@ -164,27 +160,24 @@ impl Filter {
     /// Removes the texts
     ///
     /// Comments and doctypes are kept, unless said otherwise by the user.
-    #[inline]
     #[must_use]
     pub const fn all_except_text(mut self) -> Self {
         self.types.set_only_text(false);
         self
     }
 
-    #[inline]
-    #[must_use]
     /// Sets the filter for comments
     ///
     /// If `comment` is set to `true` (default), comments are kept.
     /// If `comment` is set to `false`, comments are removed.
     ///
     /// See [`Filter`] for usage information.
+    #[must_use]
     pub const fn comment(mut self, comment: bool) -> Self {
         self.types.set_comment(comment);
         self
     }
 
-    #[inline]
     #[must_use]
     /// Sets the filter for doctype tags
     ///
@@ -200,7 +193,6 @@ impl Filter {
     /// Keeps only the comments
     ///
     /// Doctypes and texts are removed, unless said otherwise by the user.
-    #[inline]
     #[must_use]
     pub const fn none_except_comment(mut self) -> Self {
         self.types.set_only_comment(true);
@@ -210,7 +202,6 @@ impl Filter {
     /// Keeps only the doctypes
     ///
     /// Comments and texts are removed, unless said otherwise by the user.
-    #[inline]
     #[must_use]
     pub const fn none_except_doctype(mut self) -> Self {
         self.types.set_only_doctype(true);
@@ -220,14 +211,12 @@ impl Filter {
     /// Keeps only the texts
     ///
     /// Comments and doctypes are removed, unless said otherwise by the user.
-    #[inline]
     #[must_use]
     pub const fn none_except_text(mut self) -> Self {
         self.types.set_only_text(true);
         self
     }
 
-    #[inline]
     #[must_use]
     /// Filters texts
     ///
@@ -243,7 +232,6 @@ impl Filter {
 
 /// Public API for [`Filter`] on tags and attributes
 impl Filter {
-    #[inline]
     #[must_use]
     /// Specifies the name of an attribute in the wanted tags.
     ///
@@ -260,7 +248,6 @@ impl Filter {
         self
     }
 
-    #[inline]
     #[must_use]
     /// Specifies the value of an attribute in the wanted tags.
     ///
@@ -273,7 +260,6 @@ impl Filter {
         self
     }
 
-    #[inline]
     #[must_use]
     /// Specifies the depth of the desired nodes.
     ///
@@ -362,7 +348,6 @@ impl Filter {
         self
     }
 
-    #[inline]
     #[must_use]
     /// Specifies the name of an attribute in the tags that must be dismissed.
     ///
@@ -379,7 +364,6 @@ impl Filter {
         self
     }
 
-    #[inline]
     #[must_use]
     /// Specifies the value of an attribute in the tags that must be dismissed.
     ///
@@ -396,7 +380,6 @@ impl Filter {
         self
     }
 
-    #[inline]
     #[must_use]
     /// Specifies the tag name of the wanted tags.
     ///
@@ -420,21 +403,18 @@ impl Filter {
     ///
     /// let _filter: Filter = Filter::new();
     /// ```
-    #[inline]
     #[must_use]
     pub fn new() -> Self {
         Self::default()
     }
 
     /// Disable all tags, except those explicitly whitelisted
-    #[inline]
     #[must_use]
     pub const fn no_tags(mut self) -> Self {
         self.tags.set_default(false);
         self
     }
 
-    #[inline]
     #[must_use]
     /// Specifies the tag name of the wanted tags.
     ///

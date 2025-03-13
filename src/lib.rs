@@ -41,6 +41,7 @@
     clippy::while_let_on_iterator,
     reason = "better to understand when the iterator is used after the loop breaks"
 )]
+#![allow(clippy::missing_inline_in_public_items, reason = "bad lint")]
 #![expect(clippy::doc_include_without_cfg, reason = "see issue #13918")]
 #![expect(clippy::blanket_clippy_restriction_lints, reason = "I want them all")]
 #![expect(clippy::multiple_inherent_impl, reason = "useful when lots of methods")]

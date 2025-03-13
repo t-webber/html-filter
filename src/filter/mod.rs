@@ -41,7 +41,6 @@ enum DepthSuccess {
 
 impl DepthSuccess {
     /// Increment the depth, if applicable
-    #[inline]
     #[coverage(off)]
     fn incr(mut self) -> Self {
         if let Self::Found(depth) = &mut self {
@@ -69,7 +68,6 @@ struct FilterSuccess {
 
 impl FilterSuccess {
     /// Increment the depth, if applicable
-    #[inline]
     #[expect(clippy::unnecessary_wraps, reason = "useful for filter method")]
     fn incr(mut self) -> Option<Self> {
         self.depth = self.depth.incr();
@@ -89,7 +87,6 @@ impl FilterSuccess {
     ///
     /// This is the method to use when the node isn't interesting alone, it can
     /// be if it is in the right scope though.
-    #[inline]
     #[expect(clippy::unnecessary_wraps, reason = "useful for filter method")]
     fn make_none(html: Cow<'_, Html>) -> Option<Self> {
         Some(Self { depth: DepthSuccess::None, html: html.into_owned() })
@@ -142,7 +139,6 @@ impl Html {
     ///
     /// The html tree obtains by keeping only the nodes that fulfills the
     /// filter.
-    #[inline]
     #[must_use]
     pub fn filter(self, filter: &Filter) -> Self {
         filter_aux(Cow::Owned(self), filter, false).html
@@ -158,7 +154,6 @@ impl Html {
     /// # Returns
     ///
     /// The first node that fulfills the filter.
-    #[inline]
     #[must_use]
     pub fn find(self, filter: &Filter) -> Self {
         self.filter(filter).into_first()
@@ -183,7 +178,6 @@ impl Html {
     /// Filters html based on a defined filter.
     ///
     /// Equivalent of [`Html::filter`] when data is not owned.
-    #[inline]
     #[must_use]
     pub fn to_filtered(&self, filter: &Filter) -> Self {
         filter_aux(Cow::Borrowed(self), filter, false).html
@@ -193,7 +187,6 @@ impl Html {
     ///
     /// Equivalent of [`Html::find`] when data is not owned.
     //TODO: data except first is cloned
-    #[inline]
     #[must_use]
     pub fn to_found(&self, filter: &Filter) -> Self {
         self.to_filtered(filter).into_first()

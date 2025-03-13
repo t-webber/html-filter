@@ -6,7 +6,7 @@
 fn auto_doctest_1() {
     // Auto generated from src/types/html.rs:13
     use html_filter::prelude::*;
-    let _html: Html = parse_html(
+    let _html: Html = Html::parse(
         r#"<nav>
         <!-- Navigation menu -->
         <ul>
@@ -21,9 +21,9 @@ fn auto_doctest_1() {
 
 #[test]
 fn auto_doctest_2() {
-    // Auto generated from src/types/tag.rs:133
+    // Auto generated from src/types/tag.rs:131
     use html_filter::prelude::*;
-    let html = parse_html("<a enabled href='https://crates.io'>").unwrap();
+    let html = Html::parse("<a enabled href='https://crates.io'>").unwrap();
     if let Html::Tag { tag, .. } = html {
         assert!(tag.as_name() == "a");
         assert!(tag.find_attr_value("enabled").is_none());
@@ -40,9 +40,9 @@ fn auto_doctest_2() {
 
 #[test]
 fn auto_doctest_3() {
-    // Auto generated from src/types/tag.rs:169
+    // Auto generated from src/types/tag.rs:167
     use html_filter::prelude::*;
-    let html = parse_html("<div id='blob' />").unwrap();
+    let html = Html::parse("<div id='blob' />").unwrap();
     if let Html::Tag { tag, .. } = html {
         let attr = tag.as_attrs().first().unwrap();
         assert!(attr.as_name() == "id");
@@ -54,9 +54,9 @@ fn auto_doctest_3() {
 
 #[test]
 fn auto_doctest_4() {
-    // Auto generated from src/types/tag.rs:191
+    // Auto generated from src/types/tag.rs:188
     use html_filter::prelude::*;
-    let html = parse_html("<div />").unwrap();
+    let html = Html::parse("<div />").unwrap();
     if let Html::Tag { tag, .. } = html {
         assert!(tag.as_name() == "div");
     } else {
@@ -66,9 +66,9 @@ fn auto_doctest_4() {
 
 #[test]
 fn auto_doctest_5() {
-    // Auto generated from src/types/tag.rs:217
+    // Auto generated from src/types/tag.rs:213
     use html_filter::prelude::*;
-    let html = parse_html(r#"<a id="std doc" enabled xlink:href="https://std.rs"/>"#).unwrap();
+    let html = Html::parse(r#"<a id="std doc" enabled xlink:href="https://std.rs"/>"#).unwrap();
     if let Html::Tag { tag, .. } = html {
         assert!(tag.find_attr_value("enabled").is_none());
         assert!(
@@ -83,15 +83,15 @@ fn auto_doctest_5() {
 
 #[test]
 fn auto_doctest_6() {
-    // Auto generated from src/types/tag.rs:251
+    // Auto generated from src/types/tag.rs:246
     use html_filter::prelude::*;
-    let html = parse_html(r#"<a enabled/>"#).unwrap();
+    let html = Html::parse(r#"<a enabled/>"#).unwrap();
     if let Html::Tag { tag, .. } = html {
         assert!(tag.into_attr_value("enabled").is_none());
     } else {
         unreachable!()
     }
-    let html = parse_html(r#"<a id="std doc" href="https://std.rs"/>"#).unwrap();
+    let html = Html::parse(r#"<a id="std doc" href="https://std.rs"/>"#).unwrap();
     if let Html::Tag { tag, .. } = html {
         assert!(
             tag.into_attr_value("href")
@@ -123,7 +123,7 @@ fn auto_doctest_8() {
 
 #[test]
 fn auto_doctest_9() {
-    // Auto generated from src/filter/types.rs:305
+    // Auto generated from src/filter/types.rs:291
     #![allow(unused)]
     html_filter::prelude::Filter::new()
         .attribute_value("href", "second")
@@ -132,7 +132,7 @@ fn auto_doctest_9() {
 
 #[test]
 fn auto_doctest_10() {
-    // Auto generated from src/filter/types.rs:320
+    // Auto generated from src/filter/types.rs:306
     #![allow(unused)]
     html_filter::prelude::Filter::new()
         .attribute_value("href", "second")
@@ -141,7 +141,7 @@ fn auto_doctest_10() {
 
 #[test]
 fn auto_doctest_11() {
-    // Auto generated from src/filter/types.rs:339
+    // Auto generated from src/filter/types.rs:325
     #![allow(unused)]
     html_filter::prelude::Filter::new()
         .attribute_value("href", "second")
@@ -150,14 +150,14 @@ fn auto_doctest_11() {
 
 #[test]
 fn auto_doctest_12() {
-    // Auto generated from src/filter/types.rs:417
+    // Auto generated from src/filter/types.rs:400
     use html_filter::prelude::*;
     let _filter: Filter = Filter::new();
 }
 
 #[test]
 fn auto_doctest_13() {
-    // Auto generated from src/parse/mod.rs:19
+    // Auto generated from src/parse/mod.rs:18
     use html_filter::prelude::*;
     let html: &str = r#"
     <!DOCTYPE html>
@@ -170,6 +170,6 @@ fn auto_doctest_13() {
         </body>
     </html>
     "#;
-    let tree: Html = parse_html(html).expect("Invalid HTML");
+    let tree: Html = Html::parse(html).expect("Invalid HTML");
     assert!(format!("{tree}") == html);
 }

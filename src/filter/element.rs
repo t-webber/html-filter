@@ -48,7 +48,6 @@ impl BlackWhiteList {
     }
 
     /// Checks if no elements were specified
-    #[inline]
     pub const fn is_empty(&self) -> bool {
         self.whitelist_empty
     }
@@ -163,7 +162,6 @@ impl ValueAssociateHash {
     }
 
     /// Checks if the [`ValueAssociateHash`] wasn't given any rules.
-    #[inline]
     pub const fn is_empty(&self) -> bool {
         self.whitelist.is_empty() && self.blacklist.is_empty()
     }
