@@ -41,7 +41,6 @@ enum DepthSuccess {
 
 impl DepthSuccess {
     /// Increment the depth, if applicable
-    #[coverage(off)]
     fn incr(mut self) -> Self {
         if let Self::Found(depth) = &mut self {
             *depth = safe_expect!(depth.checked_add(1), "Smaller than required depth");
@@ -160,7 +159,6 @@ impl Html {
     }
 
     /// Keeps only the first element of a filtered output
-    #[coverage(off)]
     fn into_first(self) -> Self {
         if let Self::Vec(vec) = self {
             for elt in vec {
@@ -326,7 +324,6 @@ fn filter_aux_vec(vec: Cow<'_, Box<[Html]>>, filter: &Filter) -> Option<FilterSu
 ///
 /// The return type is [`Html`] and not [`Cow`] has it is only called on
 /// successes.
-#[coverage(off)]
 #[allow(clippy::allow_attributes, reason = "expect is buggy")]
 #[allow(
     clippy::enum_glob_use,

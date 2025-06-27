@@ -189,7 +189,6 @@ impl HtmlBuilder {
     /// This is to check if a new node needs to be created for the next data.
     ///
     /// This method is different if the input is a char or not.
-    #[coverage(off)]
     pub fn is_pushable(&self, is_char: bool) -> bool {
         match self {
             Self::Empty | Self::Vec(_) => safe_unreachable("Vec or Empty can't be in vec"),
@@ -235,7 +234,6 @@ impl HtmlBuilder {
     /// Pushes an [`HtmlBuilder`] tree into another one.
     ///
     /// This is useful to add comments or push tags for instance.
-    #[coverage(off)]
     pub fn push_node(&mut self, node: Self) {
         match self {
             Self::Empty => *self = node,
@@ -269,7 +267,6 @@ impl HtmlBuilder {
     }
 }
 
-#[coverage(off)]
 #[expect(clippy::min_ident_chars, reason = "keep trait naming")]
 impl fmt::Display for HtmlBuilder {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

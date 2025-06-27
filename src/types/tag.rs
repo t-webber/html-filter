@@ -63,7 +63,6 @@ impl Attribute {
     /// # Panics
     ///
     /// If called on a [`Attribute::NameValue`]
-    #[coverage(off)]
     pub(crate) fn add_value(&mut self, double_quote: bool) {
         if let Self::NameNoValue(name) = self {
             *self = Self::NameValue { double_quote, name: take(name), value: String::new() }
@@ -96,7 +95,6 @@ impl Attribute {
     }
 
     /// Pushes a character into the attribute's value
-    #[coverage(off)]
     pub(crate) fn push_value(&mut self, ch: char) {
         if let Self::NameValue { value, .. } = self {
             value.push(ch);
@@ -197,7 +195,6 @@ impl Tag {
     /// }
     /// ```
     #[must_use]
-    #[coverage(off)]
     pub const fn as_name(&self) -> &String {
         &self.name
     }

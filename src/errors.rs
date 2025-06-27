@@ -26,7 +26,6 @@ We will try to fix it as soon as possible.
 }
 
 /// Macro to make a developer error with a generic failure text.
-#[coverage(off)]
 #[expect(
     clippy::panic,
     reason = "called when code must fail to avoid undefined behaviour."
