@@ -1,10 +1,15 @@
 # Html Parser
 
-# C parser
+![Clippy](https://github.com/t-webber/html-filter/actions/workflows/clippy.yml/badge.svg?branch=main)
+![Build](https://github.com/t-webber/html-filter/actions/workflows/build.yml/badge.svg?branch=main)
+![Tests](https://github.com/t-webber/html-filter/actions/workflows/tests.yml/badge.svg?branch=main)
+![Docs](https://github.com/t-webber/html-filter/actions/workflows/docs.yml/badge.svg?branch=main)
+![Fmt](https://github.com/t-webber/html-filter/actions/workflows/fmt.yml/badge.svg?branch=main)
+![Coverage](https://github.com/t-webber/html-filter/actions/workflows/coverage.yml/badge.svg?branch=main)
 
 [![github](https://img.shields.io/badge/GitHub-t--webber/html--parser-blue?logo=GitHub)](https://github.com/t-webber/html-parser)
 [![license](https://img.shields.io/badge/Licence-MIT-darkgreen)](https://github.com/t-webber/html-parser?tab=MIT-1-ov-file)
-[![coverage](https://img.shields.io/badge/Coverage-100%25-purple)](https://github.com/t-webber/html-parser/actions/workflows/nightly.yml)
+[![coverage](https://img.shields.io/badge/Coverage-90%25-purple)](https://github.com/t-webber/html-parser/actions/workflows/nightly.yml)
 [![rust-edition](https://img.shields.io/badge/Rust--edition-2024-darkred?logo=Rust)](https://doc.rust-lang.org/stable/edition-guide/rust-2024/)
 
 This is a rust library that parses html source files and allows you to search in and filter this Html with a specific set of rules.

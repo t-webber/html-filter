@@ -1,4 +1,4 @@
-name: Rust
+name: Docs
 
 on:
     push:
@@ -12,7 +12,7 @@ env:
     CARGO_TERM_COLOR: always
 
 jobs:
-    test:
+    doc:
         runs-on: ubuntu-latest
         strategy:
           matrix:
@@ -28,6 +28,6 @@ jobs:
                 toolchain: ${{ matrix.rust }}
                 override: true
 
-            - name: Run tests
-              run: cargo test --verbose
+            - name: Check documentation
+              run: RUSTDOCFLAGS="-D warnings" cargo doc --document-private-items --all --verbose --release
 
