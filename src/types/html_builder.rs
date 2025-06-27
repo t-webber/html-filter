@@ -284,10 +284,11 @@ impl fmt::Display for HtmlBuilder {
             },
             Self::Text(text) => text.fmt(f),
             Self::Vec(vec) => vec.iter().try_for_each(|html| html.fmt(f)),
-            Self::Comment { content, full } => f
-                .write_str("<!--")
-                .and_then(|()| f.write_str(content))
-                .and_then(|()| if full.0 { f.write_str("-->") } else { Ok(()) }),
+            Self::Comment { content, full } => {
+                f.write_str("<!--")?;
+                f.write_str(content)?;
+                if full.0 { f.write_str("-->") } else { Ok(()) }
+            }
         }
     }
 }

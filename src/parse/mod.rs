@@ -56,18 +56,18 @@ impl HtmlBuilder {
         let mut comment = false;
         while let Some(ch) = chars.next() {
             if !comment && (style || script) {
-                if ch == '<' {
-                    if let Ok(TagBuilder::Close(name)) = TagBuilder::parse(chars) {
-                        if style && name == "style" {
-                            style = false;
-                            self.close_tag(&name)?;
-                            continue;
-                        }
-                        if script && name == "script" {
-                            script = false;
-                            self.close_tag(&name)?;
-                            continue;
-                        }
+                if ch == '<'
+                    && let Ok(TagBuilder::Close(name)) = TagBuilder::parse(chars)
+                {
+                    if style && name == "style" {
+                        style = false;
+                        self.close_tag(&name)?;
+                        continue;
+                    }
+                    if script && name == "script" {
+                        script = false;
+                        self.close_tag(&name)?;
+                        continue;
                     }
                 }
                 self.push_char(ch);

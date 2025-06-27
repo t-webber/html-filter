@@ -137,7 +137,7 @@ impl ValueAssociateHash {
     pub fn check(&self, attrs: &[Attribute]) -> ElementState {
         let attrs_map: HashMap<_, _> = attrs
             .iter()
-            .map(|attr| (attr.as_name().to_string(), attr.as_value()))
+            .map(|attr| (attr.as_name().clone(), attr.as_value()))
             .collect();
         for (wanted_name, wanted_value) in &self.whitelist {
             match attrs_map.get(wanted_name) {
@@ -174,10 +174,10 @@ impl ValueAssociateHash {
             .map(|(name, value)| (name, value))
             .collect::<HashMap<_, _>>();
         for attr in attrs {
-            if let Some(value) = blacklist.get(&attr.as_name().to_string()) {
-                if attr.as_value() == value.as_ref() {
-                    return true;
-                }
+            if let Some(value) = blacklist.get(&attr.as_name().clone())
+                && attr.as_value() == value.as_ref()
+            {
+                return true;
             }
         }
         false
