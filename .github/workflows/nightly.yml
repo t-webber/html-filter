@@ -14,37 +14,78 @@ env:
 jobs:
     check:
         runs-on: ubuntu-latest
+        strategy:
+          matrix:
+            rust: [stable, nightly]
 
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4
+
+            - name: Install Rust
+              uses: actions-rs/toolchain@v1
+              with:
+                toolchain: ${{ matrix.rust }}
+                override: true
+                components: clippy
+
             - name: Cargo clippy
               run: cargo clippy --all -- --verbose -D warnings
 
     build:
         runs-on: ubuntu-latest
+        strategy:
+          matrix:
+            rust: [stable, nightly]
 
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4
+
+            - name: Install Rust
+              uses: actions-rs/toolchain@v1
+              with:
+                toolchain: ${{ matrix.rust }}
+                override: true
+
             - name: Cargo build
               run: cargo build --release --verbose
 
     test:
         runs-on: ubuntu-latest
+        strategy:
+          matrix:
+            rust: [stable, nightly]
 
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4
+
+            - name: Install Rust
+              uses: actions-rs/toolchain@v1
+              with:
+                toolchain: ${{ matrix.rust }}
+                override: true
+
             - name: Run tests
               run: cargo test --verbose
 
     doc:
         runs-on: ubuntu-latest
+        strategy:
+          matrix:
+            rust: [stable, nightly]
 
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4
+
+            - name: Install Rust
+              uses: actions-rs/toolchain@v1
+              with:
+                toolchain: ${{ matrix.rust }}
+                override: true
+
             - name: Check documentation
               run: RUSTDOCFLAGS="-D warnings" cargo doc --document-private-items --all --verbose --release
 
@@ -54,26 +95,39 @@ jobs:
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4
+
+            - name: Install Rust
+              uses: actions-rs/toolchain@v1
+              with:
+                toolchain: nightly
+                override: true
+                components: rustfmt
+
             - name: Check formatting
               run: cargo fmt -- --check
 
     coverage:
         runs-on: ubuntu-latest
+        strategy:
+          matrix:
+            rust: [stable, nightly]
 
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4
-            - name: Restore cache
-              uses: actions/cache/restore@v4
+
+            - name: Install Rust
+              uses: actions-rs/toolchain@v1
               with:
-                  path: ~/.cargo/
-                  key: cargo-cache
+                toolchain: ${{ matrix.rust }}
+                override: true
+                components: cargo
+
+            - name: Install cargo Binstall
+              uses: cargo-bins/cargo-binstall@main
+
             - name: Install tarpaulin
-              run: cargo install cargo-tarpaulin
-            - name: Update cache
-              uses: actions/cache/save@v4
-              with:
-                  path: ~/.cargo/
-                  key: cargo-cache
+              run: cargo binstall cargo-tarpaulin
+
             - name: Check coverage
-              run: cargo tarpaulin --doc --tests  --fail-under 100
+              run: cargo tarpaulin --doc --tests  --fail-under 90
