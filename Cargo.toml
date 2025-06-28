@@ -9,8 +9,3 @@ keywords = ["parser", "html", "scraping"]
 description = "Crate to parse, filter, search and edit an HTML file."
 repository = "https://github.com/t-webber/html-filter"
 categories = ["command-line-interface", "parser-implementations", "parsing"]
-
-[dependencies]
-
-[features]
-debug = []
