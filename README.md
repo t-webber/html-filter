@@ -1,4 +1,4 @@
-# Html Parser
+# HTML Parser
 
 ![Clippy](https://github.com/t-webber/html-filter/actions/workflows/clippy.yml/badge.svg?branch=main)
 ![Build](https://github.com/t-webber/html-filter/actions/workflows/build.yml/badge.svg?branch=main)
@@ -12,13 +12,14 @@
 [![coverage](https://img.shields.io/badge/Coverage-90%25-purple)](https://github.com/t-webber/html-parser/actions/workflows/nightly.yml)
 [![rust-edition](https://img.shields.io/badge/Rust--edition-2024-darkred?logo=Rust)](https://doc.rust-lang.org/stable/edition-guide/rust-2024/)
 
-This is a rust library that parses html source files and allows you to search in and filter this Html with a specific set of rules.
+This is a rust library that parses HTML source files and allows you to search in and filter this HTML with a specific set of rules.
 
+> [!IMPORTANT]
 > Do not use this parser to check the syntax of your HTML code. Many HTML files are parsed without any errors by this parser, as the sole objective is to get a parsed version. Only breaking syntax errors raises errors.
 >
 > Obviously, all valid HTML files work fine.
 
-This is a simple lightweight html parser, that converts an html file (in the `&str` format) to a tree representing the html tags and text.
+This is a simple lightweight HTML parser, that converts an HTML file (in the `&str` format) to a tree representing the HTML tags and text.
 
 ## Getting started
 
@@ -45,7 +46,7 @@ let html: &str = r#"
 </html>
 "#;
 
-// Parse your html
+// Parse your HTML
 let tree: Html = Html::parse(html).expect("Invalid HTML");
 
 // Now you can use it!
@@ -55,7 +56,7 @@ assert!(format!("{tree}") == html);
 
 ## Find & filter
 
-You can also use the `find` and `filter` methods to manage this html. To do this, you need to create your filtering options with the `Filter` type.
+You can also use the `find` and `filter` methods to manage this HTML. To do this, you need to create your filtering options with the `Filter` type.
 
 ### Filter
 
@@ -79,10 +80,10 @@ let html: &str = r##"
 // Create your filter
 let filter = Filter::new().tag_name("li");
 
-// Parse your html
+// Parse your HTML
 let filtered_tree: Html = Html::parse(html).expect("Invalid HTML").filter(&filter);
 
-// Check the result: filtered_tree contains the 4 lis from the above html string
+// Check the result: filtered_tree contains the 4 lis from the above HTML string
 if let Html::Vec(links) = filtered_tree {
     assert!(links.len() == 4)
 } else {
@@ -114,7 +115,7 @@ let html: &str = r##"
 // Create your filter
 let filter = Filter::new().tag_name("a");
 
-// Parse your html
+// Parse your HTML
 let link: Html = Html::parse(html).expect("Invalid HTML").find(&filter);
 
 // Check the result: link contains `<a href="/home">Home</a>`
