@@ -1,4 +1,4 @@
-# HTML Parser
+# HTML filter
 
 ![Clippy](https://github.com/t-webber/html-filter/actions/workflows/clippy.yml/badge.svg?branch=main)
 ![Build](https://github.com/t-webber/html-filter/actions/workflows/build.yml/badge.svg?branch=main)
@@ -13,11 +13,6 @@
 [![rust-edition](https://img.shields.io/badge/Rust--edition-2024-darkred?logo=Rust)](https://doc.rust-lang.org/stable/edition-guide/rust-2024/)
 
 This is a rust library that parses HTML source files and allows you to search in and filter this HTML with a specific set of rules.
-
-> [!IMPORTANT]
-> Do not use this parser to check the syntax of your HTML code. Many HTML files are parsed without any errors by this parser, as the sole objective is to get a parsed version. Only breaking syntax errors raises errors.
->
-> Obviously, all valid HTML files work fine.
 
 This is a simple lightweight HTML parser, that converts an HTML file (in the `&str` format) to a tree representing the HTML tags and text.
 
@@ -50,7 +45,8 @@ let html: &str = r#"
 let tree: Html = Html::parse(html).expect("Invalid HTML");
 
 // Now you can use it!
-// Beware, this doesn't always work as you can have ways to write the same HTML.
+// Beware, this doesn't always work as you can have
+// difference ways to write the same HTML.
 assert!(format!("{tree}") == html);
 ```
 
@@ -81,10 +77,10 @@ let html: &str = r##"
 let filter = Filter::new().tag_name("li");
 
 // Parse your HTML
-let filtered_tree: Html = Html::parse(html).expect("Invalid HTML").filter(&filter);
+let filtered: Html = Html::parse(html).expect("Invalid HTML").filter(&filter);
 
-// Check the result: filtered_tree contains the 4 lis from the above HTML string
-if let Html::Vec(links) = filtered_tree {
+// `filtered` contains the 4 `<li>`s from the above HTML string
+if let Html::Vec(links) = filtered {
     assert!(links.len() == 4)
 } else {
     unreachable!()
@@ -119,12 +115,8 @@ let filter = Filter::new().tag_name("a");
 let link: Html = Html::parse(html).expect("Invalid HTML").find(&filter);
 
 // Check the result: link contains `<a href="/home">Home</a>`
-if let Html::Tag { tag, child, .. } = link {
-    if let Html::Text(text) = *child {
-        assert!(tag.as_name() == "a" && text == "Home");
-    } else {
-        unreachable!()
-    }
+if let Html::Tag { tag, child, .. } = link && let Html::Text(text) = *child {
+    assert!(tag.as_name() == "a" && text == "Home");
 } else {
     unreachable!()
 }
@@ -134,8 +126,8 @@ if let Html::Tag { tag, child, .. } = link {
 
 Licensed under either of
 
--   [Apache License, Version 2.0](LICENSE-APACHE)
--   [MIT license](LICENSE-MIT)
+- [Apache License, Version 2.0](LICENSE-APACHE)
+- [MIT license](LICENSE-MIT)
 
 at your option.
 
@@ -144,3 +136,10 @@ at your option.
 Unless you explicitly state otherwise, any contribution intentionally submitted
 for inclusion in the work by you, as defined in the Apache-2.0 license, shall be
 dual licensed as above, without any additional terms or conditions.
+
+## Disclaimer
+
+> [!IMPORTANT]
+> Do not use this parser to check the syntax of your HTML code. Many HTML files are parsed without any errors by this parser, as the sole objective is to get a parsed version. Only breaking syntax errors raises errors.
+>
+> Obviously, all valid HTML files work fine with this crate.
