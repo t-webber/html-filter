@@ -110,7 +110,6 @@ impl From<String> for Attribute {
     }
 }
 
-#[expect(clippy::min_ident_chars, reason = "keep trait naming")]
 impl fmt::Display for Attribute {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -278,7 +277,6 @@ impl From<(String, Box<[Attribute]>)> for Tag {
     }
 }
 
-#[expect(clippy::min_ident_chars, reason = "keep trait naming")]
 impl fmt::Display for Tag {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(&self.name)?;

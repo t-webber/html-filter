@@ -31,4 +31,4 @@ jobs:
               run: cargo binstall -y cargo-tarpaulin
 
             - name: Check coverage
-              run: cargo tarpaulin --doc --tests  --fail-under 90
+              run: cargo tarpaulin --doc --tests  --fail-under 95

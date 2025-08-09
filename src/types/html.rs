@@ -114,7 +114,6 @@ impl Html {
     }
 }
 
-#[expect(clippy::min_ident_chars, reason = "keep trait naming")]
 impl fmt::Display for Html {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {

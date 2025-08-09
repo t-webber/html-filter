@@ -9,7 +9,7 @@
 
 [![github](https://img.shields.io/badge/GitHub-t--webber/html--parser-blue?logo=GitHub)](https://github.com/t-webber/html-parser)
 [![license](https://img.shields.io/badge/Licence-MIT-darkgreen)](https://github.com/t-webber/html-parser?tab=MIT-1-ov-file)
-[![coverage](https://img.shields.io/badge/Coverage-90%25-purple)](https://github.com/t-webber/html-parser/actions/workflows/nightly.yml)
+[![coverage](https://img.shields.io/badge/Coverage-95%25-purple)](https://github.com/t-webber/html-parser/actions/workflows/nightly.yml)
 [![rust-edition](https://img.shields.io/badge/Rust--edition-2024-darkred?logo=Rust)](https://doc.rust-lang.org/stable/edition-guide/rust-2024/)
 
 This is a rust library that parses HTML source files and allows you to search in and filter this HTML with a specific set of rules.

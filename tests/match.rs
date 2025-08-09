@@ -25,19 +25,17 @@ fn manual() {
                                 if tag.as_name() == "head" {
                                     if let Html::Vec(vec) = &**child {
                                         for elt in vec {
-                                            if let Html::Tag { tag, child, .. } = elt {
-                                                if tag.as_name() == "title" {
-                                                    if let Html::Text(text) = &**child {
-                                                        assert!(text == "Document");
-                                                        return;
-                                                    } else {
-                                                        panic!(
-                                                            "invalid child of title tag: {child:?}"
-                                                        )
-                                                    }
+                                            if let Html::Tag { tag, child, .. } = elt
+                                                && tag.as_name() == "title"
+                                            {
+                                                if let Html::Text(text) = &**child {
+                                                    assert!(text == "Document");
+                                                    return;
+                                                } else {
+                                                    panic!("invalid child of title tag: {child:?}")
                                                 }
-                                                // media
                                             }
+                                            // media
                                         }
                                         panic!("none with name title");
                                     }

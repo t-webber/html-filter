@@ -1,6 +1,5 @@
 //! Module that defines a builder for the [`Html`] tree.
 
-use core::fmt;
 use core::mem::take;
 
 use super::html::Html;
@@ -264,31 +263,5 @@ impl HtmlBuilder {
             },
             child: Self::empty_box(),
         });
-    }
-}
-
-#[expect(clippy::min_ident_chars, reason = "keep trait naming")]
-impl fmt::Display for HtmlBuilder {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::Empty => "".fmt(f),
-            Self::Tag { tag, full, child } => match full {
-                TagType::Closed => write!(f, "<{tag}>{child}</{}>", tag.as_name()),
-                TagType::Opened => write!(f, "<{tag}>{child}"),
-                TagType::SelfClosing => write!(f, "<{tag} />"),
-            },
-            Self::Doctype { name, attr } => match (name, attr) {
-                (name_str, Some(attr_str)) => write!(f, "<!{name_str} {attr_str}>"),
-                (name_str, None) if name_str.is_empty() => write!(f, "<!>"),
-                (name_str, None) => write!(f, "<!{name_str} >"),
-            },
-            Self::Text(text) => text.fmt(f),
-            Self::Vec(vec) => vec.iter().try_for_each(|html| html.fmt(f)),
-            Self::Comment { content, full } => {
-                f.write_str("<!--")?;
-                f.write_str(content)?;
-                if full.0 { f.write_str("-->") } else { Ok(()) }
-            }
-        }
     }
 }
