@@ -1,5 +1,5 @@
 #![doc = include_str!("../README.md")]
-#![warn(
+#![deny(
     missing_docs,
     warnings,
     deprecated_safe,
