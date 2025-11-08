@@ -3,7 +3,7 @@
 mod tag;
 use core::str::Chars;
 
-use crate::prelude::Html;
+use crate::Html;
 use crate::types::html_builder::HtmlBuilder;
 use crate::types::tag::TagBuilder;
 
@@ -23,7 +23,7 @@ impl Html {
     /// # Examples
     ///
     /// ```
-    /// use html_filter::prelude::*;
+    /// use html_filter::*;
     ///
     /// let html: &str = r#"
     /// <!DOCTYPE html>

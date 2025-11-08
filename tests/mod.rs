@@ -1,4 +1,4 @@
-use html_filter::prelude::{Filter, Html};
+use html_filter::{Filter, Html};
 
 pub mod files;
 

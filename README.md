@@ -34,7 +34,7 @@ cargo add html_filter
 then us it like this:
 
 ```rust
-use html_filter::prelude::*;
+use html_filter::*;
 
 let html: &str = r#"
 <!DOCTYPE html>
@@ -64,7 +64,7 @@ You can also use the `find` and `filter` methods to manage this HTML. To do this
 ### Filter
 
 ```rust
-use html_filter::prelude::*;
+use html_filter::*;
 
 let html: &str = r##"
   <section>
@@ -99,7 +99,7 @@ if let Html::Vec(links) = filtered {
 The finder returns the first element that respects the filter:
 
 ```rust
-use html_filter::prelude::*;
+use html_filter::*;
 
 let html: &str = r##"
   <section>

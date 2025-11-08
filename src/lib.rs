@@ -45,6 +45,7 @@
 #![expect(clippy::doc_include_without_cfg, reason = "see issue #13918")]
 #![expect(clippy::blanket_clippy_restriction_lints, reason = "I want them all")]
 #![expect(clippy::multiple_inherent_impl, reason = "useful when lots of methods")]
+#![expect(clippy::pub_use, reason = "better to not break APIs when refactoring")]
 
 // All modules are private to prevent a breaking change after refactoring this
 // crate's structure.
@@ -52,8 +53,11 @@
 mod errors;
 mod filter;
 mod parse;
-pub mod prelude;
 mod types;
+
+pub use crate::filter::types::Filter;
+pub use crate::types::html::Html;
+pub use crate::types::tag::{Attribute, Tag};
 
 /// A const equivalent of the [`Option::unwrap_or`] method.
 const fn unwrap_or(opt: Option<bool>, default: bool) -> bool {

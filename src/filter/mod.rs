@@ -19,7 +19,7 @@ use node_type::NodeTypeFilter;
 use types::Filter;
 
 use crate::errors::{safe_expect, safe_unreachable};
-use crate::prelude::{Html, Tag};
+use crate::{Html, Tag};
 
 /// State to follow if the wanted nodes where found at what depth
 ///
