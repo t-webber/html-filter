@@ -1,0 +1,19 @@
+[files]
+extend-exclude = [".git", "rustfmt.toml", "LICENSE-*"]
+ignore-hidden = false
+ignore-files = false
+ignore-dot = false
+ignore-vcs = true
+ignore-global = false
+ignore-parent = false
+
+[default]
+binary = false
+check-filename = true
+check-file = true
+unicode = true
+locale = "en-gb"
+extend-ignore-re = ["(?m)^.*// ignore-spell$"]
+
+[default.extend-identifiers]
+CARGO_TERM_COLOR = "CARGO_TERM_COLOR"

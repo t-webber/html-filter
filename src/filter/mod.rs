@@ -136,7 +136,7 @@ impl Html {
     ///
     /// # Returns
     ///
-    /// The html tree obtains by keeping only the nodes that fulfills the
+    /// The html tree obtains by keeping only the nodes that fulfil the
     /// filter.
     #[must_use]
     pub fn filter(self, filter: &Filter) -> Self {
@@ -152,7 +152,7 @@ impl Html {
     ///
     /// # Returns
     ///
-    /// The first node that fulfills the filter.
+    /// The first node that fulfils the filter.
     #[must_use]
     pub fn find(self, filter: &Filter) -> Self {
         self.filter(filter).into_first()

@@ -14,7 +14,7 @@ macro_rules! safe_expect {
 This is not meant to happen.
 Please report this problem at https://github.com/t-webber/html-parser/issues/new.
 Please include the code snippet that created this error and the reason displayed below.
-Thank you for signaling this issue!
+Thank you for signalling this issue!
 We will try to fix it as soon as possible.
 ---------- Reason ----------
 {}
@@ -36,7 +36,7 @@ pub fn safe_unreachable(reason: &str) -> ! {
 This is not meant to happen.
 Please report this problem at https://github.com/t-webber/html-parser/issues/new.
 Please include the code snippet that created this error and the reason displayed below.
-Thank you for signaling this issue!
+Thank you for signalling this issue!
 We will try to fix it as soon as possible.
 ---------- Reason ----------
 {reason}
