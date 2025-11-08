@@ -82,7 +82,7 @@ pub enum Html {
         /// # Note
         ///
         /// This is always empty if the tag is self-closing.
-        child: Box<Html>,
+        child: Box<Self>,
     },
     /// Raw text
     ///
@@ -98,7 +98,7 @@ pub enum Html {
     ///
     /// In `a<strong>b`, the node is a vector, with [`Html::Text`] `a`,
     /// [`Html::Tag`] `strong` [`Html::Text`] `b`.
-    Vec(Box<[Html]>),
+    Vec(Box<[Self]>),
 }
 
 impl Html {

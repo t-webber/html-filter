@@ -91,7 +91,7 @@ pub enum HtmlBuilder {
         /// # Note
         ///
         /// This is always empty if the tag is self-closing.
-        child: Box<HtmlBuilder>,
+        child: Box<Self>,
     },
     /// Raw text
     ///
@@ -107,7 +107,7 @@ pub enum HtmlBuilder {
     ///
     /// In `a<strong>b`, the node is a vector, with [`HtmlBuilder::Text`] `a`,
     /// [`HtmlBuilder::Tag`] `strong` [`HtmlBuilder::Text`] `b`.
-    Vec(Vec<HtmlBuilder>),
+    Vec(Vec<Self>),
 }
 
 impl HtmlBuilder {

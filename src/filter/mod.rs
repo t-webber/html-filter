@@ -363,7 +363,7 @@ fn filter_light(cow_html: Cow<'_, Html>, filter: &Filter) -> Html {
 
 /// Method to apply [`Iterator::filter_map`] on an iterator inside a Cow,
 /// without losing the Cow.
-pub fn into_iter_filter_map_collect<T, U, V, F>(cow: Cow<'_, Box<[T]>>, map: F) -> V
+fn into_iter_filter_map_collect<T, U, V, F>(cow: Cow<'_, Box<[T]>>, map: F) -> V
 where
     T: Clone,
     V: FromIterator<U>,
