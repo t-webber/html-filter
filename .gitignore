@@ -1,7 +1,2 @@
-/target
-.*
-*.lock
-!.git*
+target/
 *.html
-!tests/data/*.html
-debug.rs
