@@ -3,8 +3,8 @@
 ![Clippy](https://github.com/t-webber/html-filter/actions/workflows/clippy.yml/badge.svg?branch=main)
 ![Build](https://github.com/t-webber/html-filter/actions/workflows/build.yml/badge.svg?branch=main)
 ![Tests](https://github.com/t-webber/html-filter/actions/workflows/tests.yml/badge.svg?branch=main)
-![Docs](https://github.com/t-webber/html-filter/actions/workflows/docs.yml/badge.svg?branch=main)
-![Fmt](https://github.com/t-webber/html-filter/actions/workflows/fmt.yml/badge.svg?branch=main)
+![Docs](https://github.com/t-webber/html-filter/actions/workflows/rustdoc.yml/badge.svg?branch=main)
+![Fmt](https://github.com/t-webber/html-filter/actions/workflows/rustfmt.yml/badge.svg?branch=main)
 ![Coverage](https://github.com/t-webber/html-filter/actions/workflows/coverage.yml/badge.svg?branch=main)
 
 [![github](https://img.shields.io/badge/GitHub-t--webber/html--filter-blue?logo=GitHub)](https://github.com/t-webber/html-filter)
