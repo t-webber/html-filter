@@ -16,8 +16,8 @@ use crate::errors::safe_unreachable;
     clippy::derived_hash_with_manual_eq,
     reason = "hash on enum doesn't depend of variant data"
 )]
+#[non_exhaustive]
 #[derive(Debug, Hash, Clone)]
-
 pub enum Attribute {
     /// Name of the attribute, when it doesn't have a value
     ///
@@ -72,6 +72,7 @@ impl Attribute {
     }
 
     /// Returns the name of an attribute
+    #[must_use]
     pub const fn as_name(&self) -> &String {
         match self {
             Self::NameNoValue(name) | Self::NameValue { name, .. } => name,
@@ -79,6 +80,7 @@ impl Attribute {
     }
 
     /// Returns the value of an attribute
+    #[must_use]
     pub const fn as_value(&self) -> Option<&String> {
         match self {
             Self::NameNoValue(_) => None,
@@ -147,14 +149,14 @@ impl fmt::Display for Attribute {
 #[derive(Debug, Clone)]
 pub struct Tag {
     /// Attributes of the tag. See [`Attribute`].
-    attrs: Box<[Attribute]>,
+    pub attrs: Box<[Attribute]>,
     /// Name of the tag.
     ///
     /// # Examples
     ///
     /// - `<div id="blob">` as name `div`
     /// - `<>` as an empty name
-    name: String,
+    pub name: String,
 }
 
 impl Tag {

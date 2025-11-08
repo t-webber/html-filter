@@ -16,6 +16,13 @@ This is a rust library that parses HTML source files and allows you to search in
 
 This is a simple lightweight HTML parser, that converts an HTML file (in the `&str` format) to a tree representing the HTML tags and text.
 
+## Why use this crate ?
+
+- For HTML parsing and filtering
+- Lightweight and no dependencies
+- Public and accessible HTML tree representation
+- Easy interface to filter HTML
+
 ## Getting started
 
 You can install it with

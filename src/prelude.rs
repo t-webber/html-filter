@@ -3,4 +3,4 @@
 
 pub use crate::filter::types::Filter;
 pub use crate::types::html::Html;
-pub use crate::types::tag::Tag;
+pub use crate::types::tag::{Attribute, Tag};
