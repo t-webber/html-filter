@@ -17,7 +17,7 @@ use crate::errors::safe_unreachable;
     reason = "hash on enum doesn't depend of variant data"
 )]
 #[non_exhaustive]
-#[derive(Debug, Hash, Clone)]
+#[derive(Debug, Hash, Clone, PartialEq, Eq)]
 pub enum Attribute {
     /// Name of the attribute, when it doesn't have a value
     ///
@@ -146,7 +146,7 @@ impl fmt::Display for Attribute {
 /// }
 /// ```
 #[non_exhaustive]
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Tag {
     /// Attributes of the tag. See [`Attribute`].
     pub attrs: Box<[Attribute]>,

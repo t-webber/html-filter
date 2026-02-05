@@ -2,6 +2,7 @@
 
 use super::NodeTypeFilter;
 use super::element::{BlackWhiteList, ValueAssociateHash};
+use crate::filter::element::AttributeMatch;
 use crate::types::tag::Tag;
 use crate::unwrap_or;
 
@@ -244,19 +245,53 @@ impl Filter {
     /// See [`Filter`] for usage information.
     #[must_use]
     pub fn attribute_name<N: Into<String>>(mut self, name: N) -> Self {
-        self.attrs.push(name.into(), None, true);
+        self.attrs.push(name.into(), AttributeMatch::NoValue, true);
         self
     }
 
     /// Specifies the value of an attribute in the wanted tags.
     ///
     /// This matches only tag attributes that have the correct value for the
-    /// given name.
+    /// given name. To match only one value inside that values (e.g. class
+    /// names), cf. [`Filter::attribute_value_contains`].
     ///
     /// See [`Filter`] for usage information.
     #[must_use]
     pub fn attribute_value<N: Into<String>, V: Into<String>>(mut self, name: N, value: V) -> Self {
-        self.attrs.push(name.into(), Some(value.into()), true);
+        self.attrs
+            .push(name.into(), AttributeMatch::Is(value.into()), true);
+        self
+    }
+
+    /// Specifies a possible value of an attribute in the wanted tags.
+    ///
+    /// This matches only tag attributes that have the given value as part of
+    /// the space-separated values inside the attribute value (cf. example
+    /// below). To match exact value, see [`Filter::attribute_value`].
+    ///
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use html_filter::*;
+    ///
+    /// let html = Html::parse(r#"<div class="some_class other_class" />"#).unwrap();
+    /// let filter = Filter::new().attribute_value_contains("class", "some_class");
+    ///
+    /// if let Html::Tag { tag: Tag { name, .. }, .. } = html.filter(&filter) {
+    ///     assert_eq!(name, "div");
+    /// } else {
+    ///     unreachable!();
+    /// }
+    /// ```
+    #[must_use]
+    pub fn attribute_value_contains<N: Into<String>, V: Into<String>>(
+        mut self,
+        name: N,
+        value: V,
+    ) -> Self {
+        self.attrs
+            .push(name.into(), AttributeMatch::Contains(value.into()), true);
         self
     }
 
@@ -360,7 +395,7 @@ impl Filter {
     /// See [`Filter`] for usage information.
     #[must_use]
     pub fn except_attribute_name<N: Into<String>>(mut self, name: N) -> Self {
-        self.attrs.push(name.into(), None, false);
+        self.attrs.push(name.into(), AttributeMatch::NoValue, false);
         self
     }
 
@@ -376,7 +411,8 @@ impl Filter {
         N: Into<String>,
         V: Into<String>,
     {
-        self.attrs.push(name.into(), Some(value.into()), false);
+        self.attrs
+            .push(name.into(), AttributeMatch::Is(value.into()), false);
         self
     }
 

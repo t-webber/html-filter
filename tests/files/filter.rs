@@ -28,6 +28,9 @@ doctype: Filter::new().no_tags().none_except_doctype() =>
 prefix: Filter::new().attribute_value("xlink:href", "#").none_except_text() =>
 r##"<a xlink:href="#">About</a>"##
 
+contains: Filter::new().attribute_value_contains("class", "some_other_class") =>
+r#"<div class="some_class some_other_class"> Secret </div>"#
+
 radio: Filter::new().attribute_value("type", "radio").attribute_name("radio") =>
 r#"<input radio type="radio" name="radio" id="radio1" /><input radio type="radio" name="radio" id="radio2" />"#
 
@@ -229,6 +232,7 @@ r##"
     <body>
         <header>
             <h1>Test Page</h1>
+            <div class="some_class some_other_class">Secret</div>
             <nav>
                 <ul>
                     <!--@<li> -->

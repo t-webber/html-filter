@@ -122,14 +122,40 @@ impl ElementState {
     }
 }
 
+/// Ways to match an attribute's value to decide whether to keep the tag or not.
+#[derive(Debug, PartialEq, Eq)]
+pub enum AttributeMatch {
+    /// The tag's value must contain a word equal to the given string.
+    Contains(String),
+    /// The tag's value must be exactly the given string.
+    Is(String),
+    /// The tag must not have a value.
+    NoValue,
+}
+
+impl AttributeMatch {
+    /// Checks if a [`AttributeMatch`] is satisfied by a given attribute value.
+    fn matches(&self, attribute_value: Option<&str>) -> bool {
+        attribute_value.map_or(matches!(self, Self::NoValue), |attr_val| {
+            if let Self::Is(this_val) = self {
+                *this_val == *attr_val
+            } else if let Self::Contains(this_val) = self {
+                attr_val.split_whitespace().any(|word| word == this_val)
+            } else {
+                false
+            }
+        })
+    }
+}
+
 /// Rules for associating names to values
 //TODO: could add a default to create a method: exact_attributes
 #[derive(Default, Debug)]
 pub struct ValueAssociateHash {
     /// Names and attributes explicitly not wanted
-    blacklist: Vec<(String, Option<String>)>,
+    blacklist: Vec<(String, AttributeMatch)>,
     /// Names and attributes explicitly wanted
-    whitelist: Vec<(String, Option<String>)>,
+    whitelist: Vec<(String, AttributeMatch)>,
 }
 
 impl ValueAssociateHash {
@@ -142,14 +168,14 @@ impl ValueAssociateHash {
         for (wanted_name, wanted_value) in &self.whitelist {
             match attrs_map.get(wanted_name) {
                 None => return ElementState::BlackListed,
-                Some(found_value) if *found_value != wanted_value.as_ref() =>
+                Some(found_value) if !wanted_value.matches(found_value.map(String::as_str)) =>
                     return ElementState::BlackListed,
                 Some(_) => (),
             }
         }
         for (wanted_name, wanted_value) in &self.blacklist {
             match attrs_map.get(wanted_name) {
-                Some(found_value) if *found_value == wanted_value.as_ref() =>
+                Some(found_value) if wanted_value.matches(found_value.map(String::as_str)) =>
                     return ElementState::BlackListed,
                 Some(_) | None => (),
             }
@@ -175,7 +201,7 @@ impl ValueAssociateHash {
             .collect::<HashMap<_, _>>();
         for attr in attrs {
             if let Some(value) = blacklist.get(&attr.as_name().clone())
-                && attr.as_value() == value.as_ref()
+                && value.matches(attr.as_value().map(String::as_str))
             {
                 return true;
             }
@@ -184,7 +210,7 @@ impl ValueAssociateHash {
     }
 
     /// Adds a rule for the attribute `name`
-    pub fn push(&mut self, name: String, value: Option<String>, keep: bool) {
+    pub fn push(&mut self, name: String, value: AttributeMatch, keep: bool) {
         let () = if keep {
             self.whitelist.push((name, value));
         } else {

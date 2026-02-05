@@ -27,7 +27,7 @@ use super::tag::Tag;
 /// .unwrap();
 /// ```
 #[non_exhaustive]
-#[derive(Default, Debug, Clone)]
+#[derive(Default, Debug, Clone, PartialEq, Eq)]
 pub enum Html {
     /// Comment block
     ///
