@@ -402,7 +402,8 @@ impl Filter {
     /// Specifies the value of an attribute in the tags that must be dismissed.
     ///
     /// This matches only tag attributes that have the correct value for the
-    /// given name.
+    /// given name. To filter out on a possible value inside the attribute name,
+    /// see [`Filter::except_attribute_value_contains`].
     ///
     /// See [`Filter`] for usage information.
     #[must_use]
@@ -413,6 +414,34 @@ impl Filter {
     {
         self.attrs
             .push(name.into(), AttributeMatch::Is(value.into()), false);
+        self
+    }
+
+    /// Specifies a possible value of an attribute that must be dismissed.
+    ///
+    /// This matches only tag attributes that have the given value as part of
+    /// the space-separated values inside the attribute value (cf. example
+    /// below). To match exact value, see [`Filter::except_attribute_value`].
+    ///
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use html_filter::*;
+    ///
+    /// let html = Html::parse(r#"<div class="some_class other_class" />"#).unwrap();
+    /// let filter = Filter::new().except_attribute_value_contains("class", "some_class");
+    ///
+    /// assert_eq!(html.filter(&filter), Html::Empty);
+    /// ```
+    #[must_use]
+    pub fn except_attribute_value_contains<N: Into<String>, V: Into<String>>(
+        mut self,
+        name: N,
+        value: V,
+    ) -> Self {
+        self.attrs
+            .push(name.into(), AttributeMatch::Contains(value.into()), false);
         self
     }
 
