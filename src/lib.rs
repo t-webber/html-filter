@@ -23,12 +23,13 @@
     clippy::nursery,
     clippy::cargo
 )]
-#![expect(
+#![allow(
     clippy::implicit_return,
     clippy::question_mark_used,
     clippy::else_if_without_else,
     clippy::module_name_repetitions,
     clippy::missing_inline_in_public_items,
+    clippy::doc_paragraphs_missing_punctuation,
     reason = "bad lint"
 )]
 #![expect(

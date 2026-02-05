@@ -178,13 +178,13 @@ impl Filter {
         self
     }
 
-    #[must_use]
     /// Sets the filter for doctype tags
     ///
     /// If `doctype` is set to `true` (default), doctype tags are kept.
     /// If `doctype` is set to `false`, doctype tags are removed.
     ///
     /// See [`Filter`] for usage information.
+    #[must_use]
     pub const fn doctype(mut self, doctype: bool) -> Self {
         self.types.set_doctype(doctype);
         self
@@ -217,13 +217,13 @@ impl Filter {
         self
     }
 
-    #[must_use]
     /// Filters texts
     ///
     /// - If `text` is set to `true` (default), all texts are kept.
     /// - If `text` is set to `false`, all texts are removed.
     ///
     /// See [`Filter`] for usage information.
+    #[must_use]
     pub const fn text(mut self, text: bool) -> Self {
         self.types.set_text(text);
         self
@@ -232,7 +232,6 @@ impl Filter {
 
 /// Public API for [`Filter`] on tags and attributes
 impl Filter {
-    #[must_use]
     /// Specifies the name of an attribute in the wanted tags.
     ///
     /// This matches only tag attributes that don't have any value, such as
@@ -243,24 +242,24 @@ impl Filter {
     /// ```
     ///
     /// See [`Filter`] for usage information.
+    #[must_use]
     pub fn attribute_name<N: Into<String>>(mut self, name: N) -> Self {
         self.attrs.push(name.into(), None, true);
         self
     }
 
-    #[must_use]
     /// Specifies the value of an attribute in the wanted tags.
     ///
     /// This matches only tag attributes that have the correct value for the
     /// given name.
     ///
     /// See [`Filter`] for usage information.
+    #[must_use]
     pub fn attribute_value<N: Into<String>, V: Into<String>>(mut self, name: N, value: V) -> Self {
         self.attrs.push(name.into(), Some(value.into()), true);
         self
     }
 
-    #[must_use]
     /// Specifies the depth of the desired nodes.
     ///
     /// The *depth* means at what depth the nodes must be kept according to the
@@ -343,12 +342,12 @@ impl Filter {
     ///     </ul>
     /// </nav>
     /// ```
+    #[must_use]
     pub const fn depth(mut self, depth: usize) -> Self {
         self.depth = depth;
         self
     }
 
-    #[must_use]
     /// Specifies the name of an attribute in the tags that must be dismissed.
     ///
     /// This matches only tag attributes that don't have any value, such as
@@ -359,18 +358,19 @@ impl Filter {
     /// ```
     ///
     /// See [`Filter`] for usage information.
+    #[must_use]
     pub fn except_attribute_name<N: Into<String>>(mut self, name: N) -> Self {
         self.attrs.push(name.into(), None, false);
         self
     }
 
-    #[must_use]
     /// Specifies the value of an attribute in the tags that must be dismissed.
     ///
     /// This matches only tag attributes that have the correct value for the
     /// given name.
     ///
     /// See [`Filter`] for usage information.
+    #[must_use]
     pub fn except_attribute_value<N, V>(mut self, name: N, value: V) -> Self
     where
         N: Into<String>,
@@ -380,10 +380,10 @@ impl Filter {
         self
     }
 
-    #[must_use]
     /// Specifies the tag name of the wanted tags.
     ///
     /// See [`Filter`] for usage information.
+    #[must_use]
     #[expect(unused_must_use, reason = "filter does not yet support results")]
     pub fn except_tag_name<N: Into<String>>(mut self, name: N) -> Self {
         self.tags.push(name.into(), false);
@@ -415,10 +415,10 @@ impl Filter {
         self
     }
 
-    #[must_use]
     /// Specifies the tag name of the wanted tags.
     ///
     /// See [`Filter`] for usage information.
+    #[must_use]
     #[expect(unused_must_use, reason = "filter does not yet support results")]
     pub fn tag_name<N: Into<String>>(mut self, name: N) -> Self {
         self.tags.push(name.into(), true);
