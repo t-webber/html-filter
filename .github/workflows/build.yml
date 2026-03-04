@@ -1,12 +1,16 @@
 name: Build
 
 on:
-    push:
-        branches:
-            - "*"
-    pull_request:
-        branches:
-            - "*"
+  push:
+    paths:
+      - '**/*.rs'
+      - '.github/workflows/build.yml'
+      - 'Cargo.*'
+  pull_request:
+    paths:
+      - '**/*.rs'
+      - '.github/workflows/build.yml'
+      - 'Cargo.*'
 
 env:
     CARGO_TERM_COLOR: always
@@ -29,5 +33,5 @@ jobs:
                 override: true
 
             - name: Cargo build
-              run: cargo build --release --verbose
+              run: cargo build --release
 

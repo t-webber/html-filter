@@ -1,12 +1,14 @@
 name: Coverage
 
 on:
-    push:
-        branches:
-            - "*"
-    pull_request:
-        branches:
-            - "*"
+  push:
+    paths:
+      - '**/*.rs'
+      - '.github/workflows/coverage.yml'
+  pull_request:
+    paths:
+      - '**/*.rs'
+      - '.github/workflows/coverage.yml'
 
 env:
     CARGO_TERM_COLOR: always
@@ -24,11 +26,11 @@ jobs:
                 toolchain: nightly
                 override: true
 
-            - name: Install cargo Binstall
+            - name: Install cargo-binstall
               uses: cargo-bins/cargo-binstall@main
 
             - name: Install tarpaulin
               run: cargo binstall -y cargo-tarpaulin
 
             - name: Check coverage
-              run: cargo tarpaulin --doc --tests  --fail-under 95
+              run: cargo tarpaulin --doc --tests --fail-under 95

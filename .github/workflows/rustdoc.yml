@@ -1,12 +1,16 @@
-name: Docs
+name: Rustdoc
 
 on:
-    push:
-        branches:
-            - "*"
-    pull_request:
-        branches:
-            - "*"
+  push:
+    paths:
+      - '**/*.rs'
+      - 'README.md'
+      - '.github/workflows/rustdoc.yml'
+  pull_request:
+    paths:
+      - '**/*.rs'
+      - 'README.md'
+      - '.github/workflows/rustdoc.yml'
 
 env:
     CARGO_TERM_COLOR: always
@@ -29,5 +33,4 @@ jobs:
                 override: true
 
             - name: Check documentation
-              run: RUSTDOCFLAGS="-D warnings" cargo doc --document-private-items --all --verbose --release
-
+              run: RUSTDOCFLAGS="-D warnings" cargo doc --document-private-items --all --release

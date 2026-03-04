@@ -1,6 +1,14 @@
 name: Taplo
 
-on: [pull_request, push]
+on:
+  push:
+    paths:
+      - '**/*.toml'
+      - '.github/workflows/taplo.yml'
+  pull_request:
+    paths:
+      - '**/*.toml'
+      - '.github/workflows/taplo.yml'
 
 jobs:
     taplo:
