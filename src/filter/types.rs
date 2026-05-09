@@ -100,6 +100,11 @@ impl Filter {
         self.tags.is_empty() && self.attrs.is_empty()
     }
 
+    /// Checks if texts should be trimmed, and removed if empty.
+    pub(super) const fn should_trim(&self) -> bool {
+        self.types.should_trim()
+    }
+
     /// Checks if a given tag must be kept according to the filter
     pub(super) fn tag_allowed(&self, tag: &Tag) -> bool {
         let name_allowed = self.tags.check(tag.as_name());
@@ -225,6 +230,27 @@ impl Filter {
     #[must_use]
     pub const fn text(mut self, text: bool) -> Self {
         self.types.set_text(text);
+        self
+    }
+
+    /// Trims all texts
+    ///
+    /// This includes removal of text parts that contain only whitespaces, which
+    /// is very useful. For example, parsing
+    ///
+    /// ```html
+    /// <ul>
+    ///    <li>First</li>
+    ///    <li>Second></li>
+    /// </ul>
+    /// ```
+    ///
+    /// would return a vec with [Text("\n\t"), Tag { name: "li", ...},
+    /// Text("\n\t"), Tag { name: "li", ...}, Text("\n\t")], and in most
+    /// cases, we just want the 2 `li` tags.
+    #[must_use]
+    pub const fn trim(mut self) -> Self {
+        self.types.trim();
         self
     }
 }

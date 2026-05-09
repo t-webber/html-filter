@@ -41,6 +41,11 @@ pub(super) struct NodeTypeFilter {
     ///
     /// In `<p>Hello world</p>`, `Hello world` is a text node.
     text: Option<bool>,
+    /// Whether to trim all texts.
+    ///
+    /// This will remove text segments that contain only whitespaces and
+    /// newlines.
+    trim: bool,
 }
 
 #[expect(clippy::arbitrary_source_item_ordering, reason = "ordered by type")]
@@ -49,7 +54,7 @@ impl NodeTypeFilter {
 
     /// Returns a default [`Self`]
     pub const fn new() -> Self {
-        Self { comment: None, doctype: None, text: None }
+        Self { comment: None, doctype: None, text: None, trim: false }
     }
 
     // getters
@@ -67,6 +72,11 @@ impl NodeTypeFilter {
     /// Checks if texts are allowed
     pub const fn text_allowed(&self) -> bool {
         unwrap_or(self.text, true)
+    }
+
+    /// Checks if texts should be trimmed, and removed if empty.
+    pub const fn should_trim(&self) -> bool {
+        self.trim
     }
 
     // setters
@@ -118,5 +128,10 @@ impl NodeTypeFilter {
         if self.text.is_none() {
             self.text = Some(keep);
         }
+    }
+
+    /// Sets trim flag.
+    pub const fn trim(&mut self) {
+        self.trim = true;
     }
 }

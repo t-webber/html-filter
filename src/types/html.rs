@@ -112,6 +112,12 @@ impl Html {
     pub const fn new() -> Self {
         Self::Empty
     }
+
+    /// Trims the texts then allocates a text [`Html`] node if it isn't empty.
+    pub(crate) fn trim_text(text: &str) -> Self {
+        let trimmed = text.trim();
+        if trimmed.is_empty() { Self::Empty } else { Self::Text(trimmed.to_owned()) }
+    }
 }
 
 impl fmt::Display for Html {

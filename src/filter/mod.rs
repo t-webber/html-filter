@@ -211,7 +211,8 @@ fn filter_aux(cow_html: Cow<'_, Html>, filter: &Filter, found: bool) -> FilterSu
             None,
         Cow::Borrowed(Doctype { .. } | Comment(_)) | Cow::Owned(Doctype { .. } | Comment(_)) =>
             FilterSuccess::make_none(cow_html),
-        Cow::Borrowed(Text(_) | Empty) | Cow::Owned(Text(_) | Empty) => None,
+        Cow::Borrowed(Text(_) | Empty) | Cow::Owned(Text(_) | Empty) => None, // TODO: this is
+        // incorrect
         Cow::Borrowed(Tag { tag, child }) =>
             filter_aux_tag(Cow::Borrowed(&**child), Cow::Borrowed(tag), filter, found),
         Cow::Owned(Tag { tag, child }) =>
@@ -305,8 +306,13 @@ fn filter_aux_vec(vec: Cow<'_, Box<[Html]>>, filter: &Filter) -> Option<FilterSu
 #[allow(clippy::enum_glob_use, reason = "heavy syntax and Html is the main struct")]
 fn filter_light(cow_html: Cow<'_, Html>, filter: &Filter) -> Html {
     use Html::*;
+    #[allow(clippy::ref_patterns, reason = "!")]
     match cow_html {
-        Cow::Borrowed(Text(_)) | Cow::Owned(Text(_)) if filter.text_allowed() =>
+        Cow::Borrowed(Text(txt)) if filter.text_allowed() && filter.should_trim() =>
+            Html::trim_text(txt),
+        Cow::Owned(Text(txt)) if filter.text_allowed() && filter.should_trim() =>
+            Html::trim_text(&txt),
+        Cow::Owned(Text(_)) | Cow::Borrowed(Text(_)) if filter.text_allowed() =>
             cow_html.into_owned(),
         Cow::Borrowed(Comment(_)) | Cow::Owned(Comment(_)) if filter.comment_allowed() =>
             cow_html.into_owned(),

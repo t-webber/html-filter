@@ -8,13 +8,14 @@ macro_rules! make_tests {
             #[test]
             fn $name() {
                 let tree = Html::parse(INPUT).unwrap().filter(&$filter);
-                test_maker(stringify!($name), $expect, &tree, $filter)
+                test_maker(stringify!($name), $expect, &tree, $filter, true)
             }
         )*
     };
 }
 
-const INPUT: &str = "
+/// !
+pub const INPUT: &str = "
 <!DOCTYPE html>
 <!-- comment 1 -->
 <html>

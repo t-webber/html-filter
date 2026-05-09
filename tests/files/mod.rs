@@ -10,6 +10,8 @@ pub mod full;
 pub mod matches;
 /// Test filters on a smaller string.
 pub mod strings;
+/// Test the trimming mechanism.
+pub mod trim;
 
 use core::fmt::Debug;
 use std::fs;
@@ -80,9 +82,12 @@ fn format_html(html: &str) -> String {
         .replace("> </br>", ">")
 }
 
-fn test_maker<T: Debug>(name: &str, expected: &str, output: &Html, msg: T) {
-    let formatted_input = format_html(expected);
-    let formatted_output = format_html(&output.to_string());
+fn test_maker<T: Debug>(name: &str, expected: &str, output: &Html, msg: T, simplify: bool) {
+    let (formatted_input, formatted_output) = if simplify {
+        (format_html(expected), format_html(&output.to_string()))
+    } else {
+        (expected.to_owned(), output.to_string())
+    };
     if formatted_output != formatted_input {
         let output_path = format!("output.{name}.html");
         let expected_path = format!("expected.{name}.html");
@@ -90,9 +95,13 @@ fn test_maker<T: Debug>(name: &str, expected: &str, output: &Html, msg: T) {
             .expect("Permission denied: failed to write to directory.");
         fs::write(&expected_path, formatted_input.replace(' ', "\n"))
             .expect("Permission denied: failed to write to directory.");
+        let sep = format!("\n\x1b[33m{}\x1b[0m\n", "-".repeat(50));
+        let nl = "\n";
+        let output = "\x1b[33mOutput:\x1b[0m";
+        let expected = "\x1b[33mExpected:\x1b[0m";
         panic!(
-            "Error occurred.\n{msg:?}\nOutput:\n--------------------\n{formatted_output}\\
-             n--------------------\nUse `diff {output_path} {expected_path}` to see the problem."
+            "{msg:?}\n{output}{sep}{formatted_output}{sep}{nl}{expected}{sep}{formatted_input}{sep}Use `diff {output_path} {expected_path}` to \
+             see the problem."
         );
     }
 }
