@@ -134,9 +134,7 @@ impl HtmlBuilder {
         if self.close_tag_aux(name) {
             Ok(())
         } else {
-            Err(format!(
-                "Invalid closing tag: Found closing tag for '{name}' but it isn't open."
-            ))
+            Err(format!("Invalid closing tag: Found closing tag for '{name}' but it isn't open."))
         }
     }
 
@@ -257,11 +255,7 @@ impl HtmlBuilder {
     pub fn push_tag(&mut self, tag: Tag, inline: bool) {
         self.push_node(Self::Tag {
             tag,
-            full: if inline {
-                TagType::SelfClosing
-            } else {
-                TagType::Opened
-            },
+            full: if inline { TagType::SelfClosing } else { TagType::Opened },
             child: Self::empty_box(),
         });
     }

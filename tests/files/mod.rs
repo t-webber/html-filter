@@ -91,7 +91,8 @@ fn test_maker<T: Debug>(name: &str, expected: &str, output: &Html, msg: T) {
         fs::write(&expected_path, formatted_input.replace(' ', "\n"))
             .expect("Permission denied: failed to write to directory.");
         panic!(
-            "Error occurred.\n{msg:?}\nOutput:\n--------------------\n{formatted_output}\n--------------------\nUse `diff {output_path} {expected_path}` to see the problem."
+            "Error occurred.\n{msg:?}\nOutput:\n--------------------\n{formatted_output}\\
+             n--------------------\nUse `diff {output_path} {expected_path}` to see the problem."
         );
     }
 }

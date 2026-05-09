@@ -104,9 +104,7 @@ impl Filter {
     pub(super) fn tag_allowed(&self, tag: &Tag) -> bool {
         let name_allowed = self.tags.check(tag.as_name());
         let attrs_allowed = self.attrs.check(tag.as_attrs());
-        name_allowed
-            .and(&attrs_allowed)
-            .is_allowed_or(self.is_empty())
+        name_allowed.and(&attrs_allowed).is_allowed_or(self.is_empty())
     }
 
     /// Checks if a given tag has an explicit rule, rule to keep this tag
@@ -258,8 +256,7 @@ impl Filter {
     /// See [`Filter`] for usage information.
     #[must_use]
     pub fn attribute_value<N: Into<String>, V: Into<String>>(mut self, name: N, value: V) -> Self {
-        self.attrs
-            .push(name.into(), AttributeMatch::Is(value.into()), true);
+        self.attrs.push(name.into(), AttributeMatch::Is(value.into()), true);
         self
     }
 
@@ -290,8 +287,7 @@ impl Filter {
         name: N,
         value: V,
     ) -> Self {
-        self.attrs
-            .push(name.into(), AttributeMatch::Contains(value.into()), true);
+        self.attrs.push(name.into(), AttributeMatch::Contains(value.into()), true);
         self
     }
 
@@ -325,9 +321,7 @@ impl Filter {
     ///
     /// ```
     /// #![allow(unused)]
-    /// html_filter::Filter::new()
-    ///     .attribute_value("href", "second")
-    ///     .depth(0);
+    /// html_filter::Filter::new().attribute_value("href", "second").depth(0);
     /// ```
     ///
     /// will return:
@@ -340,9 +334,7 @@ impl Filter {
     ///
     /// ```
     /// #![allow(unused)]
-    /// html_filter::Filter::new()
-    ///     .attribute_value("href", "second")
-    ///     .depth(1);
+    /// html_filter::Filter::new().attribute_value("href", "second").depth(1);
     /// ```
     ///
     /// will return (note that the other children were kept):
@@ -359,9 +351,7 @@ impl Filter {
     ///
     /// ```
     /// #![allow(unused)]
-    /// html_filter::Filter::new()
-    ///     .attribute_value("href", "second")
-    ///     .depth(2);
+    /// html_filter::Filter::new().attribute_value("href", "second").depth(2);
     /// ```
     ///
     /// will return (note that even the comment was kept, if you want to remove
@@ -412,8 +402,7 @@ impl Filter {
         N: Into<String>,
         V: Into<String>,
     {
-        self.attrs
-            .push(name.into(), AttributeMatch::Is(value.into()), false);
+        self.attrs.push(name.into(), AttributeMatch::Is(value.into()), false);
         self
     }
 
@@ -440,8 +429,7 @@ impl Filter {
         name: N,
         value: V,
     ) -> Self {
-        self.attrs
-            .push(name.into(), AttributeMatch::Contains(value.into()), false);
+        self.attrs.push(name.into(), AttributeMatch::Contains(value.into()), false);
         self
     }
 

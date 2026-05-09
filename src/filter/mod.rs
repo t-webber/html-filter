@@ -117,11 +117,7 @@ impl Html {
             Self::Vec(vec) => vec
                 .iter()
                 .try_fold(Some(usize::MAX), |acc, child| {
-                    if acc == Some(0) {
-                        Err(())
-                    } else {
-                        Ok(child.check_depth(max_depth, filter))
-                    }
+                    if acc == Some(0) { Err(()) } else { Ok(child.check_depth(max_depth, filter)) }
                 })
                 .unwrap_or(Some(0)),
         }
@@ -184,7 +180,7 @@ impl Html {
     /// Finds an html node based on a defined filter.
     ///
     /// Equivalent of [`Html::find`] when data is not owned.
-    //TODO: data except first is cloned
+    // TODO: data except first is cloned
     #[must_use]
     pub fn to_found(&self, filter: &Filter) -> Self {
         self.to_filtered(filter).into_first()
@@ -203,10 +199,7 @@ impl Html {
 /// to follow the current depth of the last found node. See
 /// [`FilterSuccess`] for more information.
 #[allow(clippy::allow_attributes, reason = "expect is buggy")]
-#[allow(
-    clippy::enum_glob_use,
-    reason = "heavy syntax and Html is the main struct"
-)]
+#[allow(clippy::enum_glob_use, reason = "heavy syntax and Html is the main struct")]
 fn filter_aux(cow_html: Cow<'_, Html>, filter: &Filter, found: bool) -> FilterSuccess {
     use Html::*;
     match cow_html {
@@ -230,10 +223,7 @@ fn filter_aux(cow_html: Cow<'_, Html>, filter: &Filter, found: bool) -> FilterSu
 }
 
 /// Auxiliary method for [`filter_aux`] on [`Html::Tag`]
-#[expect(
-    clippy::arithmetic_side_effects,
-    reason = "incr depth when smaller than filter_depth"
-)]
+#[expect(clippy::arithmetic_side_effects, reason = "incr depth when smaller than filter_depth")]
 fn filter_aux_tag(
     child: Cow<'_, Html>,
     tag: Cow<'_, Tag>,
@@ -265,10 +255,7 @@ fn filter_aux_tag(
 }
 
 /// Auxiliary method for [`filter_aux`] on [`Html::Vec`]
-#[expect(
-    clippy::arithmetic_side_effects,
-    reason = "incr depth when smaller than filter_depth"
-)]
+#[expect(clippy::arithmetic_side_effects, reason = "incr depth when smaller than filter_depth")]
 fn filter_aux_vec(vec: Cow<'_, Box<[Html]>>, filter: &Filter) -> Option<FilterSuccess> {
     match vec
         .as_ref()
@@ -279,20 +266,14 @@ fn filter_aux_vec(vec: Cow<'_, Box<[Html]>>, filter: &Filter) -> Option<FilterSu
         Some(depth) if depth < filter.as_depth() => Some(FilterSuccess {
             depth: DepthSuccess::Found(depth),
             html: Html::Vec(
-                vec.iter()
-                    .map(|child| filter_light(Cow::Borrowed(child), filter))
-                    .collect(),
+                vec.iter().map(|child| filter_light(Cow::Borrowed(child), filter)).collect(),
             ),
         }),
         Some(_) => Some(FilterSuccess {
             depth: DepthSuccess::Success,
             html: Html::Vec(into_iter_filter_map_collect(vec, |child| {
                 let rec = filter_aux(child, filter, true);
-                if rec.html.is_empty() {
-                    None
-                } else {
-                    Some(rec.html)
-                }
+                if rec.html.is_empty() { None } else { Some(rec.html) }
             })),
         }),
         None => {
@@ -303,14 +284,10 @@ fn filter_aux_vec(vec: Cow<'_, Box<[Html]>>, filter: &Filter) -> Option<FilterSu
             if filtered.len() <= 1 {
                 filtered.pop()
             } else {
-                filtered
-                    .iter()
-                    .map(|child| child.depth)
-                    .min()
-                    .map(|depth| FilterSuccess {
-                        depth,
-                        html: Html::Vec(filtered.into_iter().map(|child| child.html).collect()),
-                    })
+                filtered.iter().map(|child| child.depth).min().map(|depth| FilterSuccess {
+                    depth,
+                    html: Html::Vec(filtered.into_iter().map(|child| child.html).collect()),
+                })
             }
         }
     }
@@ -325,10 +302,7 @@ fn filter_aux_vec(vec: Cow<'_, Box<[Html]>>, filter: &Filter) -> Option<FilterSu
 /// The return type is [`Html`] and not [`Cow`] has it is only called on
 /// successes.
 #[allow(clippy::allow_attributes, reason = "expect is buggy")]
-#[allow(
-    clippy::enum_glob_use,
-    reason = "heavy syntax and Html is the main struct"
-)]
+#[allow(clippy::enum_glob_use, reason = "heavy syntax and Html is the main struct")]
 fn filter_light(cow_html: Cow<'_, Html>, filter: &Filter) -> Html {
     use Html::*;
     match cow_html {
@@ -347,14 +321,10 @@ fn filter_light(cow_html: Cow<'_, Html>, filter: &Filter) -> Html {
         Cow::Owned(Tag { tag, child }) =>
             Tag { tag, child: Box::new(filter_light(Cow::Owned(*child), filter)) },
         Cow::Borrowed(Vec(vec)) => Html::Vec(
-            vec.into_iter()
-                .map(|child| filter_light(Cow::Borrowed(child), filter))
-                .collect(),
+            vec.into_iter().map(|child| filter_light(Cow::Borrowed(child), filter)).collect(),
         ),
         Cow::Owned(Vec(vec)) => Html::Vec(
-            vec.into_iter()
-                .map(|child| filter_light(Cow::Owned(child), filter))
-                .collect(),
+            vec.into_iter().map(|child| filter_light(Cow::Owned(child), filter)).collect(),
         ),
         Cow::Borrowed(Empty | Text(_) | Comment { .. } | Doctype { .. })
         | Cow::Owned(Empty | Text(_) | Comment { .. } | Doctype { .. }) => Html::Empty,
@@ -370,13 +340,8 @@ where
     F: Fn(Cow<'_, T>) -> Option<U>,
 {
     match cow {
-        Cow::Borrowed(borrowed) => borrowed
-            .into_iter()
-            .filter_map(|elt| map(Cow::Borrowed(elt)))
-            .collect(),
-        Cow::Owned(owned) => owned
-            .into_iter()
-            .filter_map(|elt| map(Cow::Owned(elt)))
-            .collect(),
+        Cow::Borrowed(borrowed) =>
+            borrowed.into_iter().filter_map(|elt| map(Cow::Borrowed(elt))).collect(),
+        Cow::Owned(owned) => owned.into_iter().filter_map(|elt| map(Cow::Owned(elt))).collect(),
     }
 }

@@ -45,38 +45,42 @@ pub(super) struct NodeTypeFilter {
 
 #[expect(clippy::arbitrary_source_item_ordering, reason = "ordered by type")]
 impl NodeTypeFilter {
-    /* helpers */
+    // helpers
 
     /// Returns a default [`Self`]
     pub const fn new() -> Self {
         Self { comment: None, doctype: None, text: None }
     }
 
-    /* getters */
+    // getters
 
     /// Checks if comments are allowed
     pub const fn comment_allowed(&self) -> Option<bool> {
         self.comment
     }
+
     /// Checks if doctypes are allowed
     pub const fn doctype_allowed(&self) -> Option<bool> {
         self.doctype
     }
+
     /// Checks if texts are allowed
     pub const fn text_allowed(&self) -> bool {
         unwrap_or(self.text, true)
     }
 
-    /* setters */
+    // setters
 
     /// Sets the comment authorisation
     pub const fn set_comment(&mut self, comment: bool) {
         self.comment = Some(comment);
     }
+
     /// Sets the doctype authorisation
     pub const fn set_doctype(&mut self, doctype: bool) {
         self.doctype = Some(doctype);
     }
+
     /// Sets the text authorisation
     pub const fn set_text(&mut self, text: bool) {
         self.text = Some(text);
@@ -88,12 +92,14 @@ impl NodeTypeFilter {
         self.set_all(!comment);
         self.comment = Some(comment);
     }
+
     /// Sets the doctype authorisation, and all others to the contrary if not
     /// already set.
     pub const fn set_only_doctype(&mut self, doctype: bool) {
         self.set_all(!doctype);
         self.doctype = Some(doctype);
     }
+
     /// Sets the text authorisation, and all others to the contrary if not
     /// already set.
     pub const fn set_only_text(&mut self, text: bool) {

@@ -36,18 +36,12 @@ pub struct BlackWhiteList {
 impl BlackWhiteList {
     /// Returns the `keep` value associated to the name `name`.
     fn get(&self, name: &str) -> Option<bool> {
-        self.items
-            .iter()
-            .find(|item| item.0 == name)
-            .map(|item| item.1)
+        self.items.iter().find(|item| item.0 == name).map(|item| item.1)
     }
 
     /// Returns the `keep` value associated to the name `name` in a mutable way.
     fn get_mut(&mut self, name: &str) -> Option<&mut bool> {
-        self.items
-            .iter_mut()
-            .find(|item| item.0 == name)
-            .map(|item| &mut item.1)
+        self.items.iter_mut().find(|item| item.0 == name).map(|item| &mut item.1)
     }
 }
 
@@ -63,11 +57,7 @@ impl BlackWhiteList {
                 }
             },
             |keep| {
-                if keep {
-                    ElementState::WhiteListed
-                } else {
-                    ElementState::BlackListed
-                }
+                if keep { ElementState::WhiteListed } else { ElementState::BlackListed }
             },
         )
     }
@@ -177,7 +167,7 @@ impl AttributeMatch {
 }
 
 /// Rules for associating names to values
-//TODO: could add a default to create a method: exact_attributes
+// TODO: could add a default to create a method: exact_attributes
 #[derive(Default, Debug)]
 pub struct ValueAssociateHash {
     /// Names and attributes explicitly not wanted
@@ -189,10 +179,8 @@ pub struct ValueAssociateHash {
 impl ValueAssociateHash {
     /// Checks if the attributes form a correct combination of rules
     pub fn check(&self, attrs: &[Attribute]) -> ElementState {
-        let attrs_map: HashMap<_, _> = attrs
-            .iter()
-            .map(|attr| (attr.as_name().clone(), attr.as_value()))
-            .collect();
+        let attrs_map: HashMap<_, _> =
+            attrs.iter().map(|attr| (attr.as_name().clone(), attr.as_value())).collect();
         for (wanted_name, wanted_value) in &self.whitelist {
             match attrs_map.get(wanted_name) {
                 None => return ElementState::BlackListed,
@@ -208,11 +196,7 @@ impl ValueAssociateHash {
                 Some(_) | None => (),
             }
         }
-        if self.is_empty() {
-            ElementState::NotSpecified
-        } else {
-            ElementState::WhiteListed
-        }
+        if self.is_empty() { ElementState::NotSpecified } else { ElementState::WhiteListed }
     }
 
     /// Checks if the [`ValueAssociateHash`] wasn't given any rules.
@@ -222,11 +206,8 @@ impl ValueAssociateHash {
 
     /// Checks if one of the attributes was explicitly blacklisted
     pub fn is_explicitly_blacklisted(&self, attrs: &[Attribute]) -> bool {
-        let blacklist = self
-            .blacklist
-            .iter()
-            .map(|(name, value)| (name, value))
-            .collect::<HashMap<_, _>>();
+        let blacklist =
+            self.blacklist.iter().map(|(name, value)| (name, value)).collect::<HashMap<_, _>>();
         for attr in attrs {
             if let Some(value) = blacklist.get(&attr.as_name().clone())
                 && value.matches(attr.as_value().map(String::as_str))

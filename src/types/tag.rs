@@ -109,10 +109,7 @@ impl fmt::Display for Attribute {
 /// if let Html::Tag { tag, .. } = html {
 ///     assert!(tag.as_name() == "a");
 ///     assert!(tag.find_attr_value("enabled").is_none());
-///     assert!(
-///         tag.find_attr_value("href")
-///             .is_some_and(|value| value == "https://crates.io")
-///     );
+///     assert!(tag.find_attr_value("href").is_some_and(|value| value == "https://crates.io"));
 ///     let value: String = tag.into_attr_value("href").unwrap();
 ///     assert!(&value == "https://crates.io");
 /// } else {
@@ -191,9 +188,7 @@ impl Tag {
     /// if let Html::Tag { tag, .. } = html {
     ///     assert!(tag.find_attr_value("enabled").is_none());
     ///     assert!(
-    ///         tag.find_attr_value("xlink:href")
-    ///             .map(|value| value.as_ref())
-    ///             == Some("https://std.rs")
+    ///         tag.find_attr_value("xlink:href").map(|value| value.as_ref()) == Some("https://std.rs")
     ///     );
     /// } else {
     ///     unreachable!()
@@ -230,20 +225,14 @@ impl Tag {
     /// let html = Html::parse(r#"<a id="std doc" href="https://std.rs"/>"#).unwrap();
     ///
     /// if let Html::Tag { tag, .. } = html {
-    ///     assert!(
-    ///         tag.into_attr_value("href")
-    ///             .is_some_and(|value| &value == "https://std.rs")
-    ///     );
+    ///     assert!(tag.into_attr_value("href").is_some_and(|value| &value == "https://std.rs"));
     /// } else {
     ///     unreachable!()
     /// }
     /// ```
     #[must_use]
     pub fn into_attr_value<T: AsRef<str>>(self, name: T) -> Option<String> {
-        self.attrs
-            .into_iter()
-            .find(|attr| attr.as_name() == name.as_ref())?
-            .into_value()
+        self.attrs.into_iter().find(|attr| attr.as_name() == name.as_ref())?.into_value()
     }
 }
 

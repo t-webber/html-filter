@@ -9,19 +9,7 @@
 /// Macro to add a developer error with a generic failure text.
 macro_rules! safe_expect {
     ($code:expr, $reason:expr) => {
-        $code.expect(&format!(
-            "
-This is not meant to happen.
-Please report this problem at https://github.com/t-webber/html-parser/issues/new.
-Please include the code snippet that created this error and the reason displayed below.
-Thank you for signalling this issue!
-We will try to fix it as soon as possible.
----------- Reason ----------
-{}
-----------------------------
-",
-            $reason
-        ))
+        $code.expect(&$crate::errors::unreachable_message($reason))
     };
 }
 
@@ -33,23 +21,14 @@ macro_rules! safe_unreachable {
 }
 
 /// Function to make a developer error with a generic failure text.
-#[expect(
-    clippy::panic,
-    reason = "called when code must fail to avoid undefined behaviour."
-)]
+#[expect(clippy::panic, reason = "called when code must fail to avoid undefined behaviour.")]
 pub fn safe_unreachable_fn(reason: &str) -> ! {
-    panic!(
-        "
-This is not meant to happen.
-Please report this problem at https://github.com/t-webber/html-parser/issues/new.
-Please include the code snippet that created this error and the reason displayed below.
-Thank you for signalling this issue!
-We will try to fix it as soon as possible.
----------- Reason ----------
-{reason}
-----------------------------
-"
-    )
+    panic!("{}", unreachable_message(reason))
+}
+
+/// Formats the message to display when something unexpected happens.
+pub fn unreachable_message(reason: &str) -> String {
+    format!("\nThis is not meant to happen.\nPlease report this problem at https://github.com/t-webber/html-parser/issues/new.\nPlease include the code snippet that created this error and the reason displayed below.\nThank you for signalling this issue!\nWe will try to fix it as soon as possible.\n---------- Reason ----------\n{reason}\n----------------------------\n")
 }
 
 pub(super) use safe_expect;
