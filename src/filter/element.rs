@@ -168,14 +168,10 @@ pub enum AttributeMatch {
 impl AttributeMatch {
     /// Checks if a [`AttributeMatch`] is satisfied by a given attribute value.
     fn matches(&self, attribute_value: Option<&str>) -> bool {
-        attribute_value.map_or(matches!(self, Self::NoValue), |attr_val| {
-            if let Self::Is(this_val) = self {
-                *this_val == *attr_val
-            } else if let Self::Contains(this_val) = self {
-                attr_val.split_whitespace().any(|word| word == this_val)
-            } else {
-                false
-            }
+        attribute_value.map_or(matches!(self, Self::NoValue), |attr_val| match self {
+            Self::Is(this_val) => *this_val == *attr_val,
+            Self::Contains(this_val) => attr_val.split_whitespace().any(|word| word == this_val),
+            Self::NoValue => false,
         })
     }
 }

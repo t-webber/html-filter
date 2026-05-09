@@ -333,4 +333,8 @@ r##"
 </html>
 "##
 
+
+attribute_no_value: Filter::new().attribute_name("charset") =>
+""
+
 );
