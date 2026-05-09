@@ -8,6 +8,7 @@
 //! [`Filter`].
 
 extern crate alloc;
+mod api;
 mod element;
 mod node_type;
 pub mod types;
