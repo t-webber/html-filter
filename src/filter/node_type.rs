@@ -9,6 +9,9 @@
 /// output
 #[derive(Default, Debug)]
 pub(super) struct NodeTypeFilter {
+    /// Whether successive texts after a filter removes nodes should be collapse
+    /// in one text or not.
+    collapse: bool,
     /// Html comment
     ///
     /// # Note
@@ -52,10 +55,15 @@ impl NodeTypeFilter {
 
     /// Returns a default [`Self`]
     pub const fn new() -> Self {
-        Self { comment: None, doctype: None, text: None, trim: false }
+        Self { comment: None, doctype: None, text: None, trim: false, collapse: false }
     }
 
     // getters
+
+    /// Returns whether the texts should be collapse or not after filtering.
+    pub const fn as_collapse(&self) -> bool {
+        self.collapse
+    }
 
     /// Checks if comments are allowed
     pub const fn comment_allowed(&self) -> Option<bool> {
@@ -78,6 +86,11 @@ impl NodeTypeFilter {
     }
 
     // setters
+
+    /// Collapses successive text nodes.
+    pub const fn set_collapse(&mut self) {
+        self.collapse = true;
+    }
 
     /// Sets the comment authorisation
     pub const fn set_comment(&mut self, comment: bool) {

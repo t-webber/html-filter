@@ -278,14 +278,18 @@ fn filter_aux_vec(vec: Cow<'_, Box<[Html]>>, filter: &Filter) -> Option<FilterSu
                     .map(|child| filter_light(Cow::Borrowed(child), filter))
                     .filter(|child| !child.is_empty())
                     .collect(),
+                filter.as_collapse(),
             ),
         }),
         Some(_) => Some(FilterSuccess {
             depth: DepthSuccess::Success,
-            html: unwrap_vec(into_iter_filter_map_collect(vec, |child| {
-                let rec = filter_aux(child, filter, true).html;
-                if rec.is_empty() { None } else { Some(rec) }
-            })),
+            html: unwrap_vec(
+                into_iter_filter_map_collect(vec, |child| {
+                    let rec = filter_aux(child, filter, true).html;
+                    if rec.is_empty() { None } else { Some(rec) }
+                }),
+                filter.as_collapse(),
+            ),
         }),
         None => {
             let mut filtered: Vec<FilterSuccess> = into_iter_filter_map_collect(vec, |child| {
@@ -297,7 +301,10 @@ fn filter_aux_vec(vec: Cow<'_, Box<[Html]>>, filter: &Filter) -> Option<FilterSu
             } else {
                 filtered.iter().map(|child| child.depth).min().map(|depth| FilterSuccess {
                     depth,
-                    html: unwrap_vec(filtered.into_iter().map(|child| child.html).collect()),
+                    html: unwrap_vec(
+                        filtered.into_iter().map(|child| child.html).collect(),
+                        filter.as_collapse(),
+                    ),
                 })
             }
         }
@@ -341,12 +348,14 @@ fn filter_light(cow_html: Cow<'_, Html>, filter: &Filter) -> Html {
                 .map(|child| filter_light(Cow::Borrowed(child), filter))
                 .filter(|html| !html.is_empty())
                 .collect(),
+            filter.as_collapse(),
         ),
         Cow::Owned(Vec(vec)) => unwrap_vec(
             vec.into_iter()
                 .map(|child| filter_light(Cow::Owned(child), filter))
                 .filter(|html| !html.is_empty())
                 .collect(),
+            filter.as_collapse(),
         ),
         Cow::Borrowed(Empty | Text(_) | Comment { .. } | Doctype { .. })
         | Cow::Owned(Empty | Text(_) | Comment { .. } | Doctype { .. }) => Html::Empty,
@@ -354,22 +363,27 @@ fn filter_light(cow_html: Cow<'_, Html>, filter: &Filter) -> Html {
 }
 
 /// Unwrap a [`Vec<Html>`] to not have vecs of 0 and 1 element.
-fn unwrap_vec(vec: Vec<Html>) -> Html {
-    let mut previous = String::new();
-    let mut res = Vec::with_capacity(vec.len());
-    for this in vec {
-        if let Html::Text(text) = this {
-            previous.push_str(&text);
-        } else {
-            if !previous.is_empty() {
-                res.push(Html::Text(take(&mut previous)));
+fn unwrap_vec(vec: Vec<Html>, collapse: bool) -> Html {
+    let mut res = if collapse {
+        let mut previous = String::new();
+        let mut res = Vec::with_capacity(vec.len());
+        for this in vec {
+            if let Html::Text(text) = this {
+                previous.push_str(&text);
+            } else {
+                if !previous.is_empty() {
+                    res.push(Html::Text(take(&mut previous)));
+                }
+                res.push(this);
             }
-            res.push(this);
         }
-    }
-    if !previous.is_empty() {
-        res.push(Html::Text(take(&mut previous)));
-    }
+        if !previous.is_empty() {
+            res.push(Html::Text(take(&mut previous)));
+        }
+        res
+    } else {
+        vec
+    };
     if res.len() <= 1 {
         res.first_mut().map(take).unwrap_or_default()
     } else {

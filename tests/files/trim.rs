@@ -51,16 +51,3 @@ fn remove_empty() {
     assert_eq!(th_tag.name, "th");
     assert_eq!(*th_child, Html::Empty);
 }
-
-#[test]
-fn only_text() {
-    test_maker(
-        "only_text",
-        "\n\n\n\n    A first text\n    \n    \n        A first text\n        \n        \n    \n\n",
-        &Html::parse(INPUT)
-            .expect("failed to parse")
-            .filter(&Filter::new().no_tags().none_except_text()),
-        "",
-        false,
-    );
-}

@@ -75,6 +75,11 @@ pub struct Filter {
 
 /// Private methods for [`Filter`]
 impl Filter {
+    /// Checks whethers the texts should be collapsed or not after filtering.
+    pub(super) const fn as_collapse(&self) -> bool {
+        self.types.as_collapse()
+    }
+
     /// Returns the wanted search depth
     pub(super) const fn as_depth(&self) -> usize {
         self.depth
@@ -322,6 +327,51 @@ impl Filter {
         self
     }
 
+    /// Collapses successive text nodes.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use html_filter::*;
+    ///
+    /// let html =
+    ///     Html::parse("<div>before <!-- comment --> middle <strong>strong</strong> after</div>")
+    ///         .unwrap();
+    ///
+    /// // Without collapse
+    /// assert_eq!(
+    ///     Html::Vec(
+    ///         vec![
+    ///             Html::Text("before ".into()),
+    ///             Html::Comment(" comment ".into()),
+    ///             Html::Text(" middle ".into()),
+    ///             Html::Text("strong".into()),
+    ///             Html::Text(" after".into())
+    ///         ]
+    ///         .into()
+    ///     ),
+    ///     html.to_filtered(&Filter::new().no_tags().text(true))
+    /// );
+    ///
+    /// // With collapse
+    /// assert_eq!(
+    ///     Html::Vec(
+    ///         vec![
+    ///             Html::Text("before ".into()),
+    ///             Html::Comment(" comment ".into()),
+    ///             Html::Text(" middle strong after".into()),
+    ///         ]
+    ///         .into()
+    ///     ),
+    ///     html.to_filtered(&Filter::new().no_tags().text(true).collapse())
+    /// );
+    /// ```
+    #[must_use]
+    pub const fn collapse(mut self) -> Self {
+        self.types.set_collapse();
+        self
+    }
+
     /// Specifies the depth of the desired nodes.
     ///
     /// The *depth* means at what depth the nodes must be kept according to the
@@ -485,7 +535,7 @@ impl Filter {
     /// ```
     /// use html_filter::*;
     ///
-    /// let _filter: Filter = Filter::new();
+    /// const _FILTER: Filter = Filter::new();
     /// ```
     #[must_use]
     pub const fn new() -> Self {
