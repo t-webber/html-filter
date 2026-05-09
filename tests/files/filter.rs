@@ -80,14 +80,10 @@ tr: Filter::new().tag_name("tr").comment(false) =>
 "<tr><th>ID</th><th>Name</th></tr><tr><td>1</td><td>Alice</td></tr><tr><td>2</td><td>Bob</td></tr>"
 
 depth_1: Filter::new().depth(1).tag_name("source") =>
-r##"
-<video controls>
-    <source src="test.mp4" type="video/mp4" />
-</video>
-"##
+"\n<video controls>\n    <source src=\"test.mp4\" type=\"video/mp4\" />\n</video>\n"
 
 depth_2: Filter::new().depth(2).tag_name("source") =>
-r##"
+r#"
 <section>
     <h2>Media</h2>
     <img src="test.jpg" alt="Test Image" />
@@ -95,7 +91,7 @@ r##"
         <source src="test.mp4" type="video/mp4" />
     </video>
 </section>
-"##
+"#
 
 tag: Filter::new().tag_name("form").attribute_value("action", "#").comment(false) =>
 r##"
@@ -172,7 +168,7 @@ r##"
 "##
 
 depth_with_comment: Filter::new().depth(1).attribute_value("border", "1").comment(true) =>
-r##"
+r#"
 <section>
     <h2><!--- Table --->Table</h2>
     <table border="1">
@@ -194,10 +190,10 @@ r##"
         </tbody>
     </table>
 </section>
-"##
+"#
 
 depth_no_comment: Filter::new().depth(1).attribute_value("border", "1").comment(false) =>
-r##"
+r#"
 <section>
     <h2>Table</h2>
     <table border="1">
@@ -219,7 +215,7 @@ r##"
         </tbody>
     </table>
 </section>
-"##
+"#
 
 no_script_style: Filter::new().except_tag_name("script").except_tag_name("style") =>
 r##"

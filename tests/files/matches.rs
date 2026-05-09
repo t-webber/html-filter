@@ -1,6 +1,7 @@
 use html_filter::*;
 
 #[test]
+#[expect(clippy::shadow_unrelated, reason = "long chain of match")]
 fn manual() {
     let html = r#"
 <!DOCTYPE html>
@@ -14,7 +15,7 @@ fn manual() {
 </body>
 </html>
     "#;
-    let tree = Html::parse(html).unwrap();
+    let tree = Html::parse(html).expect("failed to parse");
     if let Html::Vec(vec) = &tree {
         for elt in vec {
             if let Html::Tag { tag, child, .. } = elt {
@@ -29,7 +30,7 @@ fn manual() {
                                                 && tag.as_name() == "title"
                                             {
                                                 if let Html::Text(text) = &**child {
-                                                    assert!(text == "Document");
+                                                    assert_eq!(text, "Document");
                                                     return;
                                                 }
                                                 panic!("invalid child of title tag: {child:?}")
