@@ -13,5 +13,8 @@ jobs:
     - name: Checkout Actions Repository
       uses: actions/checkout@v4
 
+    - name: Dump git commit name
+      run: git log --oneline -n 10 > commits
+
     - name: Spell Check Repo
       uses: crate-ci/typos@v1.38.1
