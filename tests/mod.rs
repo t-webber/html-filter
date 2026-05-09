@@ -9,4 +9,9 @@ fn empty() {
     matches!(html.filter(&filter), Html::Empty);
 }
 
+#[test]
+fn new_default() {
+    assert_eq!(format!("{:?}", Filter::new()), format!("{:?}", Filter::default()));
+}
+
 const _CONST_FILTER: Filter = Filter::new();
