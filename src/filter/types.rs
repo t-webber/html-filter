@@ -469,8 +469,13 @@ impl Filter {
     /// let _filter: Filter = Filter::new();
     /// ```
     #[must_use]
-    pub fn new() -> Self {
-        Self::default()
+    pub const fn new() -> Self {
+        Self {
+            attrs: ValueAssociateHash::new(),
+            depth: 0,
+            tags: BlackWhiteList::new(),
+            types: NodeTypeFilter::new(),
+        }
     }
 
     /// Disable all tags, except those explicitly whitelisted

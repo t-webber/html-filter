@@ -24,15 +24,37 @@ pub struct BlackWhiteList {
     ///
     /// The hashmap maps a name to a target, and a bool. The boolean is `true`
     /// if the item is whitelisted, and `false` if the item is blacklisted.
-    items: HashMap<String, bool>,
+    ///
+    /// The hashmap will never contain a lot of elements as it is bound by the
+    /// number of valid html tags in practice, so a vec is better, as it
+    /// supports const behaviour.
+    items: Vec<(String, bool)>,
     /// Indicates if a whitelisted element was pushed into the [`HashMap`].
     whitelist_empty: bool,
 }
 
 impl BlackWhiteList {
+    /// Returns the `keep` value associated to the name `name`.
+    fn get(&self, name: &str) -> Option<bool> {
+        self.items
+            .iter()
+            .find(|item| item.0 == name)
+            .map(|item| item.1)
+    }
+
+    /// Returns the `keep` value associated to the name `name` in a mutable way.
+    fn get_mut(&mut self, name: &str) -> Option<&mut bool> {
+        self.items
+            .iter_mut()
+            .find(|item| item.0 == name)
+            .map(|item| &mut item.1)
+    }
+}
+
+impl BlackWhiteList {
     /// Check the status of an element
     pub fn check(&self, name: &str) -> ElementState {
-        self.items.get(name).map_or_else(
+        self.get(name).map_or_else(
             || {
                 if self.is_empty() && self.default {
                     ElementState::NotSpecified
@@ -40,9 +62,12 @@ impl BlackWhiteList {
                     ElementState::BlackListed
                 }
             },
-            |keep| match keep {
-                true => ElementState::WhiteListed,
-                false => ElementState::BlackListed,
+            |keep| {
+                if keep {
+                    ElementState::WhiteListed
+                } else {
+                    ElementState::BlackListed
+                }
             },
         )
     }
@@ -54,7 +79,12 @@ impl BlackWhiteList {
 
     /// Checks if a name was explicitly blacklisted
     pub fn is_explicitly_blacklisted(&self, name: &str) -> bool {
-        self.items.get(name).map_or_else(|| false, |keep| !*keep)
+        self.get(name).map_or_else(|| false, |keep| !keep)
+    }
+
+    /// Returns a default [`Self`]
+    pub const fn new() -> Self {
+        Self { default: true, items: vec![], whitelist_empty: true }
     }
 
     /// Pushes an element as whitelisted or blacklisted
@@ -62,10 +92,12 @@ impl BlackWhiteList {
         if keep {
             self.whitelist_empty = false;
         }
-        let old = self.items.insert(name, keep);
-        if old.is_some_and(|inner| inner != keep) {
-            Err(())
+        if let Some(item) = self.get_mut(&name) {
+            let old = *item;
+            *item = keep;
+            if keep == old { Ok(()) } else { Err(()) }
         } else {
+            self.items.push((name, keep));
             Ok(())
         }
     }
@@ -80,7 +112,7 @@ impl BlackWhiteList {
 
 impl Default for BlackWhiteList {
     fn default() -> Self {
-        Self { items: HashMap::new(), whitelist_empty: true, default: true }
+        Self::new()
     }
 }
 
@@ -207,6 +239,11 @@ impl ValueAssociateHash {
             }
         }
         false
+    }
+
+    /// Returns a default [`Self`].
+    pub const fn new() -> Self {
+        Self { blacklist: vec![], whitelist: vec![] }
     }
 
     /// Adds a rule for the attribute `name`

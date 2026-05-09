@@ -45,6 +45,13 @@ pub(super) struct NodeTypeFilter {
 
 #[expect(clippy::arbitrary_source_item_ordering, reason = "ordered by type")]
 impl NodeTypeFilter {
+    /* helpers */
+
+    /// Returns a default [`Self`]
+    pub const fn new() -> Self {
+        Self { comment: None, doctype: None, text: None }
+    }
+
     /* getters */
 
     /// Checks if comments are allowed

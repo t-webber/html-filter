@@ -8,3 +8,5 @@ fn empty() {
     let filter = Filter::new();
     matches!(html.filter(&filter), Html::Empty);
 }
+
+const _CONST_FILTER: Filter = Filter::new();
