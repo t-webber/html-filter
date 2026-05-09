@@ -2,7 +2,7 @@
 
 > Parse HTML into a typed tree, then search and filter it — zero dependencies.
 
-[![github](https://img.shields.io/badge/GitHub-t--webber/html--filter-blue?logo=GitHub)](https://github.com/t-webber/html-filter)
+[![github](https://img.shields.io/badge/GitHub-html--filter-blue?logo=GitHub)](https://github.com/t-webber/html-filter)
 [![license](https://img.shields.io/badge/Licence-MIT%20OR%20Apache--2.0-darkgreen)](https://github.com/t-webber/html-filter?tab=MIT-1-ov-file)
 [![coverage](https://img.shields.io/badge/Coverage-100%25-purple)](https://github.com/t-webber/html-filter/actions/workflows/nightly.yml)
 [![rust-edition](https://img.shields.io/badge/Rust--edition-2024-darkred?logo=Rust)](https://doc.rust-lang.org/stable/edition-guide/rust-2024/)
@@ -332,16 +332,3 @@ if let Html::Tag { tag, .. } = first {
     assert_eq!(tag.as_name(), "li");
 }
 ```
-
-## License
-
-Licensed under either of
-
-- [Apache License, Version 2.0](LICENSE-APACHE)
-- [MIT license](LICENSE-MIT)
-
-at your option.
-
-## Contribution
-
-Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.
