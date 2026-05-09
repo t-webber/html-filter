@@ -1,0 +1,3 @@
+[test_config]
+exclude-files = ["src/errors.rs"]
+fail-under = 100
