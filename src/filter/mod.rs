@@ -167,7 +167,7 @@ impl Html {
                     return res;
                 }
             }
-            safe_unreachable("Filtering removes empty nodes in vec.")
+            safe_unreachable!("Filtering removes empty nodes in vec.")
         } else {
             self
         }

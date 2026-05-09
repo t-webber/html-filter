@@ -26,11 +26,18 @@ We will try to fix it as soon as possible.
 }
 
 /// Macro to make a developer error with a generic failure text.
+macro_rules! safe_unreachable {
+    ($reason:expr) => {{
+        $crate::errors::safe_unreachable_fn($reason);
+    }};
+}
+
+/// Function to make a developer error with a generic failure text.
 #[expect(
     clippy::panic,
     reason = "called when code must fail to avoid undefined behaviour."
 )]
-pub fn safe_unreachable(reason: &str) -> ! {
+pub fn safe_unreachable_fn(reason: &str) -> ! {
     panic!(
         "
 This is not meant to happen.
@@ -46,3 +53,4 @@ We will try to fix it as soon as possible.
 }
 
 pub(super) use safe_expect;
+pub(super) use safe_unreachable;

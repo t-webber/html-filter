@@ -4,7 +4,7 @@
 
 [![github](https://img.shields.io/badge/GitHub-t--webber/html--filter-blue?logo=GitHub)](https://github.com/t-webber/html-filter)
 [![license](https://img.shields.io/badge/Licence-MIT%20OR%20Apache--2.0-darkgreen)](https://github.com/t-webber/html-filter?tab=MIT-1-ov-file)
-[![coverage](https://img.shields.io/badge/Coverage-95%25-purple)](https://github.com/t-webber/html-filter/actions/workflows/nightly.yml)
+[![coverage](https://img.shields.io/badge/Coverage-100%25-purple)](https://github.com/t-webber/html-filter/actions/workflows/nightly.yml)
 [![rust-edition](https://img.shields.io/badge/Rust--edition-2024-darkred?logo=Rust)](https://doc.rust-lang.org/stable/edition-guide/rust-2024/)
 
 ![Clippy](https://github.com/t-webber/html-filter/actions/workflows/clippy.yml/badge.svg?branch=main)

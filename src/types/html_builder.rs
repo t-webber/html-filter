@@ -190,7 +190,7 @@ impl HtmlBuilder {
     /// This method is different if the input is a char or not.
     pub fn is_pushable(&self, is_char: bool) -> bool {
         match self {
-            Self::Empty | Self::Vec(_) => safe_unreachable("Vec or Empty can't be in vec"),
+            Self::Empty | Self::Vec(_) => safe_unreachable!("Vec or Empty can't be in vec"),
             Self::Tag { full, .. } => full.is_open(),
             Self::Doctype { .. } => false,
             Self::Text(_) => is_char,
@@ -248,7 +248,8 @@ impl HtmlBuilder {
                 }
                 vec.push(node);
             }
-            Self::Comment { .. } => safe_unreachable("Pushed parsed not into an unclosed comment."),
+            Self::Comment { .. } =>
+                safe_unreachable!("Pushed parsed not into an unclosed comment."),
         }
     }
 

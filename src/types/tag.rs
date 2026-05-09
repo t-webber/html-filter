@@ -67,7 +67,7 @@ impl Attribute {
         if let Self::NameNoValue(name) = self {
             *self = Self::NameValue { double_quote, name: take(name), value: String::new() }
         } else {
-            safe_unreachable("Never create attribute value twice from parser.")
+            safe_unreachable!("Never create attribute value twice from parser.")
         }
     }
 
@@ -101,7 +101,7 @@ impl Attribute {
         if let Self::NameValue { value, .. } = self {
             value.push(ch);
         } else {
-            safe_unreachable("Never push to attribute before creation.")
+            safe_unreachable!("Never push to attribute before creation.")
         }
     }
 }
