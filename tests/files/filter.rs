@@ -29,6 +29,10 @@ prefix: Filter::new().attribute_value("xlink:href", "#").none_except_text() =>
 r##"<a xlink:href="#">About</a>"##
 
 contains: Filter::new().attribute_value_contains("class", "some_other_class") =>
+r#"<div class="some_class some_other_class"> Secret </div>
+<div class="some_class2 some_other_class">Secret</div>"#
+
+contains_both: Filter::new().attribute_value_contains("class", "some_other_class").attribute_value_contains("class", "some_class") =>
 r#"<div class="some_class some_other_class"> Secret </div>"#
 
 radio: Filter::new().attribute_value("type", "radio").attribute_name("radio") =>
@@ -233,6 +237,7 @@ r##"
         <header>
             <h1>Test Page</h1>
             <div class="some_class some_other_class">Secret</div>
+            <div class="some_class2 some_other_class">Secret</div>
             <nav>
                 <ul>
                     <!--@<li> -->
