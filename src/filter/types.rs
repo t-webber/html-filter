@@ -246,18 +246,50 @@ impl Filter {
     /// Trims all texts
     ///
     /// This includes removal of text parts that contain only whitespaces, which
-    /// is very useful. For example, parsing
+    /// is very useful to remove new lines for example:
     ///
-    /// ```html
+    /// # Examples
+    ///
+    /// ```
+    /// use html_filter::*;
+    ///
+    /// let html = Html::parse(
+    ///     "
+    /// <!doctype html>
     /// <ul>
-    ///    <li>First</li>
-    ///    <li>Second></li>
+    ///     <li>First</li>
+    ///     <li>Second></li>
     /// </ul>
+    /// ",
+    /// )
+    /// .unwrap();
+    ///
+    /// // With trim
+    /// let Html::Tag { tag, child, .. } = html.to_filtered(&Filter::new().tag_name("ul").trim())
+    /// else {
+    ///     panic!()
+    /// };
+    /// assert_eq!(tag.as_name(), "ul");
+    /// let Html::Vec(vec) = *child else { panic!() };
+    /// assert!(matches!(vec[0], Html::Tag { .. })); // first li
+    /// assert!(matches!(vec[1], Html::Tag { .. })); // second li
+    /// assert_eq!(vec.len(), 2);
+    ///
+    /// // Without trim
+    /// let Html::Tag { tag, child, .. } = html.to_filtered(&Filter::new().tag_name("ul")) else {
+    ///     panic!()
+    /// };
+    /// assert_eq!(tag.as_name(), "ul");
+    /// let Html::Vec(vec) = *child else { panic!() };
+    /// assert_eq!(vec[0], Html::Text("\n    ".to_string()));
+    /// assert!(matches!(vec[1], Html::Tag { .. })); // first li
+    /// assert_eq!(vec[2], Html::Text("\n    ".to_string()));
+    /// assert!(matches!(vec[3], Html::Tag { .. })); // second li
+    /// assert_eq!(vec[4], Html::Text("\n".to_string()));
+    /// assert_eq!(vec.len(), 5);
     /// ```
     ///
-    /// would return a vec with [Text("\n\t"), Tag { name: "li", ...},
-    /// Text("\n\t"), Tag { name: "li", ...}, Text("\n\t")], and in most
-    /// cases, we just want the 2 `li` tags.
+    /// See also [`Self::collapse`]
     #[must_use]
     pub const fn trim(mut self) -> Self {
         self.types.trim();
