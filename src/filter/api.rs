@@ -453,6 +453,12 @@ impl Filter {
     ///     html.to_filtered(&Filter::new().no_tags()),
     ///     Html::parse("<!doctype html><!-- comment -->").unwrap()
     /// );
+    ///
+    /// let html = Html::parse("z<body>a<div>b<p>c</p>d</div>e</body>y").unwrap();
+    /// assert_eq!(
+    ///     html.to_filtered(&Filter::new().no_tags().tag_name("div").collapse()),
+    ///     Html::parse("<div>bd</div>").unwrap()
+    /// );
     /// ```
     #[must_use]
     pub const fn no_tags(mut self) -> Self {

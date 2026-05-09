@@ -69,7 +69,7 @@ impl BlackWhiteList {
 
     /// Checks if a name was explicitly blacklisted
     pub fn is_explicitly_blacklisted(&self, name: &str) -> bool {
-        self.get(name).map_or_else(|| false, |keep| !keep)
+        self.get(name).map_or_else(|| !self.default, |keep| !keep)
     }
 
     /// Returns a default [`Self`]
