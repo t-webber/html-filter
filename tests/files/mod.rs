@@ -82,11 +82,17 @@ fn format_html(html: &str) -> String {
         .replace("> </br>", ">")
 }
 
-fn test_maker<T: Debug>(name: &str, expected: &str, output: &Html, msg: T, simplify: bool) {
+fn test_maker<T: Debug>(
+    name: &str,
+    expected_str: &str,
+    output_html: &Html,
+    msg: T,
+    simplify: bool,
+) {
     let (formatted_input, formatted_output) = if simplify {
-        (format_html(expected), format_html(&output.to_string()))
+        (format_html(expected_str), format_html(&output_html.to_string()))
     } else {
-        (expected.to_owned(), output.to_string())
+        (expected_str.to_owned(), output_html.to_string())
     };
     if formatted_output != formatted_input {
         let output_path = format!("output.{name}.html");

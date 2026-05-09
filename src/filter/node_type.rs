@@ -3,8 +3,6 @@
 //! Set the elements to `true` iff you want them to appear in the filtered
 //! output
 
-use crate::unwrap_or;
-
 /// Types of html nodes to filter
 ///
 /// Set the elements to `true` iff you want them to appear in the filtered
@@ -70,8 +68,8 @@ impl NodeTypeFilter {
     }
 
     /// Checks if texts are allowed
-    pub const fn text_allowed(&self) -> bool {
-        unwrap_or(self.text, true)
+    pub const fn text_allowed(&self) -> Option<bool> {
+        self.text
     }
 
     /// Checks if texts should be trimmed, and removed if empty.

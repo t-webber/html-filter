@@ -127,7 +127,12 @@ impl Filter {
 
     /// Checks if texts must be kept according to the filter
     pub(super) const fn text_allowed(&self) -> bool {
-        self.types.text_allowed()
+        unwrap_or(self.types.text_allowed(), true)
+    }
+
+    /// Checks if comments must be kept according to the filter.
+    pub(super) const fn text_explicitly_allowed(&self) -> bool {
+        unwrap_or(self.types.comment_allowed(), self.is_empty())
     }
 }
 

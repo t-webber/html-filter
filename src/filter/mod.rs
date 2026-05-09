@@ -212,7 +212,11 @@ fn filter_aux(cow_html: Cow<'_, Html>, filter: &Filter, found: bool) -> FilterSu
             None,
         Cow::Borrowed(Doctype { .. } | Comment(_)) | Cow::Owned(Doctype { .. } | Comment(_)) =>
             FilterSuccess::make_none(cow_html),
-        Cow::Borrowed(Text(_) | Empty) | Cow::Owned(Text(_) | Empty) => None, // TODO: this is
+        Cow::Borrowed(Text(text)) if filter.text_explicitly_allowed() =>
+            FilterSuccess::make_none(Cow::Owned(Html::trim_text(text))),
+        Cow::Owned(Text(text)) if filter.text_explicitly_allowed() =>
+            FilterSuccess::make_none(Cow::Owned(Html::trim_text(&text))),
+        Cow::Borrowed(Text(_) | Empty) | Cow::Owned(Text(_) | Empty) => None,
         // incorrect
         Cow::Borrowed(Tag { tag, child }) =>
             filter_aux_tag(Cow::Borrowed(&**child), Cow::Borrowed(tag), filter, found),
