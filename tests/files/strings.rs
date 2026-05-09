@@ -89,6 +89,40 @@ text_comment: Filter::new().all_except_doctype() => "
     </p>
 </html>"
 
+
+// TODO: by default, if there is a filter, things outside a tag are deleted (comments, doctype,
+// etc.), is this expected?
+depth_default_doctype: Filter::new().comment(false).depth(3).tag_name("strong") => "
+<html>
+    A first text
+    <p>
+        A <strong>first</strong> text
+        <img />
+    </p>
+</html>"
+
+
+text_depth_doctype: Filter::new().doctype(true).comment(false).depth(2).tag_name("p") => "
+<!DOCTYPE html>
+<html>
+    A first text
+    <p>
+        A <strong>first</strong> text
+        <img />
+    </p>
+</html>"
+
+no_depth_force_doctype: Filter::new().doctype(true).comment(false).depth(1).tag_name("p") => "
+<html>
+    A first text
+    <p>
+        A <strong>first</strong> text
+        <img />
+    </p>
+</html>"
+
+
+
 text_doctype: Filter::new().all_except_comment() => "
 <!DOCTYPE html>
 <html>
