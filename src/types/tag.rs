@@ -2,9 +2,6 @@
 
 use core::fmt;
 use core::hash::Hash;
-use core::mem::take;
-
-use crate::errors::safe_unreachable;
 
 /// Name and optionally a value for an attribute of a tag.
 ///
@@ -57,20 +54,6 @@ pub enum Attribute {
 }
 
 impl Attribute {
-    /// Converts an existent [`Attribute::NameNoValue`] to a
-    /// [`Attribute::NameValue`].
-    ///
-    /// # Panics
-    ///
-    /// If called on a [`Attribute::NameValue`]
-    pub(crate) fn add_value(&mut self, double_quote: bool) {
-        if let Self::NameNoValue(name) = self {
-            *self = Self::NameValue { double_quote, name: take(name), value: String::new() }
-        } else {
-            safe_unreachable!("Never create attribute value twice from parser.")
-        }
-    }
-
     /// Returns the name of an attribute
     #[must_use]
     pub const fn as_name(&self) -> &String {
@@ -93,15 +76,6 @@ impl Attribute {
         match self {
             Self::NameNoValue(_) => None,
             Self::NameValue { value, .. } => Some(value),
-        }
-    }
-
-    /// Pushes a character into the attribute's value
-    pub(crate) fn push_value(&mut self, ch: char) {
-        if let Self::NameValue { value, .. } = self {
-            value.push(ch);
-        } else {
-            safe_unreachable!("Never push to attribute before creation.")
         }
     }
 }

@@ -3,11 +3,9 @@
 //! This module is used when a <d is found in a html string. It can also mean an
 //! opening comment.
 
-use core::mem::take;
 use core::str::Chars;
 
 use super::AUTO_CLOSING_TAGS;
-use crate::errors::safe_expect;
 use crate::types::tag::{Attribute, Tag, TagBuilder};
 
 /// State that informs on position of the '/' closing character.
@@ -44,83 +42,89 @@ impl TagBuilder {
         let mut close = Close::None;
         let mut bang = false;
         let mut dash = false;
-        let mut name = String::new();
+        let mut tag = String::new();
         let mut attrs = vec![];
 
         while let Some(ch) = chars.next() {
-            match (&mut state, ch) {
+            state = match (state, ch) {
                 (TagParsingState::Name, '-') if dash => return Ok(Self::OpenComment),
-                (TagParsingState::Name, '-') if bang => dash = true,
+                (old @ TagParsingState::Name, '-') if bang => {
+                    dash = true;
+                    old
+                }
                 _ if dash => return invalid_err('-', "doctype"),
                 // closing
                 (TagParsingState::Name | TagParsingState::AttributeNone, '>') =>
-                    return Self::return_tag(bang, close, name, attrs),
+                    return Self::return_tag(bang, close, tag, attrs),
                 (TagParsingState::AttributeName(attr), '>') => {
-                    attrs.push(Attribute::from(take(attr)));
-                    return Self::return_tag(bang, close, name, attrs);
+                    attrs.push(Attribute::from(attr));
+                    return Self::return_tag(bang, close, tag, attrs);
                 }
-                (TagParsingState::Name, '/') if name.is_empty() => close = Close::Before,
-                (TagParsingState::Name | TagParsingState::AttributeNone, '/') =>
-                    close = Close::After,
-                (TagParsingState::AttributeName(attr), '/') => {
-                    attrs.push(Attribute::from(take(attr)));
+                (old @ TagParsingState::Name, '/') if tag.is_empty() => {
+                    close = Close::Before;
+                    old
+                }
+                (old @ (TagParsingState::Name | TagParsingState::AttributeNone), '/') => {
                     close = Close::After;
+                    old
+                }
+                (TagParsingState::AttributeName(attr), '/') => {
+                    attrs.push(Attribute::from(attr));
+                    close = Close::After;
+                    TagParsingState::AttributeName(String::new())
                 }
                 // name
-                (TagParsingState::Name, '!') =>
-                    if name.is_empty() {
+                (old @ TagParsingState::Name, '!') =>
+                    if tag.is_empty() {
                         bang = true;
+                        old
                     } else {
                         return invalid_err(ch, "tag name");
                     },
                 (TagParsingState::Name, ':') => return invalid_err(ch, "tag name"),
-                (TagParsingState::Name, _) if ch.is_whitespace() =>
-                    state = TagParsingState::AttributeNone,
-                (TagParsingState::Name, _) => name.push(ch),
+                (TagParsingState::Name, _) if ch.is_whitespace() => TagParsingState::AttributeNone,
+                (old @ TagParsingState::Name, _) => {
+                    tag.push(ch);
+                    old
+                }
                 // attribute none: none in progress
-                (TagParsingState::AttributeNone, _) if ch.is_whitespace() => (),
+                (old @ TagParsingState::AttributeNone, _) if ch.is_whitespace() => old,
                 (TagParsingState::AttributeNone, _) =>
-                    state = TagParsingState::AttributeName(ch.to_string()),
+                    TagParsingState::AttributeName(ch.to_string()),
                 // attribute name
-                (TagParsingState::AttributeName(attr), '=') => {
-                    attrs.push(Attribute::from(take(attr)));
-                    state = TagParsingState::AttributeEq;
-                }
+                (TagParsingState::AttributeName(attr), '=') => TagParsingState::AttributeEq(attr),
                 (TagParsingState::AttributeName(attr), _) if ch.is_whitespace() => {
-                    attrs.push(Attribute::from(take(attr)));
-                    state = TagParsingState::AttributeNone;
+                    attrs.push(Attribute::from(attr));
+                    TagParsingState::AttributeNone
                 }
-                (TagParsingState::AttributeName(attr), _) => attr.push(ch),
+                (TagParsingState::AttributeName(mut attr), _) => {
+                    attr.push(ch);
+                    TagParsingState::AttributeName(attr)
+                }
                 // attribute after `=`
-                (TagParsingState::AttributeEq, '"') => {
-                    state = TagParsingState::AttributeDouble;
-                    safe_expect!(
-                        attrs.last_mut(),
-                        "Not AttributeNone so last exists at double quote creation."
-                    )
-                    .add_value(true);
-                }
-                (TagParsingState::AttributeEq, '\'') => {
-                    state = TagParsingState::AttributeSingle;
-                    safe_expect!(
-                        attrs.last_mut(),
-                        "Not AttributeNone so last exists at single quote creation."
-                    )
-                    .add_value(false);
-                }
-                (TagParsingState::AttributeEq, _) =>
+                (TagParsingState::AttributeEq(name), quote @ ('"' | '\'')) =>
+                    TagParsingState::AttributeValue {
+                        double: quote == '"',
+                        name,
+                        value: String::new(),
+                    },
+                (TagParsingState::AttributeEq(_), _) =>
                     return Err(format!(
                         "Invalid character '{ch}': expected '\'' or '\"' after '=' sign."
                     )),
                 // attribute value
-                (TagParsingState::AttributeSingle, '\'')
-                | (TagParsingState::AttributeDouble, '\"') => {
-                    state = TagParsingState::AttributeNone;
+                (TagParsingState::AttributeValue { double, name, value }, _)
+                    if double && ch == '"' || !double && ch == '\'' =>
+                {
+                    attrs.push(Attribute::NameValue { double_quote: double, name, value });
+                    TagParsingState::AttributeNone
                 }
-                (TagParsingState::AttributeSingle | TagParsingState::AttributeDouble, _) =>
-                    safe_expect!(attrs.last_mut(), "Not AttributeNone so last exists")
-                        .push_value(ch),
-            }
+
+                (TagParsingState::AttributeValue { double, name, mut value }, _) => {
+                    value.push(ch);
+                    TagParsingState::AttributeValue { double, name, value }
+                }
+            };
         }
         Err("EOF: Missing closing '>'.".to_owned())
     }
@@ -191,15 +195,16 @@ enum TagParsingState {
     /// Parser read the `=` sign after an attribute name.
     ///
     /// Waiting for a `'` or `"` to assign a value to the last attribute.
-    AttributeEq,
+    AttributeEq(String),
     /// Parser currently reading the value of an attribute.
-    ///
-    /// The attribute was started by a single quote `'`.
-    AttributeSingle,
-    /// Parser currently reading the value of an attribute.
-    ///
-    /// The attribute was started by a double quote `"`.
-    AttributeDouble,
+    AttributeValue {
+        /// Whether the value was started with `"` or `'`.
+        double: bool,
+        /// Name of the attribute, read-only.
+        name: String,
+        /// Current value, in the process of being built.
+        value: String,
+    },
 }
 
 /// Function to format the errors for an invalid character in a given context.
