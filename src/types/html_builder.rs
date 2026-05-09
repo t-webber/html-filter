@@ -1,10 +1,10 @@
 //! Module that defines a builder for the [`Html`] tree.
 
-use core::mem::take;
+use core::mem::{replace, take};
 
 use super::html::Html;
 use super::tag::{Tag, TagType};
-use crate::errors::{safe_expect, safe_unreachable};
+use crate::errors::safe_unreachable;
 
 /// Wrapper for bool to manage visibility
 #[derive(Debug)]
@@ -107,7 +107,7 @@ pub enum HtmlBuilder {
     ///
     /// In `a<strong>b`, the node is a vector, with [`HtmlBuilder::Text`] `a`,
     /// [`HtmlBuilder::Tag`] `strong` [`HtmlBuilder::Text`] `b`.
-    Vec(Vec<Self>),
+    Vec(Vec<Self>, Box<Self>),
 }
 
 impl HtmlBuilder {
@@ -123,8 +123,7 @@ impl HtmlBuilder {
                 },
             Self::Text(_) | Self::Empty | Self::Doctype { .. } => false,
             Self::Tag { full, child, .. } => full.is_open() && child.close_comment(),
-            Self::Vec(vec) =>
-                safe_expect!(vec.last_mut(), "Html vec built with one.").close_comment(),
+            Self::Vec(_, last) => last.close_comment(),
         }
     }
 
@@ -153,9 +152,8 @@ impl HtmlBuilder {
                     *full = TagType::Closed;
                     true
                 })
-        } else if let Self::Vec(vec) = self {
-            vec.last_mut()
-                .is_some_and(|child| child.close_tag_aux(name))
+        } else if let Self::Vec(_, last) = self {
+            last.close_tag_aux(name)
         } else {
             false
         }
@@ -179,7 +177,11 @@ impl HtmlBuilder {
             Self::Empty => Html::Empty,
             Self::Tag { tag, child, .. } => Html::Tag { tag, child: Box::new(child.into_html()) },
             Self::Text(text) => Html::Text(text),
-            Self::Vec(vec) => Html::Vec(vec.into_iter().map(Self::into_html).collect()),
+            Self::Vec(vec, last) => {
+                let mut html_vec = vec.into_iter().map(Self::into_html).collect::<Vec<_>>();
+                html_vec.push(last.into_html());
+                Html::Vec(html_vec.into_boxed_slice())
+            }
         }
     }
 
@@ -190,7 +192,7 @@ impl HtmlBuilder {
     /// This method is different if the input is a char or not.
     pub fn is_pushable(&self, is_char: bool) -> bool {
         match self {
-            Self::Empty | Self::Vec(_) => safe_unreachable!("Vec or Empty can't be in vec"),
+            Self::Empty | Self::Vec(..) => safe_unreachable!("Vec or Empty can't be in vec"),
             Self::Tag { full, .. } => full.is_open(),
             Self::Doctype { .. } => false,
             Self::Text(_) => is_char,
@@ -205,19 +207,18 @@ impl HtmlBuilder {
             Self::Tag { child, full: TagType::Opened, .. } => child.push_char(ch),
             Self::Doctype { .. }
             | Self::Tag { full: TagType::Closed | TagType::SelfClosing, .. } =>
-                *self = Self::Vec(vec![take(self), Self::from_char(ch)]),
+                *self = Self::Vec(vec![take(self)], Box::from(Self::from_char(ch))),
             Self::Text(text) => text.push(ch),
-            Self::Vec(vec) => {
-                let last = safe_expect!(vec.last_mut(), "Initialised with one element.");
+            Self::Vec(vec, last) => {
                 if last.is_pushable(true) {
                     return last.push_char(ch);
                 }
-                vec.push(Self::from_char(ch));
+                vec.push(replace(last, Self::from_char(ch)));
             }
             Self::Comment { content, full } => {
                 if full.0 {
                     // This means the comment is at the root
-                    *self = Self::Vec(vec![take(self), Self::from_char(ch)]);
+                    *self = Self::Vec(vec![take(self)], Box::from(Self::from_char(ch)));
                 } else {
                     content.push(ch);
                 }
@@ -240,13 +241,12 @@ impl HtmlBuilder {
             Self::Text(_)
             | Self::Doctype { .. }
             | Self::Tag { full: TagType::Closed | TagType::SelfClosing, .. } =>
-                *self = Self::Vec(vec![take(self), node]),
-            Self::Vec(vec) => {
-                let last = safe_expect!(vec.last_mut(), "Initialised with one element.");
+                *self = Self::Vec(vec![take(self)], Box::from(node)),
+            Self::Vec(vec, last) => {
                 if last.is_pushable(false) {
                     return last.push_node(node);
                 }
-                vec.push(node);
+                vec.push(replace(last, node));
             }
             Self::Comment { .. } =>
                 safe_unreachable!("Pushed parsed not into an unclosed comment."),
