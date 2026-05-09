@@ -2,7 +2,7 @@ use html_filter::*;
 
 #[test]
 fn manual() {
-    let html = r##"
+    let html = r#"
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,7 +13,7 @@ fn manual() {
 <body>
 </body>
 </html>
-    "##;
+    "#;
     let tree = Html::parse(html).unwrap();
     if let Html::Vec(vec) = &tree {
         for elt in vec {
@@ -31,9 +31,8 @@ fn manual() {
                                                 if let Html::Text(text) = &**child {
                                                     assert!(text == "Document");
                                                     return;
-                                                } else {
-                                                    panic!("invalid child of title tag: {child:?}")
                                                 }
+                                                panic!("invalid child of title tag: {child:?}")
                                             }
                                             // media
                                         }

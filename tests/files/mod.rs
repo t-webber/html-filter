@@ -1,12 +1,20 @@
-use std::fmt::Debug;
+/// Test expected parsing errors.
+pub mod errors;
+/// Test filters on index.html.
+pub mod filter;
+/// Test finders on index.html.
+pub mod find;
+/// Test no filter keeps html intact.
+pub mod full;
+/// Test that ana html is parsed correctly.
+pub mod matches;
+/// Test filters on a smaller string.
+pub mod strings;
+
+use core::fmt::Debug;
 use std::fs;
 
 use html_filter::*;
-
-pub mod filter;
-pub mod find;
-pub mod full;
-pub mod strings;
 
 fn handle_auto_closing(html: &str) -> String {
     let mut output = String::with_capacity(html.len());
@@ -57,8 +65,8 @@ fn format_html(html: &str) -> String {
         .replace('\n', " ")
         .replace("< ", "<")
         .replace(" >", ">")
-        .replace("<", " <")
-        .replace(">", "> ");
+        .replace('<', " <")
+        .replace('>', "> ");
     loop {
         let out = formatted.replace("  ", " ");
         if out == formatted {
@@ -72,12 +80,12 @@ fn format_html(html: &str) -> String {
         .replace("> </br>", ">")
 }
 
-fn test_maker<T: Debug>(name: &str, expected: &str, output: Html, msg: T) {
+fn test_maker<T: Debug>(name: &str, expected: &str, output: &Html, msg: T) {
     let formatted_input = format_html(expected);
     let formatted_output = format_html(&output.to_string());
     if formatted_output != formatted_input {
-        let output_path = format!("output.{}.html", name);
-        let expected_path = format!("expected.{}.html", name);
+        let output_path = format!("output.{name}.html");
+        let expected_path = format!("expected.{name}.html");
         fs::write(&output_path, formatted_output.replace(' ', "\n"))
             .expect("Permission denied: failed to write to directory.");
         fs::write(&expected_path, formatted_input.replace(' ', "\n"))

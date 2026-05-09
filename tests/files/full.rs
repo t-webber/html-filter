@@ -6,7 +6,7 @@ use super::test_maker;
 
 #[test]
 fn index() {
-    let content = read_to_string("tests/data/index.html").unwrap();
+    let content = read_to_string("tests/data/index.html").expect("Missing tests/data/index.html");
     let tree = Html::parse(&content).unwrap_or_else(|err| panic!("{err}"));
-    test_maker("full", &content, tree, "");
+    test_maker("full", &content, &tree, "");
 }

@@ -96,10 +96,10 @@ impl HtmlBuilder {
                         TagBuilder::Doctype { name, attr } =>
                             self.push_node(Self::Doctype { name, attr }),
                         TagBuilder::Open(tag) => {
-                            if tag.as_name() == "style" {
-                                style = true;
-                            } else if tag.as_name() == "script" {
-                                script = true;
+                            match tag.as_name().as_str() {
+                                "style" => style = true,
+                                "script" => script = true,
+                                _ => (),
                             }
                             self.push_tag(tag, false);
                         }

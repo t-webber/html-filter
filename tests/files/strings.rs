@@ -2,6 +2,18 @@ use html_filter::*;
 
 use super::test_maker;
 
+macro_rules! make_tests {
+    ($($name:ident: $filter:expr => $expect:expr)*) => {
+        $(
+            #[test]
+            fn $name() {
+                let tree = Html::parse(INPUT).unwrap().filter(&$filter);
+                test_maker(stringify!($name), $expect, &tree, $filter)
+            }
+        )*
+    };
+}
+
 const INPUT: &str = "
 <!DOCTYPE html>
 <!-- comment 1 -->
@@ -15,18 +27,6 @@ const INPUT: &str = "
     </p>
 </html>
 ";
-
-macro_rules! make_tests {
-    ($($name:ident: $filter:expr => $expect:expr)*) => {
-        $(
-            #[test]
-            fn $name() {
-                let tree = Html::parse(INPUT).unwrap().filter(&$filter);
-                test_maker(stringify!($name), $expect, tree, $filter)
-            }
-        )*
-    };
-}
 
 make_tests!(
 

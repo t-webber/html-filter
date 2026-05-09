@@ -9,3 +9,44 @@ keywords = ["parser", "html", "scraping"]
 description = "Crate to parse, filter, search and edit an HTML file."
 repository = "https://github.com/t-webber/html-filter"
 categories = ["command-line-interface", "parser-implementations", "parsing"]
+
+[lints.rust]
+missing_docs = "deny"
+unused = "deny"
+warnings = "deny"
+deprecated_safe = "deny"
+future_incompatible = "deny"
+keyword_idents = "deny"
+let_underscore = "deny"
+nonstandard_style = "deny"
+refining_impl_trait = "deny"
+rust_2018_compatibility = "deny"
+rust_2018_idioms = "deny"
+rust_2021_compatibility = "deny"
+rust_2024_compatibility = "deny"
+
+[lints.clippy]
+all = { level = "deny", priority = -1 }
+complexity = { level = "deny", priority = -1 }
+correctness = { level = "deny", priority = -1 }
+nursery = { level = "deny", priority = -1 }
+pedantic = { level = "deny", priority = -1 }
+perf = { level = "deny", priority = -1 }
+restriction = { level = "deny", priority = -1 }
+style = { level = "deny", priority = -1 }
+
+blanket_clippy_restriction_lints = "allow"
+doc_include_without_cfg = "allow"            # cfg #13918
+doc_paragraphs_missing_punctuation = "allow"
+implicit_return = "allow"
+missing_inline_in_public_items = "allow"
+missing_trait_methods = "allow"
+mod_module_files = "allow"
+module_name_repetitions = "allow"
+multiple_inherent_impl = "allow"
+pattern_type_mismatch = "allow"
+pub_use = "allow"
+pub_with_shorthand = "allow"
+question_mark_used = "allow"
+single_call_fn = "allow"
+unseparated_literal_suffix = "allow"

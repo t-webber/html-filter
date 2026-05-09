@@ -45,7 +45,7 @@ impl TagBuilder {
         let mut tag = String::new();
         let mut attrs = vec![];
 
-        while let Some(ch) = chars.next() {
+        for ch in chars.by_ref() {
             state = match (state, ch) {
                 (TagParsingState::Name, '-') if dash => return Ok(Self::OpenComment),
                 (old @ TagParsingState::Name, '-') if bang => {

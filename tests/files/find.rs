@@ -13,8 +13,8 @@ macro_rules! test_find {
                 let tree = Html::parse(&content).unwrap_or_else(|err| panic!("{err}"));
                 let found_cloned = (&tree).to_found(&$filter);
                 let found = tree.find(&$filter);
-                test_maker(stringify!($name), $expect, found_cloned, $filter);
-                test_maker(stringify!($name), $expect, found, $filter);
+                test_maker(stringify!($name), $expect, &found_cloned, $filter);
+                test_maker(stringify!($name), $expect, &found, $filter);
             }
         )*
     };
