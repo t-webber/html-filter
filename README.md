@@ -139,17 +139,18 @@ let src = r#"
   </div>
 "#;
 
-// Keep everything, but strip <script> tags and elements with class "hidden".
+// Keep everything, but strip <script> tags and elements with class "hidden", and also remove newlines and spaces.
 let filter = Filter::new()
     .except_tag_name("script")
-    .except_attribute_value_contains("class", "hidden");
+    .except_attribute_value_contains("class", "hidden").trim();
 
 let result = Html::parse(src).unwrap().filter(&filter);
 
-// Only the first <p> survives.
-if let Html::Tag { tag, .. } = result {
-    assert_eq!(tag.as_name(), "p");
-}
+let Html::Tag { tag, child, .. } = result else { panic!() };
+assert_eq!(tag.as_name(), "div");
+let Html::Tag { tag, child, .. } = *child else { panic!() };
+assert_eq!(tag.as_name(), "p");
+assert_eq!(*child, Html::Text("Keep me".to_owned()));
 ```
 
 ## Finding

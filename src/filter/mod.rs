@@ -14,6 +14,7 @@ pub mod types;
 
 use alloc::borrow::Cow;
 use core::cmp::Ordering;
+use core::mem::take;
 
 use node_type::NodeTypeFilter;
 use types::Filter;
@@ -266,15 +267,18 @@ fn filter_aux_vec(vec: Cow<'_, Box<[Html]>>, filter: &Filter) -> Option<FilterSu
     {
         Some(depth) if depth < filter.as_depth() => Some(FilterSuccess {
             depth: DepthSuccess::Found(depth),
-            html: Html::Vec(
-                vec.iter().map(|child| filter_light(Cow::Borrowed(child), filter)).collect(),
+            html: unwrap_vec(
+                vec.iter()
+                    .map(|child| filter_light(Cow::Borrowed(child), filter))
+                    .filter(|child| !child.is_empty())
+                    .collect(),
             ),
         }),
         Some(_) => Some(FilterSuccess {
             depth: DepthSuccess::Success,
-            html: Html::Vec(into_iter_filter_map_collect(vec, |child| {
-                let rec = filter_aux(child, filter, true);
-                if rec.html.is_empty() { None } else { Some(rec.html) }
+            html: unwrap_vec(into_iter_filter_map_collect(vec, |child| {
+                let rec = filter_aux(child, filter, true).html;
+                if rec.is_empty() { None } else { Some(rec) }
             })),
         }),
         None => {
@@ -326,15 +330,26 @@ fn filter_light(cow_html: Cow<'_, Html>, filter: &Filter) -> Html {
         },
         Cow::Owned(Tag { tag, child }) =>
             Tag { tag, child: Box::new(filter_light(Cow::Owned(*child), filter)) },
-        Cow::Borrowed(Vec(vec)) => Html::Vec(
-            vec.into_iter().map(|child| filter_light(Cow::Borrowed(child), filter)).collect(),
+        Cow::Borrowed(Vec(vec)) => unwrap_vec(
+            vec.iter()
+                .map(|child| filter_light(Cow::Borrowed(child), filter))
+                .filter(|html| !html.is_empty())
+                .collect(),
         ),
-        Cow::Owned(Vec(vec)) => Html::Vec(
-            vec.into_iter().map(|child| filter_light(Cow::Owned(child), filter)).collect(),
+        Cow::Owned(Vec(vec)) => unwrap_vec(
+            vec.into_iter()
+                .map(|child| filter_light(Cow::Owned(child), filter))
+                .filter(|html| !html.is_empty())
+                .collect(),
         ),
         Cow::Borrowed(Empty | Text(_) | Comment { .. } | Doctype { .. })
         | Cow::Owned(Empty | Text(_) | Comment { .. } | Doctype { .. }) => Html::Empty,
     }
+}
+
+/// Unwrap a [`Vec<Html>`] to not have vecs of 0 and 1 element.
+fn unwrap_vec(mut vec: Box<[Html]>) -> Html {
+    if vec.len() <= 1 { vec.first_mut().map(take).unwrap_or_default() } else { Html::Vec(vec) }
 }
 
 /// Method to apply [`Iterator::filter_map`] on an iterator inside a Cow,

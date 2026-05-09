@@ -40,3 +40,14 @@ fn trim_simple_borrowed() {
         false,
     );
 }
+
+#[test]
+fn remove_empty() {
+    let filter = Filter::new().tag_name("tr").trim();
+    let html = Html::parse("<tr>\n<th></th>\n</tr>\n").expect("failed to parse").filter(&filter);
+    let Html::Tag { tag, child, .. } = html else { panic!("{html:?}") };
+    assert_eq!(tag.name, "tr");
+    let Html::Tag { tag: th_tag, child: th_child, .. } = *child else { panic!("{child:?}") };
+    assert_eq!(th_tag.name, "th");
+    assert_eq!(*th_child, Html::Empty);
+}
