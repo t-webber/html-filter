@@ -212,10 +212,12 @@ fn filter_aux(cow_html: Cow<'_, Html>, filter: &Filter, found: bool) -> FilterSu
             None,
         Cow::Borrowed(Doctype { .. } | Comment(_)) | Cow::Owned(Doctype { .. } | Comment(_)) =>
             FilterSuccess::make_none(cow_html),
-        Cow::Borrowed(Text(text)) if filter.text_explicitly_allowed() =>
+        Cow::Borrowed(Text(text)) if filter.text_explicitly_allowed() && filter.should_trim() =>
             FilterSuccess::make_none(Cow::Owned(Html::trim_text(text))),
-        Cow::Owned(Text(text)) if filter.text_explicitly_allowed() =>
+        Cow::Owned(Text(text)) if filter.text_explicitly_allowed() && filter.should_trim() =>
             FilterSuccess::make_none(Cow::Owned(Html::trim_text(&text))),
+        Cow::Borrowed(Text(_)) | Cow::Owned(Text(_)) if filter.text_explicitly_allowed() =>
+            FilterSuccess::make_none(cow_html),
         Cow::Borrowed(Text(_) | Empty) | Cow::Owned(Text(_) | Empty) => None,
         // incorrect
         Cow::Borrowed(Tag { tag, child }) =>
@@ -295,7 +297,7 @@ fn filter_aux_vec(vec: Cow<'_, Box<[Html]>>, filter: &Filter) -> Option<FilterSu
             } else {
                 filtered.iter().map(|child| child.depth).min().map(|depth| FilterSuccess {
                     depth,
-                    html: Html::Vec(filtered.into_iter().map(|child| child.html).collect()),
+                    html: unwrap_vec(filtered.into_iter().map(|child| child.html).collect()),
                 })
             }
         }
@@ -352,8 +354,27 @@ fn filter_light(cow_html: Cow<'_, Html>, filter: &Filter) -> Html {
 }
 
 /// Unwrap a [`Vec<Html>`] to not have vecs of 0 and 1 element.
-fn unwrap_vec(mut vec: Box<[Html]>) -> Html {
-    if vec.len() <= 1 { vec.first_mut().map(take).unwrap_or_default() } else { Html::Vec(vec) }
+fn unwrap_vec(vec: Vec<Html>) -> Html {
+    let mut previous = String::new();
+    let mut res = Vec::with_capacity(vec.len());
+    for this in vec {
+        if let Html::Text(text) = this {
+            previous.push_str(&text);
+        } else {
+            if !previous.is_empty() {
+                res.push(Html::Text(take(&mut previous)));
+            }
+            res.push(this);
+        }
+    }
+    if !previous.is_empty() {
+        res.push(Html::Text(take(&mut previous)));
+    }
+    if res.len() <= 1 {
+        res.first_mut().map(take).unwrap_or_default()
+    } else {
+        Html::Vec(res.into_boxed_slice())
+    }
 }
 
 /// Method to apply [`Iterator::filter_map`] on an iterator inside a Cow,

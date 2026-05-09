@@ -106,8 +106,8 @@ fn test_maker<T: Debug>(
         let output = "\x1b[33mOutput:\x1b[0m";
         let expected = "\x1b[33mExpected:\x1b[0m";
         panic!(
-            "{msg:?}\n{output}{sep}{formatted_output}{sep}{nl}{expected}{sep}{formatted_input}{sep}Use `diff {output_path} {expected_path}` to \
-             see the problem."
+            "{msg:?}\n{output}{sep}.{formatted_output}.{sep}{nl}{expected}{sep}.{formatted_input}.\
+             {sep}Use `diff {output_path} {expected_path}` to see the problem."
         );
     }
 }

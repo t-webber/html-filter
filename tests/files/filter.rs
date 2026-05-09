@@ -25,7 +25,7 @@ test_filter!(
 doctype: Filter::new().no_tags().none_except_doctype() =>
 "<!><!DOCTYPE ><!DOCTYPE html>"
 
-prefix: Filter::new().attribute_value("xlink:href", "#").none_except_text() =>
+prefix: Filter::new().attribute_value("xlink:href", "#") =>
 r##"<a xlink:href="#">About</a>"##
 
 contains: Filter::new().attribute_value_contains("class", "some_other_class") =>
