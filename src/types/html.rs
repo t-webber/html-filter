@@ -108,6 +108,106 @@ impl<T: AsRef<str>> PartialEq<T> for Html {
 }
 
 impl Html {
+    /// Returns the text of the comment, if this node is a comment.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use html_filter::*;
+    ///
+    /// assert_eq!(Html::parse("<!-- some comment -->").unwrap().as_comment(), Some(" some comment "));
+    /// assert_eq!(Html::parse("<div>a</div>").unwrap().as_comment(), None);
+    /// assert_eq!(Html::parse("not <!-- at --> top-level").unwrap().as_comment(), None);
+    /// ```
+    #[must_use]
+    pub const fn as_comment(&self) -> Option<&str> {
+        if let Self::Comment(comment) = self { Some(comment.as_str()) } else { None }
+    }
+
+    /// Returns the text of the doctype, if this node is a doctype.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use html_filter::*;
+    ///
+    /// assert_eq!(
+    ///     Html::parse("<!doctype html>").unwrap().as_doctype(),
+    ///     Some(("doctype", Some("html")))
+    /// );
+    /// assert_eq!(Html::parse("<!xml>").unwrap().as_doctype(), Some(("xml", None)));
+    /// assert_eq!(Html::parse("<div>a</div>").unwrap().as_doctype(), None);
+    /// assert_eq!(Html::parse("<!not at> top-level").unwrap().as_doctype(), None);
+    /// ```
+    #[must_use]
+    pub const fn as_doctype(&self) -> Option<(&str, Option<&str>)> {
+        if let Self::Doctype { name, attr: maybe_attr } = self {
+            if let Some(attr) = maybe_attr {
+                Some((name.as_str(), Some(attr.as_str())))
+            } else {
+                Some((name.as_str(), None))
+            }
+        } else {
+            None
+        }
+    }
+
+    /// Returns the tag, if this node is a tag.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use html_filter::*;
+    ///
+    /// let div = Html::parse(r#"<div href="/">a</div>"#).unwrap();
+    /// assert_eq!(div.as_tag().unwrap().0.as_name(), "div");
+    /// assert_eq!(div.as_tag().unwrap().0.find_attr_value("href"), Some(&"/".to_owned()));
+    ///
+    /// assert_eq!(Html::parse("<div>a</div>").unwrap().as_tag().unwrap().1.as_text(), Some("a"));
+    /// assert_eq!(Html::parse("<p>a</p><p>b</p>").unwrap().as_tag(), None);
+    /// ```
+    #[must_use]
+    pub const fn as_tag(&self) -> Option<(&Tag, &Self)> {
+        if let Self::Tag { tag, child } = self { Some((tag, child)) } else { None }
+    }
+
+    /// Returns the text, if this node is a text.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use html_filter::*;
+    ///
+    /// assert_eq!(Html::parse("text").unwrap().as_text(), Some("text"));
+    /// assert_eq!(Html::parse("<div>a</div>").unwrap().as_text(), None);
+    /// assert_eq!(Html::parse("<div>a</div>").unwrap().as_tag().unwrap().1.as_text(), Some("a"));
+    /// assert_eq!(Html::parse("<p>a</p><p>b</p>").unwrap().as_text(), None);
+    /// ```
+    #[must_use]
+    pub const fn as_text(&self) -> Option<&str> {
+        if let Self::Text(text) = self { Some(text.as_str()) } else { None }
+    }
+
+    /// Returns the vec, if this isn't a node but a list of nodes.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use html_filter::*;
+    ///
+    /// assert_eq!(Html::parse("<div>a</div>").unwrap().as_vec(), None);
+    /// let html = Html::parse("<p>a</p>text<!-- comment-->").unwrap();
+    /// let vec = html.as_vec().unwrap();
+    /// assert_eq!(vec.get(0).unwrap().as_tag().unwrap().0.as_name(), "p");
+    /// assert_eq!(vec.get(0).unwrap().as_tag().unwrap().1.as_text(), Some("a"));
+    /// assert_eq!(vec.get(1).unwrap().as_text(), Some("text"));
+    /// assert_eq!(vec.get(2).unwrap().as_comment(), Some(" comment"));
+    /// ```
+    #[must_use]
+    pub const fn as_vec(&self) -> Option<&[Self]> {
+        if let Self::Vec(vec) = self { Some(vec) } else { None }
+    }
+
     /// Checks if an [`Html`] tree is empty
     pub(crate) const fn is_empty(&self) -> bool {
         matches!(self, Self::Empty)
