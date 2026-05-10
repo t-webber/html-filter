@@ -206,10 +206,9 @@ fn filter_aux(cow_html: Cow<'_, Html>, filter: &Filter, found: bool) -> FilterSu
     use Html::*;
     match cow_html {
         Cow::Borrowed(Comment(_)) | Cow::Owned(Comment(_))
-            if found || !filter.comment_explicitly_allowed() =>
+            if !filter.comment_explicitly_allowed() =>
             None,
-        Cow::Borrowed(Doctype { .. }) | Cow::Owned(Doctype { .. })
-            if found || !filter.doctype_allowed() =>
+        Cow::Borrowed(Doctype { .. }) | Cow::Owned(Doctype { .. }) if !filter.doctype_allowed() =>
             None,
         Cow::Borrowed(Doctype { .. } | Comment(_)) | Cow::Owned(Doctype { .. } | Comment(_)) =>
             FilterSuccess::make_none(cow_html),

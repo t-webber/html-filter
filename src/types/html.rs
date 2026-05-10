@@ -101,6 +101,12 @@ pub enum Html {
     Vec(Box<[Self]>),
 }
 
+impl<T: AsRef<str>> PartialEq<T> for Html {
+    fn eq(&self, other: &T) -> bool {
+        *self.to_string() == *other.as_ref()
+    }
+}
+
 impl Html {
     /// Checks if an [`Html`] tree is empty
     pub(crate) const fn is_empty(&self) -> bool {

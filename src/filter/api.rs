@@ -25,25 +25,69 @@ impl Filter {
         self.comment(all).doctype(all).text(all)
     }
 
-    /// Removes the comments
+    /// Removes the comments, and forces to keep doctypes and texts.
     ///
-    /// Doctypes and texts are kept, unless said otherwise by the user.
+    /// See also [`Self::comment`] to allow comments without forcing others to
+    /// be kept.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use html_filter::*;
+    ///
+    /// let html = Html::parse("a <p> b <!-- c --></p> d").unwrap();
+    ///
+    /// assert_eq!(html.to_filtered(&Filter::new().tag_name("p").comment(false)), "<p> b </p>");
+    /// assert_eq!(html.filter(&Filter::new().tag_name("p").all_except_comment()), "a <p> b </p> d");
+    /// ```
     #[must_use]
     pub const fn all_except_comment(self) -> Self {
         self.all(true).comment(false)
     }
 
-    /// Removes the doctypes
+    /// Removes the doctypes, and forces to keep comments and texts.
     ///
-    /// Comments and texts are kept, unless said otherwise by the user.
+    /// See also [`Self::doctype`] to allow doctypes without forcing others to
+    /// be kept.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use html_filter::*;
+    ///
+    /// let html = Html::parse("<!doctype html> a <p> b </p> d").unwrap();
+    ///
+    /// assert_eq!(html.to_filtered(&Filter::new().tag_name("p").doctype(false)), "<p> b </p>");
+    /// assert_eq!(html.filter(&Filter::new().tag_name("p").all_except_doctype()), " a <p> b </p> d");
+    /// ```
     #[must_use]
     pub const fn all_except_doctype(self) -> Self {
         self.all(true).doctype(false)
     }
 
-    /// Removes the texts
+    /// Removes the texts, and forces to keep doctypes and comments.
     ///
-    /// Comments and doctypes are kept, unless said otherwise by the user.
+    /// See also [`Self::text`] to allow comments without forcing others to
+    /// be kept.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use html_filter::*;
+    ///
+    /// let html = Html::parse("<!doctype html> a <p> b <!-- c --></p> d <!-- e --> f").unwrap();
+    ///
+    /// assert_eq!(
+    ///     Filter::new().all_except_text(),
+    ///     Filter::new().text(false).comment(true).doctype(true)
+    /// );
+    ///
+    /// assert_eq!(html.to_filtered(&Filter::new().tag_name("p").text(false)), "<p><!-- c --></p>");
+    /// assert_eq!(
+    ///     html.filter(&Filter::new().tag_name("p").all_except_text()),
+    ///     "<!doctype html><p><!-- c --></p><!-- e -->"
+    /// );
+    /// ```
     #[must_use]
     pub const fn all_except_text(self) -> Self {
         self.all(true).text(false)

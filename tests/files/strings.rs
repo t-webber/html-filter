@@ -114,6 +114,7 @@ text_depth_doctype: Filter::new().doctype(true).comment(false).depth(2).tag_name
 </html>"
 
 no_depth_force_doctype: Filter::new().doctype(true).comment(false).depth(1).tag_name("p") => "
+<!DOCTYPE html>
 <html>
     A first text
     <p>
