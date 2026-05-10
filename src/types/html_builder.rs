@@ -14,7 +14,6 @@ pub struct CommentFull(bool);
 ///
 /// This is a builder for [`Html`]. Refer to its documentation for more
 /// information.
-#[non_exhaustive]
 #[derive(Debug, Default)]
 pub enum HtmlBuilder {
     /// Comment block
@@ -22,7 +21,6 @@ pub enum HtmlBuilder {
     /// # Example
     ///
     /// `<!-- some comment -->`
-    #[non_exhaustive]
     Comment {
         /// Content of the comment
         ///
@@ -46,7 +44,6 @@ pub enum HtmlBuilder {
     /// # Examples
     ///
     /// `<!doctype HtmlBuilder>`
-    #[non_exhaustive]
     Doctype {
         /// Name of the tag
         ///
@@ -73,7 +70,6 @@ pub enum HtmlBuilder {
     /// - `<div id="blob">content</div>`
     /// - `<div attr />`
     /// - `</>`
-    #[non_exhaustive]
     Tag {
         /// Opening tag
         ///

@@ -13,7 +13,6 @@ use core::hash::Hash;
     clippy::derived_hash_with_manual_eq,
     reason = "hash on enum doesn't depend of variant data"
 )]
-#[non_exhaustive]
 #[derive(Debug, Hash, Clone, PartialEq, Eq)]
 pub enum Attribute {
     /// Name of the attribute, when it doesn't have a value
@@ -116,7 +115,6 @@ impl fmt::Display for Attribute {
 /// let value: String = tag.into_attr_value("href").unwrap();
 /// assert_eq!(&value, "https://crates.io");
 /// ```
-#[non_exhaustive]
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Tag {
     /// Attributes of the tag. See [`Attribute`].

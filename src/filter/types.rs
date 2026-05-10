@@ -32,7 +32,6 @@ use crate::unwrap_or;
 /// Filter::new().none_except_text().collapse().trim().no_tags(); // Returns text without padding
 ///                                                               // between tags and in one Html::Text
 /// ```
-#[non_exhaustive]
 #[derive(Default, Debug, PartialEq, Eq)]
 #[expect(clippy::field_scoped_visibility_modifiers, reason = "useless")]
 pub struct Filter {
