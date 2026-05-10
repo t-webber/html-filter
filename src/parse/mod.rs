@@ -37,7 +37,7 @@ impl Html {
     /// </html>
     /// "#;
     /// let tree: Html = Html::parse(html).expect("Invalid HTML");
-    /// assert!(format!("{tree}") == html);
+    /// assert_eq!(format!("{tree}"), html);
     /// ```
     pub fn parse(html: &str) -> Result<Self, String> {
         let mut tree = HtmlBuilder::default();

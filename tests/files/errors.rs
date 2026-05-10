@@ -8,10 +8,7 @@ macro_rules! make_err_test {
                 let html = $html;
                 let expected = $err;
                 if let Err(err) = Html::parse(html) {
-                    assert!(
-                        err == expected,
-                        "Error mismatch! Expected\n{expected}\nbut found \n{err}\n."
-                    )
+                    assert_eq!(err, expected)
                 } else {
                     panic!("No errors found, but expected:\n{expected}\n.");
                 }
