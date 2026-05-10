@@ -7,7 +7,7 @@
 ///
 /// Set the elements to `true` iff you want them to appear in the filtered
 /// output
-#[derive(Default, Debug)]
+#[derive(Default, Debug, PartialEq, Eq)]
 pub(super) struct NodeTypeFilter {
     /// Whether successive texts after a filter removes nodes should be collapse
     /// in one text or not.

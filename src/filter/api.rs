@@ -7,7 +7,19 @@ use crate::filter::element::{AttributeMatch, BlackWhiteList, ValueAssociateHash}
 /// Public API for [`Filter`] on node-type-filters (texts, doctypes, comments,
 /// etc.)
 impl Filter {
-    /// Keeps everything: comments, doctypes and texts
+    /// Short-hand to set the keep policy of comments, texts and doctypes at
+    /// once.
+    ///
+    /// - `true`: keep them
+    /// - `false`: remove them
+    ///
+    /// It is equivalent to:
+    ///
+    /// ```
+    /// use html_filter::*;
+    /// assert_eq!(Filter::new().doctype(true).text(true).comment(true), Filter::new().all(true));
+    /// assert_eq!(Filter::new().doctype(false).text(false).comment(false), Filter::new().all(false));
+    /// ```
     #[must_use]
     pub const fn all(mut self, all: bool) -> Self {
         self.types.set_comment(all);

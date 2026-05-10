@@ -14,7 +14,7 @@ use crate::types::tag::Attribute;
 ///
 /// It contains a `whitelist` and a `blacklist` to keep track of the filtering
 /// parameters.
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct BlackWhiteList {
     /// Default behaviour
     ///
@@ -168,7 +168,7 @@ impl AttributeMatch {
 
 /// Rules for associating names to values
 // TODO: could add a default to create a method: exact_attributes
-#[derive(Default, Debug)]
+#[derive(Default, Debug, PartialEq, Eq)]
 pub struct ValueAssociateHash {
     /// Names and attributes explicitly not wanted
     blacklist: Vec<(String, AttributeMatch)>,

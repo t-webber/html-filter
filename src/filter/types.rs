@@ -33,7 +33,7 @@ use crate::unwrap_or;
 ///                                                               // between tags and in one Html::Text
 /// ```
 #[non_exhaustive]
-#[derive(Default, Debug)]
+#[derive(Default, Debug, PartialEq, Eq)]
 #[expect(clippy::field_scoped_visibility_modifiers, reason = "useless")]
 pub struct Filter {
     /// Attributes of tags
