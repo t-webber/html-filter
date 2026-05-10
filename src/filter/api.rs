@@ -21,38 +21,32 @@ impl Filter {
     /// assert_eq!(Filter::new().doctype(false).text(false).comment(false), Filter::new().all(false));
     /// ```
     #[must_use]
-    pub const fn all(mut self, all: bool) -> Self {
-        self.types.set_comment(all);
-        self.types.set_doctype(all);
-        self.types.set_text(all);
-        self
+    pub const fn all(self, all: bool) -> Self {
+        self.comment(all).doctype(all).text(all)
     }
 
     /// Removes the comments
     ///
     /// Doctypes and texts are kept, unless said otherwise by the user.
     #[must_use]
-    pub const fn all_except_comment(mut self) -> Self {
-        self.types.set_only_comment(false);
-        self
+    pub const fn all_except_comment(self) -> Self {
+        self.all(true).comment(false)
     }
 
     /// Removes the doctypes
     ///
     /// Comments and texts are kept, unless said otherwise by the user.
     #[must_use]
-    pub const fn all_except_doctype(mut self) -> Self {
-        self.types.set_only_doctype(false);
-        self
+    pub const fn all_except_doctype(self) -> Self {
+        self.all(true).doctype(false)
     }
 
     /// Removes the texts
     ///
     /// Comments and doctypes are kept, unless said otherwise by the user.
     #[must_use]
-    pub const fn all_except_text(mut self) -> Self {
-        self.types.set_only_text(false);
-        self
+    pub const fn all_except_text(self) -> Self {
+        self.all(true).text(false)
     }
 
     /// Sets the filter for comments
@@ -83,27 +77,24 @@ impl Filter {
     ///
     /// Doctypes and texts are removed, unless said otherwise by the user.
     #[must_use]
-    pub const fn none_except_comment(mut self) -> Self {
-        self.types.set_only_comment(true);
-        self
+    pub const fn none_except_comment(self) -> Self {
+        self.all(false).comment(true)
     }
 
     /// Keeps only the doctypes
     ///
     /// Comments and texts are removed, unless said otherwise by the user.
     #[must_use]
-    pub const fn none_except_doctype(mut self) -> Self {
-        self.types.set_only_doctype(true);
-        self
+    pub const fn none_except_doctype(self) -> Self {
+        self.all(false).doctype(true)
     }
 
     /// Keeps only the texts
     ///
     /// Comments and doctypes are removed, unless said otherwise by the user.
     #[must_use]
-    pub const fn none_except_text(mut self) -> Self {
-        self.types.set_only_text(true);
-        self
+    pub const fn none_except_text(self) -> Self {
+        self.all(false).text(true)
     }
 
     /// Filters texts

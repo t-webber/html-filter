@@ -107,40 +107,6 @@ impl NodeTypeFilter {
         self.text = Some(text);
     }
 
-    /// Sets the comment authorisation, and all others to the contrary if not
-    /// already set.
-    pub const fn set_only_comment(&mut self, comment: bool) {
-        self.set_all(!comment);
-        self.comment = Some(comment);
-    }
-
-    /// Sets the doctype authorisation, and all others to the contrary if not
-    /// already set.
-    pub const fn set_only_doctype(&mut self, doctype: bool) {
-        self.set_all(!doctype);
-        self.doctype = Some(doctype);
-    }
-
-    /// Sets the text authorisation, and all others to the contrary if not
-    /// already set.
-    pub const fn set_only_text(&mut self, text: bool) {
-        self.set_all(!text);
-        self.text = Some(text);
-    }
-
-    /// Sets all the types to the same value, if not already set.
-    const fn set_all(&mut self, keep: bool) {
-        if self.comment.is_none() {
-            self.comment = Some(keep);
-        }
-        if self.doctype.is_none() {
-            self.doctype = Some(keep);
-        }
-        if self.text.is_none() {
-            self.text = Some(keep);
-        }
-    }
-
     /// Sets trim flag.
     pub const fn trim(&mut self) {
         self.trim = true;
