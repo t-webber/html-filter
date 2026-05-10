@@ -105,16 +105,14 @@ impl fmt::Display for Attribute {
 /// ```
 /// use html_filter::*;
 ///
-/// let html = Html::parse("<a enabled href='https://crates.io'>").unwrap();
-/// if let Html::Tag { tag, .. } = html {
-///     assert!(tag.as_name() == "a");
-///     assert!(tag.find_attr_value("enabled").is_none());
-///     assert!(tag.find_attr_value("href").is_some_and(|value| value == "https://crates.io"));
-///     let value: String = tag.into_attr_value("href").unwrap();
-///     assert!(&value == "https://crates.io");
-/// } else {
-///     unreachable!();
-/// }
+/// let Ok(Html::Tag { tag, .. }) = Html::parse("<a enabled href='https://crates.io'>") else {
+///     unreachable!()
+/// };
+/// assert!(tag.as_name() == "a");
+/// assert!(tag.find_attr_value("enabled").is_none());
+/// assert!(tag.find_attr_value("href").is_some_and(|value| value == "https://crates.io"));
+/// let value: String = tag.into_attr_value("href").unwrap();
+/// assert!(&value == "https://crates.io");
 /// ```
 #[non_exhaustive]
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -138,14 +136,16 @@ impl Tag {
     /// ```
     /// use html_filter::*;
     ///
-    /// let html = Html::parse("<div id='blob' />").unwrap();
-    /// if let Html::Tag { tag, .. } = html {
-    ///     let attr = tag.as_attrs().first().unwrap();
-    ///     assert!(attr.as_name() == "id");
-    ///     assert!(attr.as_value().is_some_and(|value| value == "blob"));
-    /// } else {
-    ///     unreachable!();
-    /// }
+    /// let html = Html::parse("<div id='blob' enabled />").unwrap();
+    /// let attrs = html.as_tag().unwrap().0.as_attrs();
+    ///
+    /// let id = attrs.get(0).unwrap();
+    /// assert_eq!(id.as_name(), "id");
+    /// assert_eq!(id.as_value().unwrap(), "blob");
+    ///
+    /// let enabled = attrs.get(1).unwrap();
+    /// assert_eq!(enabled.as_name(), "enabled");
+    /// assert_eq!(enabled.as_value(), None);
     /// ```
     #[must_use]
     pub const fn as_attrs(&self) -> &[Attribute] {
@@ -160,11 +160,7 @@ impl Tag {
     /// use html_filter::*;
     ///
     /// let html = Html::parse("<div />").unwrap();
-    /// if let Html::Tag { tag, .. } = html {
-    ///     assert!(tag.as_name() == "div");
-    /// } else {
-    ///     unreachable!();
-    /// }
+    /// assert_eq!(html.as_tag().unwrap().0.as_name(), "div");
     /// ```
     #[must_use]
     pub const fn as_name(&self) -> &String {
@@ -184,15 +180,9 @@ impl Tag {
     /// use html_filter::*;
     ///
     /// let html = Html::parse(r#"<a id="std doc" enabled xlink:href="https://std.rs"/>"#).unwrap();
-    ///
-    /// if let Html::Tag { tag, .. } = html {
-    ///     assert!(tag.find_attr_value("enabled").is_none());
-    ///     assert!(
-    ///         tag.find_attr_value("xlink:href").map(|value| value.as_ref()) == Some("https://std.rs")
-    ///     );
-    /// } else {
-    ///     unreachable!()
-    /// }
+    /// let (tag, _) = html.as_tag().unwrap();
+    /// assert_eq!(tag.find_attr_value("enabled"), None);
+    /// assert_eq!(tag.find_attr_value("xlink:href").unwrap(), "https://std.rs");
     /// ```
     #[must_use]
     pub fn find_attr_value<T: AsRef<str>>(&self, name: T) -> Option<&String> {

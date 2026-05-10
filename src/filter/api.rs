@@ -175,22 +175,21 @@ impl Filter {
     /// .unwrap();
     ///
     /// // With trim
-    /// let Html::Tag { tag, child, .. } = html.to_filtered(&Filter::new().tag_name("ul").trim())
-    /// else {
-    ///     panic!()
-    /// };
+    /// let filtered = html.to_filtered(&Filter::new().tag_name("ul").trim());
+    /// let (tag, child) = filtered.as_tag().unwrap();
     /// assert_eq!(tag.as_name(), "ul");
-    /// let Html::Vec(vec) = *child else { panic!() };
+    ///
+    /// let vec = child.as_vec().unwrap();
     /// assert!(matches!(vec[0], Html::Tag { .. })); // first li
     /// assert!(matches!(vec[1], Html::Tag { .. })); // second li
     /// assert_eq!(vec.len(), 2);
     ///
     /// // Without trim
-    /// let Html::Tag { tag, child, .. } = html.to_filtered(&Filter::new().tag_name("ul")) else {
-    ///     panic!()
-    /// };
+    /// let filtered = html.filter(&Filter::new().tag_name("ul"));
+    /// let (tag, child) = filtered.as_tag().unwrap();
     /// assert_eq!(tag.as_name(), "ul");
-    /// let Html::Vec(vec) = *child else { panic!() };
+    ///
+    /// let vec = child.as_vec().unwrap();
     /// assert_eq!(vec[0], Html::Text("\n    ".to_string()));
     /// assert!(matches!(vec[1], Html::Tag { .. })); // first li
     /// assert_eq!(vec[2], Html::Text("\n    ".to_string()));
