@@ -96,7 +96,7 @@ impl HtmlBuilder {
                         TagBuilder::Doctype { name, attr } =>
                             self.push_node(Self::Doctype { name, attr }),
                         TagBuilder::Open(tag) => {
-                            match tag.as_name().as_str() {
+                            match tag.as_name() {
                                 "style" => style = true,
                                 "script" => script = true,
                                 _ => (),

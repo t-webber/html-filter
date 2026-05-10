@@ -198,10 +198,10 @@ impl Html {
     /// assert_eq!(Html::parse("<div>a</div>").unwrap().as_vec(), None);
     /// let html = Html::parse("<p>a</p>text<!-- comment-->").unwrap();
     /// let vec = html.as_vec().unwrap();
-    /// assert_eq!(vec.get(0).unwrap().as_tag().unwrap().0.as_name(), "p");
-    /// assert_eq!(vec.get(0).unwrap().as_tag().unwrap().1.as_text(), Some("a"));
-    /// assert_eq!(vec.get(1).unwrap().as_text(), Some("text"));
-    /// assert_eq!(vec.get(2).unwrap().as_comment(), Some(" comment"));
+    /// assert_eq!(vec[0].as_tag().unwrap().0.as_name(), "p");
+    /// assert_eq!(vec[0].as_tag().unwrap().1.as_text(), Some("a"));
+    /// assert_eq!(vec[1].as_text(), Some("text"));
+    /// assert_eq!(vec[2].as_comment(), Some(" comment"));
     /// ```
     #[must_use]
     pub const fn as_vec(&self) -> Option<&[Self]> {

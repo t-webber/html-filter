@@ -141,13 +141,11 @@ impl Tag {
     /// let html = Html::parse("<div id='blob' enabled />").unwrap();
     /// let attrs = html.as_tag().unwrap().0.as_attrs();
     ///
-    /// let id = attrs.get(0).unwrap();
-    /// assert_eq!(id.as_name(), "id");
-    /// assert_eq!(id.as_value().unwrap(), "blob");
+    /// assert_eq!(attrs[0].as_name(), "id");
+    /// assert_eq!(attrs[0].as_value().unwrap(), "blob");
     ///
-    /// let enabled = attrs.get(1).unwrap();
-    /// assert_eq!(enabled.as_name(), "enabled");
-    /// assert_eq!(enabled.as_value(), None);
+    /// assert_eq!(attrs[1].as_name(), "enabled");
+    /// assert_eq!(attrs[1].as_value(), None);
     /// ```
     #[must_use]
     pub const fn as_attrs(&self) -> &[Attribute] {
@@ -165,8 +163,8 @@ impl Tag {
     /// assert_eq!(html.as_tag().unwrap().0.as_name(), "div");
     /// ```
     #[must_use]
-    pub const fn as_name(&self) -> &String {
-        &self.name
+    pub const fn as_name(&self) -> &str {
+        self.name.as_str()
     }
 
     /// Finds the value of the attribute of the given name
