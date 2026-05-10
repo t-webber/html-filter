@@ -327,7 +327,11 @@ impl Filter {
     ///
     /// For example, let's consider this HTML code:
     ///
-    /// ```html
+    /// ```
+    /// use html_filter::*;
+    ///
+    /// let html = Html::parse(
+    ///     r#"
     /// <main>
     ///     <nav>
     ///         <!-- Navigation menu -->
@@ -338,57 +342,35 @@ impl Filter {
     ///         </ul>
     ///     </nav>
     /// </main>
-    /// ```
+    /// "#,
+    /// )
+    /// .unwrap();
     ///
-    /// For this piece of HTML code, the filter
+    /// assert_eq!(
+    ///     html.to_filtered(&Filter::new().attribute_value("href", "second").depth(0)),
+    ///     r#"<li href="second">Second link</li>"#
+    /// );
     ///
-    /// ```
-    /// #![allow(unused)]
-    /// html_filter::Filter::new().attribute_value("href", "second").depth(0);
-    /// ```
+    /// assert_eq!(
+    ///     html.to_filtered(&Filter::new().attribute_value("href", "second").depth(1)),
+    ///     r#"<ul>
+    ///             <li href="first">First link</li>
+    ///             <li href="second">Second link</li>
+    ///             <li href="third">Third link</li>
+    ///         </ul>"#
+    /// );
     ///
-    /// will return:
-    ///
-    /// ```html
-    /// <li href="second">Second link</li>
-    /// ```
-    ///
-    /// ;
-    ///
-    /// ```
-    /// #![allow(unused)]
-    /// html_filter::Filter::new().attribute_value("href", "second").depth(1);
-    /// ```
-    ///
-    /// will return (note that the other children were kept):
-    ///
-    /// ```html
-    /// <ul>
-    ///     <li href="first">First link</li>
-    ///     <li href="second">Second link</li>
-    ///     <li href="third">Third link</li>
-    /// </ul>
-    /// ```
-    ///
-    /// ;
-    ///
-    /// ```
-    /// #![allow(unused)]
-    /// html_filter::Filter::new().attribute_value("href", "second").depth(2);
-    /// ```
-    ///
-    /// will return (note that even the comment was kept, if you want to remove
-    /// the comment, you must add `.comment(false)` to the filter):
-    ///
-    /// ```html
-    /// <nav>
-    ///     <!-- Navigation menu -->
-    ///     <ul>
-    ///         <li href="first">First link</li>
-    ///         <li href="second">Second link</li>
-    ///         <li href="third">Third link</li>
-    ///     </ul>
-    /// </nav>
+    /// assert_eq!(
+    ///     html.to_filtered(&Filter::new().attribute_value("href", "second").depth(2)),
+    ///     r#"<nav>
+    ///         <!-- Navigation menu -->
+    ///         <ul>
+    ///             <li href="first">First link</li>
+    ///             <li href="second">Second link</li>
+    ///             <li href="third">Third link</li>
+    ///         </ul>
+    ///     </nav>"#
+    /// );
     /// ```
     #[must_use]
     pub const fn depth(mut self, depth: usize) -> Self {
