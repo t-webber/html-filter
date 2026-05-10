@@ -8,6 +8,8 @@ license = "MIT OR Apache-2.0"
 keywords = ["parser", "html", "scraping"]
 description = "Crate to parse, filter, search and edit an HTML file."
 repository = "https://github.com/t-webber/html-filter"
+homepage = "https://github.com/t-webber/html-filter"
+documentation = "https://docs.rs/html-filter/latest/html_filter/"
 categories = ["command-line-interface", "parser-implementations", "parsing"]
 
 [lints.rust]
