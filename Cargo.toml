@@ -1,16 +1,18 @@
 [package]
 name = "html-filter"
-version = "0.2.2"
 edition = "2024"
 readme = "README.md"
-authors = ["Tom Webber"]
+authors = ["Tom Webber <t.c.w.webber@gmail.com>"]
 license = "MIT OR Apache-2.0"
-keywords = ["parser", "html", "scraping"]
-description = "Crate to parse, filter, search and edit an HTML file."
+
+version = "0.2.2"
+keywords = ["html", "parser", "filter", "search", "dom"]
+categories = ["parser-implementations", "parsing", "web-programming"]
+description = "Parse HTML into a typed tree, then search for tags, attributes, classes, filter out comments or find and extract the exact data you want with a short builder pattern - zero dependencies, zero overhead"
+
 repository = "https://github.com/t-webber/html-filter"
 homepage = "https://github.com/t-webber/html-filter"
 documentation = "https://docs.rs/html-filter/latest/html_filter/"
-categories = ["command-line-interface", "parser-implementations", "parsing"]
 
 [lints.rust]
 missing_docs = "deny"

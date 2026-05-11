@@ -2,7 +2,7 @@
 
 ---
 
-_Parse HTML into a typed tree, then search and filter it easily with finders — zero dependencies, zero overhead._
+_Parse HTML into a typed tree, then search for tags, attributes, classes, filter out comments or find the exact data you want with a short builder pattern in no time — zero dependencies, zero overhead._
 
 ---
 
@@ -11,12 +11,12 @@ _Parse HTML into a typed tree, then search and filter it easily with finders —
 [![coverage](https://img.shields.io/badge/Coverage-100%25-purple)](https://github.com/t-webber/html-filter/actions/workflows/nightly.yml)
 [![rust-edition](https://img.shields.io/badge/Rust--edition-2024-darkred?logo=Rust)](https://doc.rust-lang.org/stable/edition-guide/rust-2024/)
 
-![Clippy](https://github.com/t-webber/html-filter/actions/workflows/clippy.yml/badge.svg?branch=main)
-![Build](https://github.com/t-webber/html-filter/actions/workflows/build.yml/badge.svg?branch=main)
-![Tests](https://github.com/t-webber/html-filter/actions/workflows/tests.yml/badge.svg?branch=main)
-![Docs](https://github.com/t-webber/html-filter/actions/workflows/rustdoc.yml/badge.svg?branch=main)
-![Fmt](https://github.com/t-webber/html-filter/actions/workflows/rustfmt.yml/badge.svg?branch=main)
-![Coverage](https://github.com/t-webber/html-filter/actions/workflows/coverage.yml/badge.svg?branch=main)
+![lint](https://github.com/t-webber/html-filter/actions/workflows/clippy.yml/badge.svg?branch=main)
+![build](https://github.com/t-webber/html-filter/actions/workflows/build.yml/badge.svg?branch=main)
+![test](https://github.com/t-webber/html-filter/actions/workflows/tests.yml/badge.svg?branch=main)
+![doc](https://github.com/t-webber/html-filter/actions/workflows/rustdoc.yml/badge.svg?branch=main)
+![format](https://github.com/t-webber/html-filter/actions/workflows/rustfmt.yml/badge.svg?branch=main)
+![coverage](https://github.com/t-webber/html-filter/actions/workflows/coverage.yml/badge.svg?branch=main)
 
 ---
 
@@ -28,6 +28,7 @@ _Parse HTML into a typed tree, then search and filter it easily with finders —
 - Easy interface to filter HTML
 - Extract some information from some HTML in just a few lines
 - Lenient parsing to not crash on non-valid HTML files
+- Contextual Filtering: retrieve ancestors of matched nodes, to keep a node based on child content.
 
 ## Installation
 
@@ -39,10 +40,10 @@ You first need to parse the HTML data:
 
 ```rust
 use html_filter::*;
-use std::fs;
 
-let html = fs::read_to_string("./tests/data/index.html").unwrap();
-assert!(Html::parse(&html).is_ok());
+let html = Html::parse("<div class='hidden'>Secret</div><p>Public</p>").unwrap();
+let filter = Filter::new().except_attribute_value("class", "hidden");
+assert_eq!(html.filter(&filter), "<p>Public</p>");
 ```
 
 ## Filtering
