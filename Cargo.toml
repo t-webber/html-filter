@@ -5,7 +5,7 @@ readme = "README.md"
 authors = ["Tom Webber <t.c.w.webber@gmail.com>"]
 license = "MIT OR Apache-2.0"
 
-version = "0.2.2"
+version = "0.2.3"
 keywords = ["html", "parser", "filter", "search", "dom"]
 categories = ["parser-implementations", "parsing", "web-programming"]
 description = "Parse HTML into a typed tree, then search for tags, attributes, classes, filter out comments or find and extract the exact data you want with a short builder pattern - zero dependencies, zero overhead"
